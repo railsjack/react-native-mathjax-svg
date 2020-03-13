@@ -1,0 +1,39 @@
+{
+  "name": "react-native-mathjax-svg",
+  "version": "0.1.0",
+  "description": "React Native component to display latex using MathJax. Uses [MathJax](https://github.com/mathjax/)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/railsjack/react-native-mathjax-svg.git"
+  },
+  "main": "index.tsx",
+  "scripts": {
+    "lint": "eslint ./"
+  },
+  "keywords": [
+    "react-native",
+    "mathjax",
+    "svg",
+    "mathjax-svg"
+  ],
+  "author": "Nahrae <jinnahrae@gmail.com>",
+  "dependencies": {
+    "mathjax": "3.0.1"
+  },
+  "peerDependencies": {
+    "prop-types": "^15.5.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^6.1.2",
+    "eslint": "^2.13.1",
+    "eslint-plugin-react": "^6.8.0"
+  },
+  "bugs": {
+    "url": "https://github.com/railsjack/react-native-jsbarcode/issues"
+  },
+  "homepage": "https://github.com/railsjack/react-native-jsbarcode#readme",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
+}
