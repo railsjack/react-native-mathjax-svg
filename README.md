@@ -24,3 +24,6 @@ import MathJax from 'react-native-mathjax-svg';
 |  fontSize     | 16             | Size of font to display formula         |
 |  color        | 'black'        | Color of formula to display             |
 
+
+## Example
+[https://github.com/railsjack/demo-app-for-mathjax](https://github.com/railsjack/demo-app-for-mathjax)
