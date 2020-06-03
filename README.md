@@ -2,7 +2,7 @@
 
 ## Installation
 ```
-$ yarn add react-native-mathjax-svg
+$ yarn add react-native-mathjax-svg react-native-svg
 ```
 
 ## Usage
