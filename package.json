@@ -18,10 +18,9 @@
   ],
   "author": "Nahrae <jinnahrae@gmail.com>",
   "dependencies": {
-    
+    "react-native-svg": "^9.13.6"
   },
   "peerDependencies": {
-    "react-native-svg": "^9.13.6"
   },
   "devDependencies": {
   },
