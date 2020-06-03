@@ -1,6 +1,6 @@
 {
   "name": "react-native-mathjax-svg",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "React Native component to display latex using MathJax. Uses [MathJax](https://github.com/mathjax/)",
   "repository": {
     "type": "git",
@@ -18,9 +18,10 @@
   ],
   "author": "Nahrae <jinnahrae@gmail.com>",
   "dependencies": {
-    "react-native-svg": "^9.13.6"
+    
   },
   "peerDependencies": {
+    "react-native-svg": "^9.13.6"
   },
   "devDependencies": {
   },
