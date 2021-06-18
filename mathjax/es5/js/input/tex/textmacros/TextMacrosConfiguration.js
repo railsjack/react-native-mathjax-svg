@@ -1,7 +1,7 @@
 "use strict";
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TextMacrosConfiguration = exports.TextBaseConfiguration = void 0;
+exports.TextMacrosConfiguration = exports.textBase = void 0;
 var Configuration_js_1 = require("../Configuration.js");
 var ParseOptions_js_1 = require("../ParseOptions.js");
 var Tags_js_1 = require("../Tags.js");
@@ -9,8 +9,7 @@ var BaseItems_js_1 = require("../base/BaseItems.js");
 var TextParser_js_1 = require("./TextParser.js");
 var TextMacrosMethods_js_1 = require("./TextMacrosMethods.js");
 require("./TextMacrosMappings.js");
-exports.TextBaseConfiguration = Configuration_js_1.Configuration.create('text-base', {
-    parser: 'text',
+exports.textBase = Configuration_js_1.Configuration.local({
     handler: {
         character: ['command', 'text-special'],
         macro: ['text-macros']
@@ -44,7 +43,8 @@ function internalMath(parser, text, level, mathvariant) {
 }
 exports.TextMacrosConfiguration = Configuration_js_1.Configuration.create('textmacros', {
     config: function (_config, jax) {
-        var textConf = new Configuration_js_1.ParserConfiguration(jax.parseOptions.options.textmacros.packages, ['tex', 'text']);
+        var textConf = new Configuration_js_1.ParserConfiguration([]);
+        textConf.append(exports.textBase);
         textConf.init();
         var parseOptions = new ParseOptions_js_1.default(textConf, []);
         parseOptions.options = jax.parseOptions.options;
@@ -59,11 +59,6 @@ exports.TextMacrosConfiguration = Configuration_js_1.Configuration.create('textm
     preprocessors: [function (data) {
             var config = data.data.packageData.get('textmacros');
             config.parseOptions.nodeFactory.setMmlFactory(config.jax.mmlFactory);
-        }],
-    options: {
-        textmacros: {
-            packages: ['text-base']
-        }
-    }
+        }]
 });
 //# sourceMappingURL=TextMacrosConfiguration.js.map

@@ -60,6 +60,10 @@ var CHTMLmsubsup = (function (_super) {
     function CHTMLmsubsup() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    CHTMLmsubsup.prototype.markUsed = function () {
+        _super.prototype.markUsed.call(this);
+        CHTMLmsubsup.used = true;
+    };
     CHTMLmsubsup.prototype.toCHTML = function (parent) {
         var adaptor = this.adaptor;
         var chtml = this.standardCHTMLnode(parent);

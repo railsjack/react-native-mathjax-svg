@@ -14,17 +14,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseConfiguration = exports.BaseTags = exports.Other = void 0;
@@ -36,7 +25,6 @@ var SymbolMap_js_1 = require("../SymbolMap.js");
 var bitem = require("./BaseItems.js");
 var Tags_js_1 = require("../Tags.js");
 require("./BaseMappings.js");
-var OperatorDictionary_js_1 = require("../../../core/MmlTree/OperatorDictionary.js");
 new SymbolMap_js_1.CharacterMap('remap', null, {
     '-': '\u2212',
     '*': '\u2217',
@@ -46,14 +34,11 @@ function Other(parser, char) {
     var font = parser.stack.env['font'];
     var def = font ?
         { mathvariant: parser.stack.env['font'] } : {};
-    var remap = MapHandler_js_1.MapHandler.getMap('remap').lookup(char);
-    var range = OperatorDictionary_js_1.getRange(char);
-    var type = (range ? range[3] : 'mo');
-    var mo = parser.create('token', type, def, (remap ? remap.char : char));
-    if (type === 'mo') {
-        NodeUtil_js_1.default.setProperty(mo, 'fixStretchy', true);
-        parser.configuration.addNode('fixStretchy', mo);
-    }
+    var remap = MapHandler_js_1.MapHandler.getMap('remap').
+        lookup(char);
+    var mo = parser.create('token', 'mo', def, (remap ? remap.char : char));
+    NodeUtil_js_1.default.setProperty(mo, 'fixStretchy', true);
+    parser.configuration.addNode('fixStretchy', mo);
     parser.Push(mo);
 }
 exports.Other = Other;
@@ -62,36 +47,6 @@ function csUndefined(_parser, name) {
 }
 function envUndefined(_parser, env) {
     throw new TexError_js_1.default('UnknownEnv', 'Unknown environment \'%1\'', env);
-}
-function filterNonscript(_a) {
-    var e_1, _b;
-    var data = _a.data;
-    try {
-        for (var _c = __values(data.getList('nonscript')), _d = _c.next(); !_d.done; _d = _c.next()) {
-            var mml = _d.value;
-            if (mml.attributes.get('scriptlevel') > 0) {
-                var parent_1 = mml.parent;
-                parent_1.childNodes.splice(parent_1.childIndex(mml), 1);
-                data.removeFromList(mml.kind, [mml]);
-                if (mml.isKind('mrow')) {
-                    var mstyle = mml.childNodes[0];
-                    data.removeFromList('mstyle', [mstyle]);
-                    data.removeFromList('mspace', mstyle.childNodes[0].childNodes);
-                }
-            }
-            else if (mml.isKind('mrow')) {
-                mml.parent.replaceChild(mml.childNodes[0], mml);
-                data.removeFromList('mrow', [mml]);
-            }
-        }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (_d && !_d.done && (_b = _c.return)) _b.call(_c);
-        }
-        finally { if (e_1) throw e_1.error; }
-    }
 }
 var BaseTags = (function (_super) {
     __extends(BaseTags, _super);
@@ -132,7 +87,6 @@ exports.BaseConfiguration = Configuration_js_1.Configuration.create('base', {
         _a[bitem.MmlItem.prototype.kind] = bitem.MmlItem,
         _a[bitem.FnItem.prototype.kind] = bitem.FnItem,
         _a[bitem.NotItem.prototype.kind] = bitem.NotItem,
-        _a[bitem.NonscriptItem.prototype.kind] = bitem.NonscriptItem,
         _a[bitem.DotsItem.prototype.kind] = bitem.DotsItem,
         _a[bitem.ArrayItem.prototype.kind] = bitem.ArrayItem,
         _a[bitem.EqnArrayItem.prototype.kind] = bitem.EqnArrayItem,
@@ -146,7 +100,6 @@ exports.BaseConfiguration = Configuration_js_1.Configuration.create('base', {
     },
     tags: {
         base: BaseTags
-    },
-    postprocessors: [[filterNonscript, -4]]
+    }
 });
 //# sourceMappingURL=BaseConfiguration.js.map

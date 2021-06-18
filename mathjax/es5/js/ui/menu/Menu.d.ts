@@ -103,7 +103,7 @@ export declare class Menu {
     addMenu(math: HTMLMATHITEM): void;
     clear(): void;
     variable<T extends (string | boolean)>(name: keyof MenuSettings, action?: (value: T) => void): Object;
-    a11yVar<T extends (string | boolean)>(name: keyof MenuSettings, action?: (value: T) => void): Object;
+    a11yVar<T extends (string | boolean)>(name: keyof MenuSettings): Object;
     submenu(id: string, content: string, entries?: any[], disabled?: boolean): Object;
     command(id: string, content: string, action: () => void, other?: Object): Object;
     checkbox(id: string, content: string, variable: string, other?: Object): Object;

@@ -18,6 +18,5 @@ export declare class CHTMLmunderover<N, T, D> extends CHTMLmunderover_base {
     static kind: string;
     static styles: StyleList;
     toCHTML(parent: N): void;
-    markUsed(): void;
 }
 export {};

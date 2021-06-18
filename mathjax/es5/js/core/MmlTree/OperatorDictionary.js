@@ -1,17 +1,6 @@
 "use strict";
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OPTABLE = exports.MMLSPACING = exports.getRange = exports.RANGES = exports.MO = exports.OPDEF = void 0;
+exports.OPTABLE = exports.MMLSPACING = exports.RANGES = exports.MO = exports.OPDEF = void 0;
 var MmlNode_js_1 = require("./MmlNode.js");
 function OPDEF(lspace, rspace, texClass, properties) {
     if (texClass === void 0) { texClass = MmlNode_js_1.TEXCLASS.BIN; }
@@ -49,79 +38,35 @@ exports.MO = {
     WIDEACCENT: OPDEF(0, 0, MmlNode_js_1.TEXCLASS.ORD, { accent: true, stretchy: true })
 };
 exports.RANGES = [
-    [0x0020, 0x007F, MmlNode_js_1.TEXCLASS.REL, 'mo'],
-    [0x00A0, 0x00BF, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x00C0, 0x024F, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x02B0, 0x036F, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x0370, 0x1A20, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x1AB0, 0x1AFF, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x1B00, 0x1DBF, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x1DC0, 0x1DFF, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x1E00, 0x1FFF, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x2000, 0x206F, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x2070, 0x209F, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x2100, 0x214F, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x2150, 0x218F, MmlNode_js_1.TEXCLASS.ORD, 'mn'],
-    [0x2190, 0x21FF, MmlNode_js_1.TEXCLASS.REL, 'mo'],
-    [0x2200, 0x22FF, MmlNode_js_1.TEXCLASS.BIN, 'mo'],
-    [0x2300, 0x23FF, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x2460, 0x24FF, MmlNode_js_1.TEXCLASS.ORD, 'mn'],
-    [0x2500, 0x27EF, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x27F0, 0x27FF, MmlNode_js_1.TEXCLASS.REL, 'mo'],
-    [0x2800, 0x28FF, MmlNode_js_1.TEXCLASS.ORD, 'mtext'],
-    [0x2900, 0x297F, MmlNode_js_1.TEXCLASS.REL, 'mo'],
-    [0x2980, 0x29FF, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x2A00, 0x2AFF, MmlNode_js_1.TEXCLASS.BIN, 'mo'],
-    [0x2B00, 0x2B2F, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x2B30, 0x2B4F, MmlNode_js_1.TEXCLASS.REL, 'mo'],
-    [0x2B50, 0x2BFF, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x2C00, 0x2DE0, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x2E00, 0x2E7F, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x2E80, 0x2FDF, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x2FF0, 0x303F, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x3040, 0xA82F, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0xA830, 0xA83F, MmlNode_js_1.TEXCLASS.ORD, 'mn'],
-    [0xA840, 0xD7FF, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0xF900, 0xFDFF, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0xFE00, 0xFE6F, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0xFE70, 0x100FF, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x10100, 0x1018F, MmlNode_js_1.TEXCLASS.ORD, 'mn'],
-    [0x10190, 0x123FF, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x12400, 0x1247F, MmlNode_js_1.TEXCLASS.ORD, 'mn'],
-    [0x12480, 0x1BC9F, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x1BCA0, 0x1D25F, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x1D360, 0x1D37F, MmlNode_js_1.TEXCLASS.ORD, 'mn'],
-    [0x1D400, 0x1D7CD, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
-    [0x1D7CE, 0x1D7FF, MmlNode_js_1.TEXCLASS.ORD, 'mn'],
-    [0x1DF00, 0x1F7FF, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x1F800, 0x1F8FF, MmlNode_js_1.TEXCLASS.REL, 'mo'],
-    [0x1F900, 0x1F9FF, MmlNode_js_1.TEXCLASS.ORD, 'mo'],
-    [0x20000, 0x2FA1F, MmlNode_js_1.TEXCLASS.ORD, 'mi'],
+    [0x20, 0x7F, MmlNode_js_1.TEXCLASS.REL, 'BasicLatin'],
+    [0xA0, 0xFF, MmlNode_js_1.TEXCLASS.ORD, 'Latin1Supplement'],
+    [0x100, 0x17F, MmlNode_js_1.TEXCLASS.ORD, 'LatinExtendedA'],
+    [0x180, 0x24F, MmlNode_js_1.TEXCLASS.ORD, 'LatinExtendedB'],
+    [0x2B0, 0x2FF, MmlNode_js_1.TEXCLASS.ORD, 'SpacingModLetters'],
+    [0x300, 0x36F, MmlNode_js_1.TEXCLASS.ORD, 'CombDiacritMarks'],
+    [0x370, 0x3FF, MmlNode_js_1.TEXCLASS.ORD, 'GreekAndCoptic'],
+    [0x1E00, 0x1EFF, MmlNode_js_1.TEXCLASS.ORD, 'LatinExtendedAdditional'],
+    [0x2000, 0x206F, MmlNode_js_1.TEXCLASS.PUNCT, 'GeneralPunctuation'],
+    [0x2070, 0x209F, MmlNode_js_1.TEXCLASS.ORD, 'SuperAndSubscripts'],
+    [0x20A0, 0x20CF, MmlNode_js_1.TEXCLASS.ORD, 'Currency'],
+    [0x20D0, 0x20FF, MmlNode_js_1.TEXCLASS.ORD, 'CombDiactForSymbols'],
+    [0x2100, 0x214F, MmlNode_js_1.TEXCLASS.ORD, 'LetterlikeSymbols'],
+    [0x2150, 0x218F, MmlNode_js_1.TEXCLASS.ORD, 'NumberForms'],
+    [0x2190, 0x21FF, MmlNode_js_1.TEXCLASS.REL, 'Arrows'],
+    [0x2200, 0x22FF, MmlNode_js_1.TEXCLASS.BIN, 'MathOperators'],
+    [0x2300, 0x23FF, MmlNode_js_1.TEXCLASS.ORD, 'MiscTechnical'],
+    [0x2460, 0x24FF, MmlNode_js_1.TEXCLASS.ORD, 'EnclosedAlphaNums'],
+    [0x2500, 0x259F, MmlNode_js_1.TEXCLASS.ORD, 'BoxDrawing'],
+    [0x25A0, 0x25FF, MmlNode_js_1.TEXCLASS.ORD, 'GeometricShapes'],
+    [0x2700, 0x27BF, MmlNode_js_1.TEXCLASS.ORD, 'Dingbats'],
+    [0x27C0, 0x27EF, MmlNode_js_1.TEXCLASS.ORD, 'MiscMathSymbolsA'],
+    [0x27F0, 0x27FF, MmlNode_js_1.TEXCLASS.REL, 'SupplementalArrowsA'],
+    [0x2900, 0x297F, MmlNode_js_1.TEXCLASS.REL, 'SupplementalArrowsB'],
+    [0x2980, 0x29FF, MmlNode_js_1.TEXCLASS.ORD, 'MiscMathSymbolsB'],
+    [0x2A00, 0x2AFF, MmlNode_js_1.TEXCLASS.BIN, 'SuppMathOperators'],
+    [0x2B00, 0x2BFF, MmlNode_js_1.TEXCLASS.ORD, 'MiscSymbolsAndArrows'],
+    [0x1D400, 0x1D7FF, MmlNode_js_1.TEXCLASS.ORD, 'MathAlphabets']
 ];
-function getRange(text) {
-    var e_1, _a;
-    var n = text.codePointAt(0);
-    try {
-        for (var RANGES_1 = __values(exports.RANGES), RANGES_1_1 = RANGES_1.next(); !RANGES_1_1.done; RANGES_1_1 = RANGES_1.next()) {
-            var range = RANGES_1_1.value;
-            if (n <= range[1]) {
-                if (n >= range[0]) {
-                    return range;
-                }
-                break;
-            }
-        }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (RANGES_1_1 && !RANGES_1_1.done && (_a = RANGES_1.return)) _a.call(RANGES_1);
-        }
-        finally { if (e_1) throw e_1.error; }
-    }
-    return null;
-}
-exports.getRange = getRange;
 exports.MMLSPACING = [
     [0, 0],
     [1, 2],

@@ -34,7 +34,6 @@ var __values = (this && this.__values) || function(o) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var StackItemFactory_js_1 = require("./StackItemFactory.js");
 var NodeFactory_js_1 = require("./NodeFactory.js");
-var NodeUtil_js_1 = require("./NodeUtil.js");
 var Options_js_1 = require("../../util/Options.js");
 var ParseOptions = (function () {
     function ParseOptions(configuration, options) {
@@ -80,11 +79,6 @@ var ParseOptions = (function () {
             list = this.nodeLists[property] = [];
         }
         list.push(node);
-        if (node.kind !== property) {
-            var inlists = (NodeUtil_js_1.default.getProperty(node, 'in-lists') || '');
-            var lists = (inlists ? inlists.split(/,/) : []).concat(property).join(',');
-            NodeUtil_js_1.default.setProperty(node, 'in-lists', lists);
-        }
     };
     ParseOptions.prototype.getList = function (property) {
         var e_1, _a;
@@ -107,26 +101,6 @@ var ParseOptions = (function () {
         }
         this.nodeLists[property] = result;
         return result;
-    };
-    ParseOptions.prototype.removeFromList = function (property, nodes) {
-        var e_2, _a;
-        var list = this.nodeLists[property] || [];
-        try {
-            for (var nodes_1 = __values(nodes), nodes_1_1 = nodes_1.next(); !nodes_1_1.done; nodes_1_1 = nodes_1.next()) {
-                var node = nodes_1_1.value;
-                var i = list.indexOf(node);
-                if (i >= 0) {
-                    list.splice(i, 1);
-                }
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (nodes_1_1 && !nodes_1_1.done && (_a = nodes_1.return)) _a.call(nodes_1);
-            }
-            finally { if (e_2) throw e_2.error; }
-        }
     };
     ParseOptions.prototype.inTree = function (node) {
         while (node && node !== this.root) {

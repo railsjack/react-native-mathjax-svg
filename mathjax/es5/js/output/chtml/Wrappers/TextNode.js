@@ -42,7 +42,8 @@ var CHTMLTextNode = (function (_super) {
         var variant = this.parent.variant;
         var text = this.node.getText();
         if (variant === '-explicitFont') {
-            adaptor.append(parent, this.jax.unknownText(text, variant, this.getBBox().w));
+            var font = this.jax.getFontData(this.parent.styles);
+            adaptor.append(parent, this.jax.unknownText(text, variant, font));
         }
         else {
             var chars = this.remappedText(text, variant);
@@ -55,7 +56,7 @@ var CHTMLTextNode = (function (_super) {
                         this.jax.unknownText(String.fromCodePoint(n), variant) :
                         this.html('mjx-c', { class: this.char(n) + font }));
                     adaptor.append(parent, node);
-                    !data.unknown && this.font.charUsage.add([variant, n]);
+                    data.used = true;
                 }
             }
             catch (e_1_1) { e_1 = { error: e_1_1 }; }

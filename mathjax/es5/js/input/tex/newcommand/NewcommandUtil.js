@@ -35,28 +35,6 @@ var NewcommandUtil;
         return cs.substr(1);
     }
     NewcommandUtil.GetCSname = GetCSname;
-    function GetCsNameArgument(parser, name) {
-        var cs = ParseUtil_js_1.default.trimSpaces(parser.GetArgument(name));
-        if (cs.charAt(0) === '\\') {
-            cs = cs.substr(1);
-        }
-        if (!cs.match(/^(.|[a-z]+)$/i)) {
-            throw new TexError_js_1.default('IllegalControlSequenceName', 'Illegal control sequence name for %1', name);
-        }
-        return cs;
-    }
-    NewcommandUtil.GetCsNameArgument = GetCsNameArgument;
-    function GetArgCount(parser, name) {
-        var n = parser.GetBrackets(name);
-        if (n) {
-            n = ParseUtil_js_1.default.trimSpaces(n);
-            if (!n.match(/^[0-9]+$/)) {
-                throw new TexError_js_1.default('IllegalParamNumber', 'Illegal number of parameters specified in %1', name);
-            }
-        }
-        return n;
-    }
-    NewcommandUtil.GetArgCount = GetArgCount;
     function GetTemplate(parser, cmd, cs) {
         var c = parser.GetNext();
         var params = [];

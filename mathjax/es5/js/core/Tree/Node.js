@@ -14,17 +14,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -140,27 +129,6 @@ var AbstractNode = (function () {
         var i = this.childNodes.indexOf(node);
         return (i === -1 ? null : i);
     };
-    AbstractNode.prototype.copy = function () {
-        var e_4, _a;
-        var node = this.factory.create(this.kind);
-        node.properties = __assign({}, this.properties);
-        try {
-            for (var _b = __values(this.childNodes || []), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var child = _c.value;
-                if (child) {
-                    node.appendChild(child.copy());
-                }
-            }
-        }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_4) throw e_4.error; }
-        }
-        return node;
-    };
     AbstractNode.prototype.findNodes = function (kind) {
         var nodes = [];
         this.walkTree(function (node) {
@@ -171,7 +139,7 @@ var AbstractNode = (function () {
         return nodes;
     };
     AbstractNode.prototype.walkTree = function (func, data) {
-        var e_5, _a;
+        var e_4, _a;
         func(this, data);
         try {
             for (var _b = __values(this.childNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -181,12 +149,12 @@ var AbstractNode = (function () {
                 }
             }
         }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_5) throw e_5.error; }
+            finally { if (e_4) throw e_4.error; }
         }
         return data;
     };

@@ -65,9 +65,7 @@ var CHTMLmpadded = (function (_super) {
         }
         if (x + dx || y) {
             style.position = 'relative';
-            var rbox = this.html('mjx-rbox', {
-                style: { left: this.em(x + dx), top: this.em(-y), 'max-width': style.width }
-            });
+            var rbox = this.html('mjx-rbox', { style: { left: this.em(x + dx), top: this.em(-y) } });
             if (x + dx && this.childNodes[0].getBBox().pwidth) {
                 this.adaptor.setAttribute(rbox, 'width', 'full');
                 this.adaptor.setStyle(rbox, 'left', this.em(x));

@@ -35,7 +35,6 @@ export declare const MO: {
     WIDEACCENT: OperatorDef;
 };
 export declare const RANGES: RangeDef[];
-export declare function getRange(text: string): RangeDef | null;
 export declare const MMLSPACING: number[][];
 export declare const OPTABLE: {
     [form: string]: OperatorList;

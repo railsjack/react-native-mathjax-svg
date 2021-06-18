@@ -95,7 +95,7 @@ export interface MathDocument<N, T, D> {
     reset(options?: ResetList): MathDocument<N, T, D>;
     clear(): MathDocument<N, T, D>;
     concat(list: MathList<N, T, D>): MathDocument<N, T, D>;
-    clearMathItemsWithin(containers: ContainerList<N>): MathItem<N, T, D>[];
+    clearMathItemsWithin(containers: ContainerList<N>): void;
     getMathItemsWithin(elements: ContainerList<N>): MathItem<N, T, D>[];
 }
 export declare abstract class AbstractMathDocument<N, T, D> implements MathDocument<N, T, D> {
@@ -131,7 +131,7 @@ export declare abstract class AbstractMathDocument<N, T, D> implements MathDocum
     reset(options?: ResetList): this;
     clear(): this;
     concat(list: MathList<N, T, D>): this;
-    clearMathItemsWithin(containers: ContainerList<N>): MathItem<N, T, D>[];
+    clearMathItemsWithin(containers: ContainerList<N>): void;
     getMathItemsWithin(elements: ContainerList<N>): MathItem<N, T, D>[];
 }
 export interface MathDocumentConstructor<D extends MathDocument<any, any, any>> {

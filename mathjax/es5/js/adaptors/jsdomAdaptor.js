@@ -27,12 +27,6 @@ var JsdomAdaptor = (function (_super) {
         _this.options = Options_js_1.userOptions(Options_js_1.defaultOptions({}, CLASS.OPTIONS), options);
         return _this;
     }
-    JsdomAdaptor.prototype.fontSize = function (_node) {
-        return this.options.fontSize;
-    };
-    JsdomAdaptor.prototype.fontFamily = function (_node) {
-        return this.options.fontFamily;
-    };
     JsdomAdaptor.prototype.nodeSize = function (node, _em, _local) {
         if (_em === void 0) { _em = 1; }
         if (_local === void 0) { _local = null; }
@@ -48,8 +42,6 @@ var JsdomAdaptor = (function (_super) {
         return { left: 0, right: 0, top: 0, bottom: 0 };
     };
     JsdomAdaptor.OPTIONS = {
-        fontSize: 16,
-        fontFamily: 'Times',
         cjkCharWidth: 1,
         unknownCharWidth: .6,
         unknownCharHeight: .8,

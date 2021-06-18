@@ -195,14 +195,11 @@ var CommonWrapper = (function (_super) {
     };
     CommonWrapper.prototype.copySkewIC = function (bbox) {
         var first = this.childNodes[0];
-        if (first === null || first === void 0 ? void 0 : first.bbox.sk) {
+        if (first && first.bbox.sk) {
             bbox.sk = first.bbox.sk;
         }
-        if (first === null || first === void 0 ? void 0 : first.bbox.dx) {
-            bbox.dx = first.bbox.dx;
-        }
         var last = this.childNodes[this.childNodes.length - 1];
-        if (last === null || last === void 0 ? void 0 : last.bbox.ic) {
+        if (last && last.bbox.ic) {
             bbox.ic = last.bbox.ic;
             bbox.w += bbox.ic;
         }

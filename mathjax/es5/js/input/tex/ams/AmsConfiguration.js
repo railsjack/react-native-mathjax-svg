@@ -44,24 +44,8 @@ exports.AmsConfiguration = Configuration_js_1.Configuration.create('ams', {
             'AMSmath-mathchar0mo', 'AMSmath-macros', 'AMSmath-delimiter'],
         environment: ['AMSmath-environment']
     },
-    items: (_a = {},
-        _a[AmsItems_js_1.MultlineItem.prototype.kind] = AmsItems_js_1.MultlineItem,
-        _a[AmsItems_js_1.FlalignItem.prototype.kind] = AmsItems_js_1.FlalignItem,
-        _a),
+    items: (_a = {}, _a[AmsItems_js_1.MultlineItem.prototype.kind] = AmsItems_js_1.MultlineItem, _a),
     tags: { 'ams': AmsTags },
-    init: init,
-    config: function (_config, jax) {
-        if (jax.parseOptions.options.multlineWidth) {
-            jax.parseOptions.options.ams.multlineWidth = jax.parseOptions.options.multlineWidth;
-        }
-        delete jax.parseOptions.options.multlineWidth;
-    },
-    options: {
-        multlineWidth: '',
-        ams: {
-            multlineWidth: '100%',
-            multlineIndent: '1em',
-        }
-    }
+    init: init
 });
 //# sourceMappingURL=AmsConfiguration.js.map

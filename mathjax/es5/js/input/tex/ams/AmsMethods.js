@@ -45,50 +45,11 @@ exports.AmsMethods.Multline = function (parser, begin, numbered) {
     item.arraydef = {
         displaystyle: true,
         rowspacing: '.5em',
-        columnspacing: '100%',
-        width: parser.options.ams['multlineWidth'],
+        columnwidth: '100%',
+        width: parser.options['multlineWidth'],
         side: parser.options['tagSide'],
-        minlabelspacing: parser.options['tagIndent'],
-        framespacing: parser.options.ams['multlineIndent'] + ' 0',
-        frame: '',
-        'data-width-includes-label': true
+        minlabelspacing: parser.options['tagIndent']
     };
-    return item;
-};
-exports.AmsMethods.XalignAt = function (parser, begin, numbered, padded) {
-    var n = parser.GetArgument('\\begin{' + begin.getName() + '}');
-    if (n.match(/[^0-9]/)) {
-        throw new TexError_js_1.default('PositiveIntegerArg', 'Argument to %1 must me a positive integer', '\\begin{' + begin.getName() + '}');
-    }
-    var align = (padded ? 'crl' : 'rlc');
-    var width = (padded ? 'fit auto auto' : 'auto auto fit');
-    var item = exports.AmsMethods.FlalignArray(parser, begin, numbered, padded, false, align, width, true);
-    item.setProperty('xalignat', 2 * parseInt(n));
-    return item;
-};
-exports.AmsMethods.FlalignArray = function (parser, begin, numbered, padded, center, align, width, zeroWidthLabel) {
-    if (zeroWidthLabel === void 0) { zeroWidthLabel = false; }
-    parser.Push(begin);
-    ParseUtil_js_1.default.checkEqnEnv(parser);
-    align = align
-        .split('')
-        .join(' ')
-        .replace(/r/g, 'right')
-        .replace(/l/g, 'left')
-        .replace(/c/g, 'center');
-    var item = parser.itemFactory.create('flalign', begin.getName(), numbered, padded, center, parser.stack);
-    item.arraydef = {
-        width: '100%',
-        displaystyle: true,
-        columnalign: align,
-        columnspacing: '0em',
-        columnwidth: width,
-        rowspacing: '3pt',
-        side: parser.options['tagSide'],
-        minlabelspacing: (zeroWidthLabel ? '0' : parser.options['tagIndent']),
-        'data-width-includes-label': true,
-    };
-    item.setProperty('zeroWidthLabel', zeroWidthLabel);
     return item;
 };
 exports.NEW_OPS = 'ams-declare-ops';
@@ -251,5 +212,4 @@ exports.AmsMethods.Array = BaseMethods_js_1.default.Array;
 exports.AmsMethods.Spacer = BaseMethods_js_1.default.Spacer;
 exports.AmsMethods.NamedOp = BaseMethods_js_1.default.NamedOp;
 exports.AmsMethods.EqnArray = BaseMethods_js_1.default.EqnArray;
-exports.AmsMethods.Equation = BaseMethods_js_1.default.Equation;
 //# sourceMappingURL=AmsMethods.js.map

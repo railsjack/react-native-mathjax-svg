@@ -83,7 +83,7 @@ var Package = (function () {
     });
     Package.resolvePath = function (name, addExtension) {
         if (addExtension === void 0) { addExtension = true; }
-        var data = { name: name, original: name, addExtension: addExtension };
+        var data = { name: name, addExtension: addExtension };
         loader_js_1.Loader.pathFilters.execute(data);
         return data.name;
     };

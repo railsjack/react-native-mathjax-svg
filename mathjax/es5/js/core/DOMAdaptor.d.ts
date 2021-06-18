@@ -53,7 +53,6 @@ export interface DOMAdaptor<N, T, D> {
     setStyle(node: N, name: string, value: string): void;
     getStyle(node: N, name: string): string;
     allStyles(node: N): string;
-    insertRules(node: N, rules: string[]): void;
     fontSize(node: N): number;
     fontFamily(node: N): string;
     nodeSize(node: N, em?: number, local?: boolean): [number, number];
@@ -105,7 +104,6 @@ export declare abstract class AbstractDOMAdaptor<N, T, D> implements DOMAdaptor<
     abstract setStyle(node: N, name: string, value: string): void;
     abstract getStyle(node: N, name: string): string;
     abstract allStyles(node: N): string;
-    abstract insertRules(node: N, rules: string[]): void;
     abstract fontSize(node: N): number;
     abstract fontFamily(node: N): string;
     abstract nodeSize(node: N, em?: number, local?: boolean): [number, number];

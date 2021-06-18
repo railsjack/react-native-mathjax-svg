@@ -72,7 +72,6 @@ export declare abstract class AbstractMmlNode extends AbstractNode implements Mm
     readonly factory: MmlFactory;
     protected texclass: number;
     constructor(factory: MmlFactory, attributes?: PropertyList, children?: MmlNode[]);
-    copy(keepIds?: boolean): AbstractMmlNode;
     get texClass(): number;
     set texClass(texClass: number);
     get isToken(): boolean;
@@ -160,7 +159,6 @@ export declare class TextNode extends AbstractMmlEmptyNode {
     get kind(): string;
     getText(): string;
     setText(text: string): TextNode;
-    copy(): TextNode;
     toString(): string;
 }
 export declare class XMLNode extends AbstractMmlEmptyNode {
@@ -170,6 +168,5 @@ export declare class XMLNode extends AbstractMmlEmptyNode {
     getXML(): Object;
     setXML(xml: Object, adaptor?: DOMAdaptor<any, any, any>): XMLNode;
     getSerializedXML(): string;
-    copy(): XMLNode;
     toString(): string;
 }

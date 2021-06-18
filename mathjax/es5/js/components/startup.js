@@ -46,7 +46,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CONFIG = exports.MathJax = exports.Startup = void 0;
 var global_js_1 = require("./global.js");
 var PrioritizedList_js_1 = require("../util/PrioritizedList.js");
-var Options_js_1 = require("../util/Options.js");
 var Startup;
 (function (Startup) {
     var extensions = new PrioritizedList_js_1.PrioritizedList();
@@ -344,12 +343,6 @@ if (typeof exports.MathJax._.startup === 'undefined') {
         startup: Startup,
         options: {}
     });
-    if (exports.MathJax.config.startup.invalidOption) {
-        Options_js_1.OPTIONS.invalidOption = exports.MathJax.config.startup.invalidOption;
-    }
-    if (exports.MathJax.config.startup.optionError) {
-        Options_js_1.OPTIONS.optionError = exports.MathJax.config.startup.optionError;
-    }
 }
 exports.CONFIG = exports.MathJax.config.startup;
 var inputSpecified = exports.CONFIG.input.length !== 0;

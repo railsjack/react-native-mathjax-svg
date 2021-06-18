@@ -130,7 +130,7 @@ var SVGmtable = (function (_super) {
         }
     };
     SVGmtable.prototype.handleFrame = function (svg) {
-        if (this.frame && this.fLine) {
+        if (this.frame) {
             var _a = this.getBBox(), h = _a.h, d = _a.d, w = _a.w;
             var style = this.node.attributes.get('frame');
             this.adaptor.append(svg, this.makeFrame(w, h, d, style));

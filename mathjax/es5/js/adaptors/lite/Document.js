@@ -8,7 +8,7 @@ var LiteDocument = (function () {
             this.head = new Element_js_1.LiteElement('head'),
             this.body = new Element_js_1.LiteElement('body')
         ]);
-        this.type = '';
+        this.type = '<!DOCTYPE html>';
     }
     Object.defineProperty(LiteDocument.prototype, "kind", {
         get: function () {

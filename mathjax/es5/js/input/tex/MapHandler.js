@@ -89,7 +89,7 @@ var SubHandler = (function () {
             finally { if (e_2) throw e_2.error; }
         }
         var _d = __read(input, 2), env = _d[0], symbol = _d[1];
-        Array.from(this._fallback)[0].item(env, symbol);
+        this._fallback.toArray()[0].item(env, symbol);
     };
     SubHandler.prototype.lookup = function (symbol) {
         var map = this.applicable(symbol);

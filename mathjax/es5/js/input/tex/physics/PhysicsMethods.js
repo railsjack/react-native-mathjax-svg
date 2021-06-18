@@ -191,7 +191,10 @@ PhysicsMethods.StarMacro = function (parser, name, argcount) {
     macro = ParseUtil_js_1.default.substituteArgs(parser, args, macro);
     parser.string = ParseUtil_js_1.default.addArgs(parser, macro, parser.string.slice(parser.i));
     parser.i = 0;
-    ParseUtil_js_1.default.checkMaxMacros(parser);
+    if (++parser.macroCount > parser.configuration.options['maxMacros']) {
+        throw new TexError_js_1.default('MaxMacroSub1', 'MathJax maximum macro substitution count exceeded; ' +
+            'is there a recursive macro call?');
+    }
 };
 var vectorApplication = function (parser, kind, name, operator, fences) {
     var op = new TexParser_js_1.default(operator, parser.stack.env, parser.configuration).mml();
@@ -617,15 +620,6 @@ PhysicsMethods.AutoClose = function (parser, fence, _texclass) {
     var item = parser.itemFactory.create('mml', mo).
         setProperties({ autoclose: fence });
     parser.Push(item);
-};
-PhysicsMethods.Vnabla = function (parser, _name) {
-    var argument = parser.options.physics.arrowdel ?
-        '\\vec{\\gradientnabla}' : '{\\gradientnabla}';
-    return parser.Push(new TexParser_js_1.default(argument, parser.stack.env, parser.configuration).mml());
-};
-PhysicsMethods.DiffD = function (parser, _name) {
-    var argument = parser.options.physics.italicdiff ? 'd' : '{\\rm d}';
-    return parser.Push(new TexParser_js_1.default(argument, parser.stack.env, parser.configuration).mml());
 };
 PhysicsMethods.Macro = BaseMethods_js_1.default.Macro;
 PhysicsMethods.NamedFn = BaseMethods_js_1.default.NamedFn;

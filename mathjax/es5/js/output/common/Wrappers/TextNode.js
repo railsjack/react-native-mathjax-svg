@@ -81,7 +81,6 @@ function CommonTextNodeMixin(Base) {
                             bbox.d = d;
                         bbox.ic = data.ic || 0;
                         bbox.sk = data.sk || 0;
-                        bbox.dx = data.dx || 0;
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }

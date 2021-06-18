@@ -298,7 +298,6 @@ function CommonScriptbaseMixin(Base) {
                         finally { if (e_3) throw e_3.error; }
                     }
                 }
-                [1, 2].map(function (i) { return dw[i] += (boxes[i] ? boxes[i].dx * boxes[0].scale : 0); });
                 return dw;
             };
             class_1.prototype.getDelta = function (noskew) {

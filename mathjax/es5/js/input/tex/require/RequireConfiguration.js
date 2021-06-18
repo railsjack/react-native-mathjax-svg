@@ -56,7 +56,7 @@ function RegisterExtension(jax, name) {
             if (handler.options && Object.keys(handler.options).length === 1 && handler.options[extension]) {
                 options_1 = (_a = {}, _a[extension] = options_1, _a);
             }
-            jax.configuration.add(extension, jax, options_1);
+            jax.configuration.add(handler, jax, options_1);
             var configured = jax.parseOptions.packageData.get('require').configured;
             if (handler.preprocessors.length && !configured.has(extension)) {
                 configured.set(extension, true);
@@ -131,11 +131,7 @@ exports.options = {
     require: {
         allow: Options_js_1.expandable({
             base: false,
-            'all-packages': false,
-            autoload: false,
-            configmacros: false,
-            tagformat: false,
-            setoptions: false
+            'all-packages': false
         }),
         defaultAllow: true,
         prefix: 'tex'

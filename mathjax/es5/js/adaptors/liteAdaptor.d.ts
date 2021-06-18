@@ -61,7 +61,6 @@ export declare class LiteAdaptor extends AbstractDOMAdaptor<LiteElement, LiteTex
     setStyle(node: LiteElement, name: string, value: string): void;
     getStyle(node: LiteElement, name: string): string;
     allStyles(node: LiteElement): any;
-    insertRules(node: LiteElement, rules: string[]): void;
     fontSize(_node: LiteElement): any;
     fontFamily(_node: LiteElement): any;
     nodeSize(node: LiteElement, _em?: number, _local?: boolean): [number, number];

@@ -532,9 +532,7 @@ var AbstractMathDocument = (function () {
     };
     AbstractMathDocument.prototype.clearMathItemsWithin = function (containers) {
         var _a;
-        var items = this.getMathItemsWithin(containers);
-        (_a = this.math).remove.apply(_a, __spreadArray([], __read(items)));
-        return items;
+        (_a = this.math).remove.apply(_a, __spreadArray([], __read(this.getMathItemsWithin(containers))));
     };
     AbstractMathDocument.prototype.getMathItemsWithin = function (elements) {
         var e_11, _a, e_12, _b;

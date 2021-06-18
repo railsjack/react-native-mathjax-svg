@@ -6,7 +6,7 @@ var SymbolMap_js_1 = require("../SymbolMap.js");
 var TexError_js_1 = require("../TexError.js");
 var BaseMethods_js_1 = require("../base/BaseMethods.js");
 var AmsMethods_js_1 = require("../ams/AmsMethods.js");
-var mhchemParser_js_1 = require("mhchemparser/dist/mhchemParser.js");
+var mhchemParser_js_1 = require("./mhchemparser/mhchemParser.js");
 var MhchemMethods = {};
 MhchemMethods.Macro = BaseMethods_js_1.default.Macro;
 MhchemMethods.xArrow = AmsMethods_js_1.AmsMethods.xArrow;
@@ -44,6 +44,8 @@ new SymbolMap_js_1.CommandMap('mhchem', {
         'Macro',
         '\\vphantom{-}\\raise2mu{\\kern2mu\\tiny\\text{-}\\kern1mu\\text{-}\\kern1mu\\text{-}\\kern2mu}'
     ],
+    xrightarrow: ['xArrow', 0x2192, 5, 6],
+    xleftarrow: ['xArrow', 0x2190, 7, 3],
     xleftrightarrow: ['xArrow', 0x2194, 6, 6],
     xrightleftharpoons: ['xArrow', 0x21CC, 5, 7],
     xRightleftharpoons: ['xArrow', 0x21CC, 5, 7],

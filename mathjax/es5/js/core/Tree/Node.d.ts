@@ -18,7 +18,6 @@ export interface Node {
     appendChild(child: Node): Node;
     replaceChild(newChild: Node, oldChild: Node): Node;
     childIndex(child: Node): number;
-    copy(): Node;
     findNodes(kind: string): Node[];
     walkTree(func: (node: Node, data?: any) => void, data?: any): void;
 }
@@ -42,7 +41,6 @@ export declare abstract class AbstractNode implements Node {
     appendChild(child: Node): Node;
     replaceChild(newChild: Node, oldChild: Node): Node;
     childIndex(node: Node): number;
-    copy(): AbstractNode;
     findNodes(kind: string): Node[];
     walkTree(func: (node: Node, data?: any) => void, data?: any): any;
     toString(): string;

@@ -13,6 +13,7 @@ declare const CHTMLmsubsup_base: import("../../common/Wrappers/msubsup.js").Msub
 export declare class CHTMLmsubsup<N, T, D> extends CHTMLmsubsup_base {
     static kind: string;
     static styles: StyleList;
+    markUsed(): void;
     toCHTML(parent: N): void;
 }
 export {};

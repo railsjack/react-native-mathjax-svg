@@ -270,7 +270,7 @@ var TexParser = (function () {
             }
             else if (c === '{' && braceOK) {
                 this.i--;
-                c = this.GetArgument(name).trim();
+                c = this.GetArgument(name);
             }
             if (this.contains('delimiter', c)) {
                 return this.convertDelimiter(c);

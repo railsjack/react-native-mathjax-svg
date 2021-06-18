@@ -178,7 +178,9 @@ function EnrichedMathDocumentMixin(BaseDocument, MmlJax) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
                 }
-                var _this = _super.apply(this, __spreadArray([], __read(args))) || this;
+                var _this = this;
+                processSreOptions(args[2]);
+                _this = _super.apply(this, __spreadArray([], __read(args))) || this;
                 MmlJax.setMmlFactory(_this.mmlFactory);
                 var ProcessBits = _this.constructor.ProcessBits;
                 if (!ProcessBits.has('enriched')) {
@@ -262,4 +264,16 @@ function EnrichHandler(handler, MmlJax) {
     return handler;
 }
 exports.EnrichHandler = EnrichHandler;
+function processSreOptions(options) {
+    if (!options) {
+        return;
+    }
+    if (!options.sre) {
+        options.sre = {};
+    }
+    if (options.enrichSpeech) {
+        options.sre.speech = options.enrichSpeech;
+        delete options.enrichSpeech;
+    }
+}
 //# sourceMappingURL=semantic-enrich.js.map

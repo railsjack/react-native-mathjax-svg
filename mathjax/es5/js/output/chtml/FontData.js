@@ -65,16 +65,12 @@ var __read = (this && this.__read) || function (o, n) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AddCSS = exports.CHTMLFontData = void 0;
 var FontData_js_1 = require("../common/FontData.js");
-var Usage_js_1 = require("./Usage.js");
 var lengths_js_1 = require("../../util/lengths.js");
 __exportStar(require("../common/FontData.js"), exports);
 var CHTMLFontData = (function (_super) {
     __extends(CHTMLFontData, _super);
     function CHTMLFontData() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.charUsage = new Usage_js_1.Usage();
-        _this.delimUsage = new Usage_js_1.Usage();
-        return _this;
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     CHTMLFontData.charOptions = function (font, n) {
         return _super.charOptions.call(this, font, n);
@@ -83,9 +79,50 @@ var CHTMLFontData = (function (_super) {
         this.options.adaptiveCSS = adapt;
     };
     CHTMLFontData.prototype.clearCache = function () {
-        if (this.options.adaptiveCSS) {
-            this.charUsage.clear();
-            this.delimUsage.clear();
+        var e_1, _a, e_2, _b, e_3, _c;
+        if (!this.options.adaptiveCSS)
+            return;
+        try {
+            for (var _d = __values(Object.keys(this.delimiters)), _e = _d.next(); !_e.done; _e = _d.next()) {
+                var n = _e.value;
+                this.delimiters[parseInt(n)].used = false;
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_e && !_e.done && (_a = _d.return)) _a.call(_d);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        try {
+            for (var _f = __values(Object.keys(this.variant)), _g = _f.next(); !_g.done; _g = _f.next()) {
+                var name_1 = _g.value;
+                var chars = this.variant[name_1].chars;
+                try {
+                    for (var _h = (e_3 = void 0, __values(Object.keys(chars))), _j = _h.next(); !_j.done; _j = _h.next()) {
+                        var n = _j.value;
+                        var options = chars[parseInt(n)][3];
+                        if (options) {
+                            options.used = false;
+                        }
+                    }
+                }
+                catch (e_3_1) { e_3 = { error: e_3_1 }; }
+                finally {
+                    try {
+                        if (_j && !_j.done && (_c = _h.return)) _c.call(_h);
+                    }
+                    finally { if (e_3) throw e_3.error; }
+                }
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_g && !_g.done && (_b = _f.return)) _b.call(_f);
+            }
+            finally { if (e_2) throw e_2.error; }
         }
     };
     CHTMLFontData.prototype.createVariant = function (name, inherit, link) {
@@ -97,7 +134,7 @@ var CHTMLFontData = (function (_super) {
         this.variant[name].letter = CLASS.defaultVariantLetters[name];
     };
     CHTMLFontData.prototype.defineChars = function (name, chars) {
-        var e_1, _a;
+        var e_4, _a;
         _super.prototype.defineChars.call(this, name, chars);
         var letter = this.variant[name].letter;
         try {
@@ -109,66 +146,6 @@ var CHTMLFontData = (function (_super) {
                 }
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-    };
-    Object.defineProperty(CHTMLFontData.prototype, "styles", {
-        get: function () {
-            var CLASS = this.constructor;
-            var styles = __assign({}, CLASS.defaultStyles);
-            this.addFontURLs(styles, CLASS.defaultFonts, this.options.fontURL);
-            this.updateStyles(styles);
-            return styles;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    CHTMLFontData.prototype.updateStyles = function (styles) {
-        var e_2, _a, e_3, _b;
-        try {
-            for (var _c = __values(this.delimUsage.update()), _d = _c.next(); !_d.done; _d = _c.next()) {
-                var N = _d.value;
-                this.addDelimiterStyles(styles, N, this.delimiters[N]);
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
-            }
-            finally { if (e_2) throw e_2.error; }
-        }
-        try {
-            for (var _e = __values(this.charUsage.update()), _f = _e.next(); !_f.done; _f = _e.next()) {
-                var _g = __read(_f.value, 2), name_1 = _g[0], N = _g[1];
-                var variant = this.variant[name_1];
-                this.addCharStyles(styles, variant.letter, N, variant.chars[N]);
-            }
-        }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-        return styles;
-    };
-    CHTMLFontData.prototype.addFontURLs = function (styles, fonts, url) {
-        var e_4, _a;
-        try {
-            for (var _b = __values(Object.keys(fonts)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var name_2 = _c.value;
-                var font = __assign({}, fonts[name_2]);
-                font.src = font.src.replace(/%%URL%%/, url);
-                styles[name_2] = font;
-            }
-        }
         catch (e_4_1) { e_4 = { error: e_4_1 }; }
         finally {
             try {
@@ -177,10 +154,95 @@ var CHTMLFontData = (function (_super) {
             finally { if (e_4) throw e_4.error; }
         }
     };
+    Object.defineProperty(CHTMLFontData.prototype, "styles", {
+        get: function () {
+            var e_5, _a;
+            var CLASS = this.constructor;
+            var styles = __assign({}, CLASS.defaultStyles);
+            this.addFontURLs(styles, CLASS.defaultFonts, this.options.fontURL);
+            try {
+                for (var _b = __values(Object.keys(this.delimiters)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var n = _c.value;
+                    var N = parseInt(n);
+                    this.addDelimiterStyles(styles, N, this.delimiters[N]);
+                }
+            }
+            catch (e_5_1) { e_5 = { error: e_5_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_5) throw e_5.error; }
+            }
+            this.addVariantChars(styles);
+            return styles;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    CHTMLFontData.prototype.addVariantChars = function (styles) {
+        var e_6, _a, e_7, _b;
+        var allCSS = !this.options.adaptiveCSS;
+        try {
+            for (var _c = __values(Object.keys(this.variant)), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var name_2 = _d.value;
+                var variant = this.variant[name_2];
+                var vletter = variant.letter;
+                try {
+                    for (var _e = (e_7 = void 0, __values(Object.keys(variant.chars))), _f = _e.next(); !_f.done; _f = _e.next()) {
+                        var n = _f.value;
+                        var N = parseInt(n);
+                        var char = variant.chars[N];
+                        if ((char[3] || {}).smp)
+                            continue;
+                        if (allCSS && char.length < 4) {
+                            char[3] = {};
+                        }
+                        if (char.length === 4 || allCSS) {
+                            this.addCharStyles(styles, vletter, N, char);
+                        }
+                    }
+                }
+                catch (e_7_1) { e_7 = { error: e_7_1 }; }
+                finally {
+                    try {
+                        if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+                    }
+                    finally { if (e_7) throw e_7.error; }
+                }
+            }
+        }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        finally {
+            try {
+                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+            }
+            finally { if (e_6) throw e_6.error; }
+        }
+    };
+    CHTMLFontData.prototype.addFontURLs = function (styles, fonts, url) {
+        var e_8, _a;
+        try {
+            for (var _b = __values(Object.keys(fonts)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var name_3 = _c.value;
+                var font = __assign({}, fonts[name_3]);
+                font.src = font.src.replace(/%%URL%%/, url);
+                styles[name_3] = font;
+            }
+        }
+        catch (e_8_1) { e_8 = { error: e_8_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_8) throw e_8.error; }
+        }
+    };
     CHTMLFontData.prototype.addDelimiterStyles = function (styles, n, data) {
+        if (this.options.adaptiveCSS && !data.used)
+            return;
         var c = this.charSelector(n);
         if (data.c && data.c !== n) {
-            c = this.charSelector(data.c);
             styles['.mjx-stretched mjx-c' + c + '::before'] = {
                 content: this.charContent(data.c)
             };
@@ -260,6 +322,8 @@ var CHTMLFontData = (function (_super) {
     };
     CHTMLFontData.prototype.addCharStyles = function (styles, vletter, n, data) {
         var options = data[3];
+        if (this.options.adaptiveCSS && !options.used)
+            return;
         var letter = (options.f !== undefined ? options.f : vletter);
         var selector = 'mjx-c' + this.charSelector(n) + (letter ? '.TEX-' + letter : '');
         styles[selector + '::before'] = {
@@ -308,7 +372,7 @@ var CHTMLFontData = (function (_super) {
 }(FontData_js_1.FontData));
 exports.CHTMLFontData = CHTMLFontData;
 function AddCSS(font, options) {
-    var e_5, _a;
+    var e_9, _a;
     try {
         for (var _b = __values(Object.keys(options)), _c = _b.next(); !_c.done; _c = _b.next()) {
             var c = _c.value;
@@ -316,12 +380,12 @@ function AddCSS(font, options) {
             Object.assign(FontData_js_1.FontData.charOptions(font, n), options[n]);
         }
     }
-    catch (e_5_1) { e_5 = { error: e_5_1 }; }
+    catch (e_9_1) { e_9 = { error: e_9_1 }; }
     finally {
         try {
             if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
         }
-        finally { if (e_5) throw e_5.error; }
+        finally { if (e_9) throw e_9.error; }
     }
     return font;
 }

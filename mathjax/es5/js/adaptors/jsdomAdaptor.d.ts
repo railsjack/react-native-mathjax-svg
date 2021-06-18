@@ -5,8 +5,6 @@ export declare class JsdomAdaptor extends HTMLAdaptor<HTMLElement, Text, Documen
     static cjkPattern: RegExp;
     options: OptionList;
     constructor(window: Window, options?: OptionList);
-    fontSize(_node: HTMLElement): any;
-    fontFamily(_node: HTMLElement): any;
     nodeSize(node: HTMLElement, _em?: number, _local?: boolean): [number, number];
     nodeBBox(_node: HTMLElement): {
         left: number;

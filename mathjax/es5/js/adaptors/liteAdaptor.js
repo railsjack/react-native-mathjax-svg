@@ -408,9 +408,6 @@ var LiteAdaptor = (function (_super) {
     LiteAdaptor.prototype.allStyles = function (node) {
         return this.getAttribute(node, 'style');
     };
-    LiteAdaptor.prototype.insertRules = function (node, rules) {
-        node.children = [this.text(rules.join('\n\n') + '\n\n' + this.textContent(node))];
-    };
     LiteAdaptor.prototype.fontSize = function (_node) {
         return this.options.fontSize;
     };

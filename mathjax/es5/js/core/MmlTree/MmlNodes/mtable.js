@@ -86,7 +86,7 @@ var MmlMtable = (function (_super) {
         }
         _super.prototype.setInheritedAttributes.call(this, attributes, display, level, prime);
     };
-    MmlMtable.prototype.setChildInheritedAttributes = function (attributes, display, level, _prime) {
+    MmlMtable.prototype.setChildInheritedAttributes = function (attributes, display, level, prime) {
         var e_2, _a, e_3, _b;
         try {
             for (var _c = __values(this.childNodes), _d = _c.next(); !_d.done; _d = _c.next()) {
@@ -110,13 +110,12 @@ var MmlMtable = (function (_super) {
             columnalign: this.attributes.get('columnalign'),
             rowalign: 'center'
         });
-        var cramped = this.attributes.getExplicit('data-cramped');
         var ralign = string_js_1.split(this.attributes.get('rowalign'));
         try {
             for (var _e = __values(this.childNodes), _f = _e.next(); !_f.done; _f = _e.next()) {
                 var child = _f.value;
                 attributes.rowalign[1] = ralign.shift() || attributes.rowalign[1];
-                child.setInheritedAttributes(attributes, display, level, !!cramped);
+                child.setInheritedAttributes(attributes, display, level, prime);
             }
         }
         catch (e_3_1) { e_3 = { error: e_3_1 }; }

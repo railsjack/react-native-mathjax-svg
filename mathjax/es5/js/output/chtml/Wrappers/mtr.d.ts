@@ -12,6 +12,5 @@ export declare class CHTMLmlabeledtr<N, T, D> extends CHTMLmlabeledtr_base {
     static kind: string;
     static styles: StyleList;
     toCHTML(parent: N): void;
-    markUsed(): void;
 }
 export {};

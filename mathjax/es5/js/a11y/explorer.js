@@ -188,7 +188,9 @@ function ExplorerMathDocumentMixin(BaseDocument) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
                 }
-                var _this = _super.apply(this, __spreadArray([], __read(args))) || this;
+                var _this = this;
+                processSreOptions(args[2]);
+                _this = _super.apply(this, __spreadArray([], __read(args))) || this;
                 var ProcessBits = _this.constructor.ProcessBits;
                 if (!ProcessBits.has('explorer')) {
                     ProcessBits.allocate('explorer');
@@ -256,6 +258,24 @@ function ExplorerMathDocumentMixin(BaseDocument) {
         _a;
 }
 exports.ExplorerMathDocumentMixin = ExplorerMathDocumentMixin;
+function processSreOptions(options) {
+    if (!options || !options.a11y) {
+        return;
+    }
+    if (!options.sre) {
+        options.sre = {};
+    }
+    if (options.a11y.locale) {
+        options.sre.locale = options.a11y.locale;
+        delete options.a11y.locale;
+    }
+    if (options.a11y.speechRules) {
+        var _a = __read(options.a11y.speechRules.split('-'), 2), domain = _a[0], style = _a[1];
+        options.sre.domain = domain;
+        options.sre.style = style;
+        delete options.a11y.speechRules;
+    }
+}
 function ExplorerHandler(handler, MmlJax) {
     if (MmlJax === void 0) { MmlJax = null; }
     if (!handler.documentClass.prototype.enrich && MmlJax) {
@@ -448,6 +468,15 @@ function setA11yOption(document, option, value) {
                     break;
             }
             break;
+        case 'speechRules':
+            var _a = __read(value.split('-'), 2), domain = _a[0], style = _a[1];
+            document.options.sre.domain = domain;
+            document.options.sre.style = style;
+            break;
+        case 'locale':
+            document.options.sre.locale = value;
+            SRE.setupEngine({ locale: value });
+            break;
         default:
             document.options.a11y[option] = value;
     }
@@ -526,8 +555,7 @@ var csSelectionBox = function (menu, locale) {
     }, menu);
     return { 'type': 'command',
         'id': 'ClearspeakPreferences',
-        'content': 'Select Preferences',
-        'action': function () { return sb.post(0, 0); } };
+        'content': 'Select Preferences', 'action': function () { return sb.post(0, 0); } };
 };
 var csMenu = function (menu, sub) {
     var locale = menu.pool.lookup('locale').getValue();
@@ -551,7 +579,6 @@ var iso = {
     'en': 'English',
     'es': 'Spanish',
     'fr': 'French',
-    'hi': 'Hindi',
     'it': 'Italian'
 };
 var language = function (menu, sub) {

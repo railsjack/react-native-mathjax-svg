@@ -18,7 +18,7 @@ var BBox = (function () {
         this.w = def.w || 0;
         this.h = ('h' in def ? def.h : -lengths_js_1.BIGDIMEN);
         this.d = ('d' in def ? def.d : -lengths_js_1.BIGDIMEN);
-        this.L = this.R = this.ic = this.sk = this.dx = 0;
+        this.L = this.R = this.ic = this.sk = 0;
         this.scale = this.rscale = 1;
         this.pwidth = '';
     }

@@ -7,6 +7,13 @@ var ParseMethods_js_1 = require("../ParseMethods.js");
 var ParseUtil_js_1 = require("../ParseUtil.js");
 var MmlNode_js_1 = require("../../../core/MmlTree/MmlNode.js");
 var lengths_js_1 = require("../../../util/lengths.js");
+var COLS = function (W) {
+    var WW = [];
+    for (var i = 0, m = W.length; i < m; i++) {
+        WW[i] = ParseUtil_js_1.default.Em(W[i]);
+    }
+    return WW.join(' ');
+};
 new sm.CharacterMap('AMSmath-mathchar0mo', ParseMethods_js_1.default.mathchar0mo, {
     iiiint: ['\u2A0C', { texClass: MmlNode_js_1.TEXCLASS.OP }]
 });
@@ -44,32 +51,29 @@ new sm.CommandMap('AMSmath-macros', {
     cfrac: 'CFrac',
     shoveleft: ['HandleShove', TexConstants_js_1.TexConstant.Align.LEFT],
     shoveright: ['HandleShove', TexConstants_js_1.TexConstant.Align.RIGHT],
-    xrightarrow: ['xArrow', 0x2192, 5, 10],
+    xrightarrow: ['xArrow', 0x2192, 7, 12],
     xleftarrow: ['xArrow', 0x2190, 10, 5]
 }, AmsMethods_js_1.AmsMethods);
 new sm.EnvironmentMap('AMSmath-environment', ParseMethods_js_1.default.environment, {
-    'equation*': ['Equation', null, false],
     'eqnarray*': ['EqnArray', null, false, true, 'rcl',
-        ParseUtil_js_1.default.cols(0, lengths_js_1.MATHSPACE.thickmathspace), '.5em'],
-    align: ['EqnArray', null, true, true, 'rl', ParseUtil_js_1.default.cols(0, 2)],
-    'align*': ['EqnArray', null, false, true, 'rl', ParseUtil_js_1.default.cols(0, 2)],
+        '0 ' + lengths_js_1.em(lengths_js_1.MATHSPACE.thickmathspace), '.5em'],
+    align: ['EqnArray', null, true, true, 'rlrlrlrlrlrl',
+        COLS([0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0])],
+    'align*': ['EqnArray', null, false, true, 'rlrlrlrlrlrl',
+        COLS([0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0])],
     multline: ['Multline', null, true],
     'multline*': ['Multline', null, false],
-    split: ['EqnArray', null, false, false, 'rl', ParseUtil_js_1.default.cols(0)],
+    split: ['EqnArray', null, false, false, 'rl', COLS([0])],
     gather: ['EqnArray', null, true, true, 'c'],
     'gather*': ['EqnArray', null, false, true, 'c'],
     alignat: ['AlignAt', null, true, true],
     'alignat*': ['AlignAt', null, false, true],
     alignedat: ['AlignAt', null, false, false],
-    aligned: ['AmsEqnArray', null, null, null, 'rl', ParseUtil_js_1.default.cols(0, 2), '.5em', 'D'],
+    aligned: ['AmsEqnArray', null, null, null, 'rlrlrlrlrlrl',
+        COLS([0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0]), '.5em', 'D'],
     gathered: ['AmsEqnArray', null, null, null, 'c', null, '.5em', 'D'],
-    xalignat: ['XalignAt', null, true, true],
-    'xalignat*': ['XalignAt', null, false, true],
-    xxalignat: ['XalignAt', null, false, false],
-    flalign: ['FlalignArray', null, true, false, true, 'rlc', 'auto auto fit'],
-    'flalign*': ['FlalignArray', null, false, false, true, 'rlc', 'auto auto fit'],
-    subarray: ['Array', null, null, null, null, ParseUtil_js_1.default.cols(0), '0.1em', 'S', 1],
-    smallmatrix: ['Array', null, null, null, 'c', ParseUtil_js_1.default.cols(1 / 3),
+    subarray: ['Array', null, null, null, null, COLS([0]), '0.1em', 'S', 1],
+    smallmatrix: ['Array', null, null, null, 'c', COLS([1 / 3]),
         '.2em', 'S', 1],
     matrix: ['Array', null, null, null, 'c'],
     pmatrix: ['Array', null, '(', ')', 'c'],

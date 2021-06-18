@@ -7,18 +7,36 @@ var ParseUtil_js_1 = require("../ParseUtil.js");
 var NewcommandUtil_js_1 = require("./NewcommandUtil.js");
 var NewcommandMethods = {};
 NewcommandMethods.NewCommand = function (parser, name) {
-    var cs = NewcommandUtil_js_1.default.GetCsNameArgument(parser, name);
-    var n = NewcommandUtil_js_1.default.GetArgCount(parser, name);
+    var cs = ParseUtil_js_1.default.trimSpaces(parser.GetArgument(name));
+    var n = parser.GetBrackets(name);
     var opt = parser.GetBrackets(name);
     var def = parser.GetArgument(name);
+    if (cs.charAt(0) === '\\') {
+        cs = cs.substr(1);
+    }
+    if (!cs.match(/^(.|[a-z]+)$/i)) {
+        throw new TexError_js_1.default('IllegalControlSequenceName', 'Illegal control sequence name for %1', name);
+    }
+    if (n) {
+        n = ParseUtil_js_1.default.trimSpaces(n);
+        if (!n.match(/^[0-9]+$/)) {
+            throw new TexError_js_1.default('IllegalParamNumber', 'Illegal number of parameters specified in %1', name);
+        }
+    }
     NewcommandUtil_js_1.default.addMacro(parser, cs, NewcommandMethods.Macro, [def, n, opt]);
 };
 NewcommandMethods.NewEnvironment = function (parser, name) {
     var env = ParseUtil_js_1.default.trimSpaces(parser.GetArgument(name));
-    var n = NewcommandUtil_js_1.default.GetArgCount(parser, name);
+    var n = parser.GetBrackets(name);
     var opt = parser.GetBrackets(name);
     var bdef = parser.GetArgument(name);
     var edef = parser.GetArgument(name);
+    if (n) {
+        n = ParseUtil_js_1.default.trimSpaces(n);
+        if (!n.match(/^[0-9]+$/)) {
+            throw new TexError_js_1.default('IllegalParamNumber', 'Illegal number of parameters specified in %1', name);
+        }
+    }
     NewcommandUtil_js_1.default.addEnvironment(parser, env, NewcommandMethods.BeginEnv, [true, bdef, edef, n, opt]);
 };
 NewcommandMethods.MacroDef = function (parser, name) {
@@ -93,7 +111,10 @@ NewcommandMethods.MacroWithTemplate = function (parser, name, text, n) {
     }
     parser.string = ParseUtil_js_1.default.addArgs(parser, text, parser.string.slice(parser.i));
     parser.i = 0;
-    ParseUtil_js_1.default.checkMaxMacros(parser);
+    if (++parser.macroCount > parser.configuration.options['maxMacros']) {
+        throw new TexError_js_1.default('MaxMacroSub1', 'MathJax maximum macro substitution count exceeded; ' +
+            'is here a recursive macro call?');
+    }
 };
 NewcommandMethods.BeginEnv = function (parser, begin, bdef, edef, n, def) {
     if (begin.getProperty('end') && parser.stack.env['closing'] === begin.getName()) {

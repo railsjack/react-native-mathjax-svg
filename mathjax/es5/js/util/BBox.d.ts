@@ -16,7 +16,6 @@ export declare class BBox {
     pwidth: string;
     ic: number;
     sk: number;
-    dx: number;
     static zero(): BBox;
     static empty(): BBox;
     constructor(def?: BBoxData);

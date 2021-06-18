@@ -103,7 +103,7 @@ var CHTMLWrapper = (function (_super) {
         return chtml;
     };
     CHTMLWrapper.prototype.markUsed = function () {
-        this.jax.wrapperUsage.add(this.kind);
+        this.constructor.used = true;
     };
     CHTMLWrapper.prototype.createCHTMLnode = function (parent) {
         var href = this.node.attributes.get('href');
@@ -287,6 +287,7 @@ var CHTMLWrapper = (function (_super) {
     };
     CHTMLWrapper.kind = 'unknown';
     CHTMLWrapper.autoStyle = true;
+    CHTMLWrapper.used = false;
     return CHTMLWrapper;
 }(Wrapper_js_1.CommonWrapper));
 exports.CHTMLWrapper = CHTMLWrapper;

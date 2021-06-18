@@ -8,7 +8,9 @@ export declare type PathFilterFunction = (data: {
     original: string;
     addExtension: boolean;
 }) => boolean;
-export declare type PathFilterList = (PathFilterFunction | [PathFilterFunction, number])[];
+export declare type PathFilterList = {
+    [name: string]: PathFilterFunction;
+};
 export interface MathJaxConfig extends MJConfig {
     loader?: {
         paths?: {
@@ -27,7 +29,6 @@ export interface MathJaxConfig extends MJConfig {
         ready?: PackageReady;
         failed?: PackageFailed;
         require?: (url: string) => any;
-        pathFilters?: PathFilterList;
         [name: string]: any;
     };
 }
@@ -40,7 +41,7 @@ export interface MathJaxObject extends MJObject {
         preLoad: (...names: string[]) => void;
         defaultReady: () => void;
         getRoot: () => string;
-        pathFilters: FunctionList;
+        pathFilters: PathFilterList;
     };
     startup?: any;
 }
@@ -74,5 +75,4 @@ export declare const CONFIG: {
     ready?: PackageReady;
     failed?: PackageFailed;
     require?: (url: string) => any;
-    pathFilters?: PathFilterList;
 };

@@ -4,7 +4,6 @@ var sm = require("../SymbolMap.js");
 var TexConstants_js_1 = require("../TexConstants.js");
 var BaseMethods_js_1 = require("./BaseMethods.js");
 var ParseMethods_js_1 = require("../ParseMethods.js");
-var ParseUtil_js_1 = require("../ParseUtil.js");
 var MmlNode_js_1 = require("../../../core/MmlTree/MmlNode.js");
 var lengths_js_1 = require("../../../util/lengths.js");
 new sm.RegExpMap('letter', ParseMethods_js_1.default.variable, /[a-z]/i);
@@ -425,9 +424,7 @@ new sm.CommandMap('macros', {
     underleftrightarrow: ['UnderOver', '2194'],
     overset: 'Overset',
     underset: 'Underset',
-    overunderset: 'Overunderset',
     stackrel: ['Macro', '\\mathrel{\\mathop{#2}\\limits^{#1}}', 2],
-    stackbin: ['Macro', '\\mathbin{\\mathop{#2}\\limits^{#1}}', 2],
     over: 'Over',
     overwithdelims: 'Over',
     atop: 'Over',
@@ -470,7 +467,6 @@ new sm.CommandMap('macros', {
     rule: 'rule',
     Rule: ['Rule'],
     Space: ['Rule', 'blank'],
-    nonscript: 'Nonscript',
     big: ['MakeBig', MmlNode_js_1.TEXCLASS.ORD, 0.85],
     Big: ['MakeBig', MmlNode_js_1.TEXCLASS.ORD, 1.15],
     bigg: ['MakeBig', MmlNode_js_1.TEXCLASS.ORD, 1.45],
@@ -501,8 +497,6 @@ new sm.CommandMap('macros', {
     text: 'HBox',
     mbox: ['HBox', 0],
     fbox: 'FBox',
-    boxed: ['Macro', '\\fbox{$\\displaystyle{#1}$}', 1],
-    framebox: 'FrameBox',
     strut: 'Strut',
     mathstrut: ['Macro', '\\vphantom{(}'],
     phantom: 'Phantom',
@@ -573,8 +567,9 @@ new sm.CommandMap('macros', {
 new sm.EnvironmentMap('environment', ParseMethods_js_1.default.environment, {
     array: ['AlignedArray'],
     equation: ['Equation', null, true],
+    'equation*': ['Equation', null, false],
     eqnarray: ['EqnArray', null, true, true, 'rcl',
-        ParseUtil_js_1.default.cols(0, lengths_js_1.MATHSPACE.thickmathspace), '.5em']
+        '0 ' + lengths_js_1.em(lengths_js_1.MATHSPACE.thickmathspace), '.5em']
 }, BaseMethods_js_1.default);
 new sm.CharacterMap('not_remap', null, {
     '\u2190': '\u219A',

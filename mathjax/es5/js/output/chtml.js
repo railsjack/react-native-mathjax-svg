@@ -39,9 +39,7 @@ var __values = (this && this.__values) || function(o) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CHTML = void 0;
 var OutputJax_js_1 = require("./common/OutputJax.js");
-var StyleList_js_1 = require("../util/StyleList.js");
 var WrapperFactory_js_1 = require("./chtml/WrapperFactory.js");
-var Usage_js_1 = require("./chtml/Usage.js");
 var tex_js_1 = require("./chtml/fonts/tex.js");
 var LENGTHS = require("../util/lengths.js");
 var string_js_1 = require("../util/string.js");
@@ -52,7 +50,6 @@ var CHTML = (function (_super) {
         var _this = _super.call(this, options, WrapperFactory_js_1.CHTMLWrapperFactory, tex_js_1.TeXFont) || this;
         _this.chtmlStyles = null;
         _this.font.adaptiveCSS(_this.options.adaptiveCSS);
-        _this.wrapperUsage = new Usage_js_1.Usage();
         return _this;
     }
     CHTML.prototype.escaped = function (math, html) {
@@ -60,34 +57,38 @@ var CHTML = (function (_super) {
         return this.html('span', {}, [this.text(math.math)]);
     };
     CHTML.prototype.styleSheet = function (html) {
-        if (this.chtmlStyles) {
-            if (this.options.adaptiveCSS) {
-                var styles = new StyleList_js_1.CssStyles();
-                this.addWrapperStyles(styles);
-                this.updateFontStyles(styles);
-                this.adaptor.insertRules(this.chtmlStyles, styles.getStyleRules());
-            }
+        if (this.chtmlStyles && !this.options.adaptiveCSS) {
             return this.chtmlStyles;
         }
         var sheet = this.chtmlStyles = _super.prototype.styleSheet.call(this, html);
         this.adaptor.setAttribute(sheet, 'id', CHTML.STYLESHEETID);
-        this.wrapperUsage.update();
         return sheet;
     };
-    CHTML.prototype.updateFontStyles = function (styles) {
-        styles.addStyles(this.font.updateStyles({}));
-    };
-    CHTML.prototype.addWrapperStyles = function (styles) {
-        var e_1, _a;
-        if (!this.options.adaptiveCSS) {
-            _super.prototype.addWrapperStyles.call(this, styles);
-            return;
+    CHTML.prototype.addClassStyles = function (CLASS) {
+        var _a;
+        if (!this.options.adaptiveCSS || CLASS.used) {
+            if (CLASS.autoStyle && CLASS.kind !== 'unknown') {
+                this.cssStyles.addStyles((_a = {},
+                    _a['mjx-' + CLASS.kind] = {
+                        display: 'inline-block',
+                        'text-align': 'left'
+                    },
+                    _a));
+            }
+            _super.prototype.addClassStyles.call(this, CLASS);
         }
+    };
+    CHTML.prototype.processMath = function (math, parent) {
+        this.factory.wrap(math).toCHTML(parent);
+    };
+    CHTML.prototype.clearCache = function () {
+        var e_1, _a;
+        this.cssStyles.clear();
+        this.font.clearCache();
         try {
-            for (var _b = __values(this.wrapperUsage.update()), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = __values(this.factory.getKinds()), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var kind = _c.value;
-                var wrapper = this.factory.getNodeClass(kind);
-                wrapper && this.addClassStyles(wrapper, styles);
+                this.factory.getNodeClass(kind).used = false;
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -98,34 +99,10 @@ var CHTML = (function (_super) {
             finally { if (e_1) throw e_1.error; }
         }
     };
-    CHTML.prototype.addClassStyles = function (wrapper, styles) {
-        var _a;
-        var CLASS = wrapper;
-        if (CLASS.autoStyle && CLASS.kind !== 'unknown') {
-            styles.addStyles((_a = {},
-                _a['mjx-' + CLASS.kind] = {
-                    display: 'inline-block',
-                    'text-align': 'left'
-                },
-                _a));
-        }
-        this.wrapperUsage.add(CLASS.kind);
-        _super.prototype.addClassStyles.call(this, wrapper, styles);
-    };
-    CHTML.prototype.processMath = function (math, parent) {
-        this.factory.wrap(math).toCHTML(parent);
-    };
-    CHTML.prototype.clearCache = function () {
-        this.cssStyles.clear();
-        this.font.clearCache();
-        this.wrapperUsage.clear();
-        this.chtmlStyles = null;
-    };
     CHTML.prototype.reset = function () {
         this.clearCache();
     };
-    CHTML.prototype.unknownText = function (text, variant, width) {
-        if (width === void 0) { width = null; }
+    CHTML.prototype.unknownText = function (text, variant) {
         var styles = {};
         var scale = 100 / this.math.metrics.scale;
         if (scale !== 100) {
@@ -138,16 +115,11 @@ var CHTML = (function (_super) {
                 this.cssFontStyles(this.font.getCssFont(variant), styles);
             }
         }
-        if (width !== null) {
-            var metrics = this.math.metrics;
-            styles.width = Math.round(width * metrics.em * metrics.scale) + 'px';
-        }
         return this.html('mjx-utext', { variant: variant, style: styles }, [this.text(text)]);
     };
-    CHTML.prototype.measureTextNode = function (textNode) {
+    CHTML.prototype.measureTextNode = function (text) {
         var adaptor = this.adaptor;
-        var text = adaptor.clone(textNode);
-        adaptor.setStyle(text, 'font-family', adaptor.getStyle(text, 'font-family').replace(/MJXZERO, /g, ''));
+        text = adaptor.clone(text);
         var style = { position: 'absolute', 'white-space': 'nowrap' };
         var node = this.html('mjx-measure-text', { style: style }, [text]);
         adaptor.append(adaptor.parent(this.math.start.node), this.container);
@@ -158,7 +130,7 @@ var CHTML = (function (_super) {
         return { w: w, h: .75, d: .2 };
     };
     CHTML.NAME = 'CHTML';
-    CHTML.OPTIONS = __assign(__assign({}, OutputJax_js_1.CommonOutputJax.OPTIONS), { adaptiveCSS: true, matchFontHeight: true });
+    CHTML.OPTIONS = __assign(__assign({}, OutputJax_js_1.CommonOutputJax.OPTIONS), { adaptiveCSS: true });
     CHTML.commonStyles = {
         'mjx-container[jax="CHTML"]': { 'line-height': 0 },
         'mjx-container [space="1"]': { 'margin-left': '.111em' },
@@ -197,12 +169,7 @@ var CHTML = (function (_super) {
             color: 'red',
             'background-color': 'yellow'
         },
-        'mjx-mphantom': {
-            visibility: 'hidden'
-        },
-        '_::-webkit-full-page-media, _:future, :root mjx-container': {
-            'will-change': 'opacity'
-        }
+        'mjx-mphantom': { visibility: 'hidden' }
     };
     CHTML.STYLESHEETID = 'MJX-CHTML-styles';
     return CHTML;

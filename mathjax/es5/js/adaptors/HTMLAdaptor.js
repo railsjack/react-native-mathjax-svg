@@ -58,7 +58,7 @@ var HTMLAdaptor = (function (_super) {
         return doc.documentElement;
     };
     HTMLAdaptor.prototype.doctype = function (doc) {
-        return (doc.doctype ? "<!DOCTYPE " + doc.doctype.name + ">" : '');
+        return "<!DOCTYPE " + doc.doctype.name + ">";
     };
     HTMLAdaptor.prototype.tags = function (node, name, ns) {
         if (ns === void 0) { ns = null; }
@@ -208,27 +208,6 @@ var HTMLAdaptor = (function (_super) {
     };
     HTMLAdaptor.prototype.allStyles = function (node) {
         return node.style.cssText;
-    };
-    HTMLAdaptor.prototype.insertRules = function (node, rules) {
-        var e_2, _a;
-        try {
-            for (var _b = __values(rules.reverse()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var rule = _c.value;
-                try {
-                    node.sheet.insertRule(rule, 0);
-                }
-                catch (e) {
-                    console.warn("MathJax: can't insert css rule '" + rule + "': " + e.message);
-                }
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_2) throw e_2.error; }
-        }
     };
     HTMLAdaptor.prototype.fontSize = function (node) {
         var style = this.window.getComputedStyle(node);

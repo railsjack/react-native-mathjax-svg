@@ -131,10 +131,6 @@ var CHTMLmunderover = (function (_super) {
         this.adjustOverDepth(over, overbox);
         this.adjustUnderDepth(under, underbox);
     };
-    CHTMLmunderover.prototype.markUsed = function () {
-        _super.prototype.markUsed.call(this);
-        this.jax.wrapperUsage.add(msubsup_js_1.CHTMLmsubsup.kind);
-    };
     CHTMLmunderover.kind = munderover_js_4.MmlMunderover.prototype.kind;
     CHTMLmunderover.styles = {
         'mjx-munderover:not([limits="false"])': {

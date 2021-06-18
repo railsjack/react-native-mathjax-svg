@@ -71,22 +71,19 @@ var CHTMLmtd = (function (_super) {
         'mjx-labels[align="right"] > mjx-mtr > mjx-mtd': {
             'text-align': 'right'
         },
-        'mjx-mtd[extra]': {
-            padding: 0
-        },
-        'mjx-mtd[rowalign="top"]': {
+        'mjx-mtr mjx-mtd[rowalign="top"], mjx-mlabeledtr mjx-mtd[rowalign="top"]': {
             'vertical-align': 'top'
         },
-        'mjx-mtd[rowalign="center"]': {
+        'mjx-mtr mjx-mtd[rowalign="center"], mjx-mlabeledtr mjx-mtd[rowalign="center"]': {
             'vertical-align': 'middle'
         },
-        'mjx-mtd[rowalign="bottom"]': {
+        'mjx-mtr mjx-mtd[rowalign="bottom"], mjx-mlabeledtr mjx-mtd[rowalign="bottom"]': {
             'vertical-align': 'bottom'
         },
-        'mjx-mtd[rowalign="baseline"]': {
+        'mjx-mtr mjx-mtd[rowalign="baseline"], mjx-mlabeledtr mjx-mtd[rowalign="baseline"]': {
             'vertical-align': 'baseline'
         },
-        'mjx-mtd[rowalign="axis"]': {
+        'mjx-mtr mjx-mtd[rowalign="axis"], mjx-mlabeledtr mjx-mtd[rowalign="axis"]': {
             'vertical-align': '.25em'
         }
     };

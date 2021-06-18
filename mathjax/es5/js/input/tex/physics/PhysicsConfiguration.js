@@ -22,12 +22,6 @@ exports.PhysicsConfiguration = Configuration_js_1.Configuration.create('physics'
     },
     items: (_a = {},
         _a[PhysicsItems_js_1.AutoOpen.prototype.kind] = PhysicsItems_js_1.AutoOpen,
-        _a),
-    options: {
-        physics: {
-            italicdiff: false,
-            arrowdel: false
-        }
-    }
+        _a)
 });
 //# sourceMappingURL=PhysicsConfiguration.js.map

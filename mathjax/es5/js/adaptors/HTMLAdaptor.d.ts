@@ -29,9 +29,6 @@ export interface MinHTMLElement<N, T> {
     className: string;
     classList: DOMTokenList;
     style: OptionList;
-    sheet?: {
-        insertRule: (rule: string, index?: number) => void;
-    };
     childNodes: (N | T)[] | NodeList;
     firstChild: N | T | Node;
     lastChild: N | T | Node;
@@ -133,7 +130,6 @@ export declare class HTMLAdaptor<N extends MinHTMLElement<N, T>, T extends MinTe
     setStyle(node: N, name: string, value: string): void;
     getStyle(node: N, name: string): any;
     allStyles(node: N): any;
-    insertRules(node: N, rules: string[]): void;
     fontSize(node: N): number;
     fontFamily(node: N): any;
     nodeSize(node: N, em?: number, local?: boolean): [number, number];

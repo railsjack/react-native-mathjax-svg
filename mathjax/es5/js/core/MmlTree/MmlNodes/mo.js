@@ -173,6 +173,15 @@ var MmlMo = (function (_super) {
                 this.texClass = MmlNode_js_1.TEXCLASS.CLOSE;
             }
         }
+        if (this.getText() === '\u2061') {
+            if (prev && prev.getProperty('texClass') === undefined &&
+                prev.attributes.get('mathvariant') !== 'italic') {
+                prev.texClass = MmlNode_js_1.TEXCLASS.OP;
+                prev.setProperty('fnOP', true);
+            }
+            this.texClass = this.prevClass = MmlNode_js_1.TEXCLASS.NONE;
+            return prev;
+        }
         return this.adjustTeXclass(prev);
     };
     MmlMo.prototype.adjustTeXclass = function (prev) {
@@ -254,7 +263,7 @@ var MmlMo = (function (_super) {
             this.rspace = (def[1] + 1) / 18;
         }
         else {
-            var range = OperatorDictionary_js_1.getRange(mo);
+            var range = this.getRange(mo);
             if (range) {
                 if (this.getProperty('texClass') === undefined) {
                     this.texClass = range[2];
@@ -291,6 +300,33 @@ var MmlMo = (function (_super) {
         }
         return forms;
     };
+    MmlMo.prototype.getRange = function (mo) {
+        var e_2, _a;
+        if (!mo.match(/^[\uD800-\uDBFF]?.$/)) {
+            return null;
+        }
+        var n = mo.codePointAt(0);
+        var ranges = this.constructor.RANGES;
+        try {
+            for (var ranges_1 = __values(ranges), ranges_1_1 = ranges_1.next(); !ranges_1_1.done; ranges_1_1 = ranges_1.next()) {
+                var range = ranges_1_1.value;
+                if (range[0] <= n && n <= range[1]) {
+                    return range;
+                }
+                if (n < range[0]) {
+                    return null;
+                }
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (ranges_1_1 && !ranges_1_1.done && (_a = ranges_1.return)) _a.call(ranges_1);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        return null;
+    };
     MmlMo.prototype.checkPseudoScripts = function (mo) {
         var PSEUDOSCRIPTS = this.constructor.pseudoScripts;
         if (!mo.match(PSEUDOSCRIPTS))
@@ -324,6 +360,7 @@ var MmlMo = (function (_super) {
         }
     };
     MmlMo.defaults = __assign(__assign({}, MmlNode_js_1.AbstractMmlTokenNode.defaults), { form: 'infix', fence: false, separator: false, lspace: 'thickmathspace', rspace: 'thickmathspace', stretchy: false, symmetric: false, maxsize: 'infinity', minsize: '0em', largeop: false, movablelimits: false, accent: false, linebreak: 'auto', lineleading: '1ex', linebreakstyle: 'before', indentalign: 'auto', indentshift: '0', indenttarget: '', indentalignfirst: 'indentalign', indentshiftfirst: 'indentshift', indentalignlast: 'indentalign', indentshiftlast: 'indentshift' });
+    MmlMo.RANGES = OperatorDictionary_js_1.RANGES;
     MmlMo.MMLSPACING = OperatorDictionary_js_1.MMLSPACING;
     MmlMo.OPTABLE = OperatorDictionary_js_1.OPTABLE;
     MmlMo.pseudoScripts = new RegExp([

@@ -272,6 +272,7 @@ var TagsFactory;
         tags: defaultTags,
         tagSide: 'right',
         tagIndent: '0.8em',
+        multlineWidth: '85%',
         useLabelIds: true,
         ignoreDuplicateLabels: false
     };

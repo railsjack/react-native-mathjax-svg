@@ -76,7 +76,7 @@ function CommonMtableMixin(Base) {
             _this.getPercentageWidth();
             var attributes = _this.node.attributes;
             _this.frame = attributes.get('frame') !== 'none';
-            _this.fLine = (_this.frame && attributes.get('frame') ? .07 : 0);
+            _this.fLine = (_this.frame ? .07 : 0);
             _this.fSpace = (_this.frame ? _this.convertLengths(_this.getAttributeArray('framespacing')) : [0, 0]);
             _this.cSpace = _this.convertLengths(_this.getColumnAttributes('columnspacing'));
             _this.rSpace = _this.convertLengths(_this.getRowAttributes('rowspacing'));
@@ -311,8 +311,7 @@ function CommonMtableMixin(Base) {
                 this.container.bbox.pwidth = '';
             }
             var _a = this.bbox, w = _a.w, L = _a.L, R = _a.R;
-            var labelInWidth = this.node.attributes.get('data-width-includes-label');
-            var W = Math.max(w, this.length2em(width, Math.max(cwidth, L + w + R))) - (labelInWidth ? L + R : 0);
+            var W = Math.max(w, this.length2em(width, Math.max(cwidth, L + w + R)));
             var cols = (this.node.attributes.get('equalcolumns') ?
                 Array(this.numCols).fill(this.percent(1 / Math.max(1, this.numCols))) :
                 this.getColumnAttributes('columnwidth', 0));
@@ -369,14 +368,9 @@ function CommonMtableMixin(Base) {
         };
         class_1.prototype.getBBoxLR = function () {
             if (this.hasLabels) {
-                var attributes = this.node.attributes;
-                var side = attributes.get('side');
+                var side = this.node.attributes.get('side');
                 var _a = __read(this.getPadAlignShift(side), 2), pad = _a[0], align = _a[1];
-                var labels = this.hasLabels && !!attributes.get('data-width-includes-label');
-                if (labels && this.frame && this.fSpace[0]) {
-                    pad -= this.fSpace[0];
-                }
-                return (align === 'center' && !labels ? [pad, pad] :
+                return (align === 'center' ? [pad, pad] :
                     side === 'left' ? [pad, 0] : [0, pad]);
             }
             return [0, 0];
@@ -485,7 +479,7 @@ function CommonMtableMixin(Base) {
             var dw = cwidth;
             indices.forEach(function (i) {
                 var x = swidths[i];
-                dw -= (x === 'fit' || x === 'auto' ? W[i] : _this.length2em(x, cwidth));
+                dw -= (x === 'fit' || x === 'auto' ? W[i] : _this.length2em(x, width));
             });
             var fw = (n && dw > 0 ? dw / n : 0);
             return indices.map(function (i) {

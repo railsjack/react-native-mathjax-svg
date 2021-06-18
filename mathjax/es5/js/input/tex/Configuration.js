@@ -34,7 +34,7 @@ var FunctionList_js_1 = require("../../util/FunctionList.js");
 var PrioritizedList_js_1 = require("../../util/PrioritizedList.js");
 var Tags_js_1 = require("./Tags.js");
 var Configuration = (function () {
-    function Configuration(name, handler, fallback, items, tags, options, nodes, preprocessors, postprocessors, initMethod, configMethod, priority, parser) {
+    function Configuration(name, handler, fallback, items, tags, options, nodes, preprocessors, postprocessors, initMethod, configMethod, priority) {
         if (handler === void 0) { handler = {}; }
         if (fallback === void 0) { fallback = {}; }
         if (items === void 0) { items = {}; }
@@ -57,7 +57,6 @@ var Configuration = (function () {
         this.initMethod = initMethod;
         this.configMethod = configMethod;
         this.priority = priority;
-        this.parser = parser;
         this.handler = Object.assign({ character: [], delimiter: [], macro: [], environment: [] }, handler);
     }
     Configuration.makeProcessor = function (func, priority) {
@@ -71,8 +70,7 @@ var Configuration = (function () {
         var conf = config.config ? this.makeProcessor(config.config, priority) : null;
         var preprocessors = (config.preprocessors || []).map(function (pre) { return _this.makeProcessor(pre, priority); });
         var postprocessors = (config.postprocessors || []).map(function (post) { return _this.makeProcessor(post, priority); });
-        var parser = config.parser || 'tex';
-        return new Configuration(name, config.handler || {}, config.fallback || {}, config.items || {}, config.tags || {}, config.options || {}, config.nodes || {}, preprocessors, postprocessors, init, conf, priority, parser);
+        return new Configuration(name, config.handler || {}, config.fallback || {}, config.items || {}, config.tags || {}, config.options || {}, config.nodes || {}, preprocessors, postprocessors, init, conf, priority);
     };
     Configuration.create = function (name, config) {
         if (config === void 0) { config = {}; }
@@ -115,19 +113,16 @@ var ConfigurationHandler;
     };
 })(ConfigurationHandler = exports.ConfigurationHandler || (exports.ConfigurationHandler = {}));
 var ParserConfiguration = (function () {
-    function ParserConfiguration(packages, parsers) {
+    function ParserConfiguration(packages) {
         var e_1, _a, e_2, _b;
-        if (parsers === void 0) { parsers = ['tex']; }
         this.initMethod = new FunctionList_js_1.FunctionList();
         this.configMethod = new FunctionList_js_1.FunctionList();
         this.configurations = new PrioritizedList_js_1.PrioritizedList();
-        this.parsers = [];
         this.handlers = new MapHandler_js_1.SubHandlers();
         this.items = {};
         this.tags = {};
         this.options = {};
         this.nodes = {};
-        this.parsers = parsers;
         try {
             for (var _c = __values(packages.slice().reverse()), _d = _c.next(); !_d.done; _d = _c.next()) {
                 var pkg = _d.value;
@@ -177,13 +172,14 @@ var ParserConfiguration = (function () {
     };
     ParserConfiguration.prototype.addPackage = function (pkg) {
         var name = typeof pkg === 'string' ? pkg : pkg[0];
-        var conf = this.getPackage(name);
-        conf && this.configurations.add(conf, typeof pkg === 'string' ? conf.priority : pkg[1]);
+        var conf = ConfigurationHandler.get(name);
+        if (conf) {
+            this.configurations.add(conf, typeof pkg === 'string' ? conf.priority : pkg[1]);
+        }
     };
-    ParserConfiguration.prototype.add = function (name, jax, options) {
+    ParserConfiguration.prototype.add = function (config, jax, options) {
         var e_4, _a;
         if (options === void 0) { options = {}; }
-        var config = this.getPackage(name);
         this.append(config);
         this.configurations.add(config, config.priority);
         this.init();
@@ -209,13 +205,6 @@ var ParserConfiguration = (function () {
         if (config.config) {
             config.config(this, jax);
         }
-    };
-    ParserConfiguration.prototype.getPackage = function (name) {
-        var config = ConfigurationHandler.get(name);
-        if (config && this.parsers.indexOf(config.parser) < 0) {
-            throw Error("Package " + name + " doesn't target the proper parser");
-        }
-        return config;
     };
     ParserConfiguration.prototype.append = function (config, priority) {
         priority = priority || config.priority;

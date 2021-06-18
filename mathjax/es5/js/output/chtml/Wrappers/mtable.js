@@ -109,7 +109,7 @@ var CHTMLmtable = (function (_super) {
             for (var _b = __values(adaptor.childNodes(this.itable)), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var row = _c.value;
                 while (adaptor.childNodes(row).length < this.numCols) {
-                    adaptor.append(row, this.html('mjx-mtd', { 'extra': true }));
+                    adaptor.append(row, this.html('mjx-mtd'));
                 }
             }
         }
@@ -359,7 +359,7 @@ var CHTMLmtable = (function (_super) {
         return false;
     };
     CHTMLmtable.prototype.handleFrame = function () {
-        if (this.frame && this.fLine) {
+        if (this.frame) {
             this.adaptor.setStyle(this.itable, 'border', '.07em ' + this.node.attributes.get('frame'));
         }
     };
@@ -382,12 +382,11 @@ var CHTMLmtable = (function (_super) {
         adaptor.setStyle(table, 'minWidth', this.em(w));
         if (L || R) {
             adaptor.setStyle(this.chtml, 'margin', '');
-            var style = (this.node.attributes.get('data-width-includes-label') ? 'padding' : 'margin');
             if (L === R) {
-                adaptor.setStyle(table, style, '0 ' + this.em(R));
+                adaptor.setStyle(table, 'margin', '0 ' + this.em(R));
             }
             else {
-                adaptor.setStyle(table, style, '0 ' + this.em(R) + ' 0 ' + this.em(L));
+                adaptor.setStyle(table, 'margin', '0 ' + this.em(R) + ' 0 ' + this.em(L));
             }
         }
         adaptor.setAttribute(this.itable, 'width', 'full');
@@ -432,7 +431,7 @@ var CHTMLmtable = (function (_super) {
     CHTMLmtable.prototype.addLabelPadding = function (side) {
         var _a = __read(this.getPadAlignShift(side), 3), align = _a[1], shift = _a[2];
         var styles = {};
-        if (side === 'right' && !this.node.attributes.get('data-width-includes-label')) {
+        if (side === 'right') {
             var W = this.node.attributes.get('width');
             var _b = this.getBBox(), w = _b.w, L = _b.L, R = _b.R;
             styles.style = {
@@ -497,8 +496,7 @@ var CHTMLmtable = (function (_super) {
         },
         'mjx-table': {
             'display': 'inline-block',
-            'vertical-align': '-.5ex',
-            'box-sizing': 'border-box'
+            'vertical-align': '-.5ex'
         },
         'mjx-table > mjx-itable': {
             'vertical-align': 'middle',

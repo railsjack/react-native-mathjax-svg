@@ -279,9 +279,8 @@ var CommonOutputJax = (function (_super) {
         var adaptor = this.adaptor;
         var family = (getFamily ? adaptor.fontFamily(node) : '');
         var em = adaptor.fontSize(node);
-        var _a = __read(adaptor.nodeSize(adaptor.childNode(node, 1)), 2), w = _a[0], h = _a[1];
-        var ex = (w ? h / 60 : em * this.options.exFactor);
-        var containerWidth = (!w ? 1000000 : adaptor.getStyle(node, 'display') === 'table' ?
+        var ex = (adaptor.nodeSize(adaptor.childNode(node, 1))[1] / 60) || (em * this.options.exFactor);
+        var containerWidth = (adaptor.getStyle(node, 'display') === 'table' ?
             adaptor.nodeSize(adaptor.lastChild(node))[0] - 1 :
             adaptor.nodeBBox(adaptor.lastChild(node)).left -
                 adaptor.nodeBBox(adaptor.firstChild(node)).left - 2);
@@ -290,51 +289,44 @@ var CommonOutputJax = (function (_super) {
         return { em: em, ex: ex, containerWidth: containerWidth, lineWidth: lineWidth, scale: scale, family: family };
     };
     CommonOutputJax.prototype.styleSheet = function (html) {
-        var e_7, _a;
+        var e_7, _a, e_8, _b;
         this.setDocument(html);
         this.cssStyles.clear();
         this.cssStyles.addStyles(this.constructor.commonStyles);
         if ('getStyles' in html) {
             try {
-                for (var _b = __values(html.getStyles()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var styles = _c.value;
+                for (var _c = __values(html.getStyles()), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    var styles = _d.value;
                     this.cssStyles.addStyles(styles);
                 }
             }
             catch (e_7_1) { e_7 = { error: e_7_1 }; }
             finally {
                 try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                    if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
                 }
                 finally { if (e_7) throw e_7.error; }
             }
         }
-        this.addWrapperStyles(this.cssStyles);
-        this.addFontStyles(this.cssStyles);
-        var sheet = this.html('style', { id: 'MJX-styles' }, [this.text('\n' + this.cssStyles.cssText + '\n')]);
-        return sheet;
-    };
-    CommonOutputJax.prototype.addFontStyles = function (styles) {
-        styles.addStyles(this.font.styles);
-    };
-    CommonOutputJax.prototype.addWrapperStyles = function (styles) {
-        var e_8, _a;
         try {
-            for (var _b = __values(this.factory.getKinds()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var kind = _c.value;
-                this.addClassStyles(this.factory.getNodeClass(kind), styles);
+            for (var _e = __values(this.factory.getKinds()), _f = _e.next(); !_f.done; _f = _e.next()) {
+                var kind = _f.value;
+                this.addClassStyles(this.factory.getNodeClass(kind));
             }
         }
         catch (e_8_1) { e_8 = { error: e_8_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
             }
             finally { if (e_8) throw e_8.error; }
         }
+        this.cssStyles.addStyles(this.font.styles);
+        var sheet = this.html('style', { id: 'MJX-styles' }, [this.text('\n' + this.cssStyles.cssText + '\n')]);
+        return sheet;
     };
-    CommonOutputJax.prototype.addClassStyles = function (CLASS, styles) {
-        styles.addStyles(CLASS.styles);
+    CommonOutputJax.prototype.addClassStyles = function (CLASS) {
+        this.cssStyles.addStyles(CLASS.styles);
     };
     CommonOutputJax.prototype.setDocument = function (html) {
         if (html) {
@@ -423,7 +415,7 @@ var CommonOutputJax = (function (_super) {
             styles.get('font-weight') === 'bold'];
     };
     CommonOutputJax.NAME = 'Common';
-    CommonOutputJax.OPTIONS = __assign(__assign({}, OutputJax_js_1.AbstractOutputJax.OPTIONS), { scale: 1, minScale: .5, mtextInheritFont: false, merrorInheritFont: false, mtextFont: '', merrorFont: 'serif', mathmlSpacing: false, skipAttributes: {}, exFactor: .5, displayAlign: 'center', displayIndent: '0', wrapperFactory: null, font: null, cssStyles: null });
+    CommonOutputJax.OPTIONS = __assign(__assign({}, OutputJax_js_1.AbstractOutputJax.OPTIONS), { scale: 1, minScale: .5, matchFontHeight: true, mtextInheritFont: false, merrorInheritFont: false, mtextFont: '', merrorFont: 'serif', mathmlSpacing: false, skipAttributes: {}, exFactor: .5, displayAlign: 'center', displayIndent: '0', wrapperFactory: null, font: null, cssStyles: null });
     CommonOutputJax.commonStyles = {};
     return CommonOutputJax;
 }(OutputJax_js_1.AbstractOutputJax));

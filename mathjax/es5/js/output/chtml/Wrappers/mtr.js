@@ -69,12 +69,9 @@ var CHTMLmlabeledtr = (function (_super) {
             var align = this.node.attributes.get('rowalign');
             var attr = (align !== 'baseline' && align !== 'axis' ? { rowalign: align } : {});
             var row = this.html('mjx-mtr', attr, [child]);
+            CHTMLmtr.used = true;
             this.adaptor.append(this.parent.labels, row);
         }
-    };
-    CHTMLmlabeledtr.prototype.markUsed = function () {
-        _super.prototype.markUsed.call(this);
-        this.jax.wrapperUsage.add(CHTMLmtr.kind);
     };
     CHTMLmlabeledtr.kind = mtr_js_3.MmlMlabeledtr.prototype.kind;
     CHTMLmlabeledtr.styles = {

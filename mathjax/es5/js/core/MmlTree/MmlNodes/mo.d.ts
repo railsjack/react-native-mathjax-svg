@@ -1,8 +1,9 @@
 import { PropertyList } from '../../Tree/Node.js';
 import { AbstractMmlTokenNode, MmlNode, AttributeList } from '../MmlNode.js';
-import { OperatorList } from '../OperatorDictionary.js';
+import { OperatorList, RangeDef } from '../OperatorDictionary.js';
 export declare class MmlMo extends AbstractMmlTokenNode {
     static defaults: PropertyList;
+    static RANGES: RangeDef[];
     static MMLSPACING: number[][];
     static OPTABLE: {
         [form: string]: OperatorList;
@@ -31,6 +32,7 @@ export declare class MmlMo extends AbstractMmlTokenNode {
     protected checkOperatorTable(mo: string): void;
     getForms(): [string, string, string];
     protected handleExplicitForm(forms: string[]): string[];
+    protected getRange(mo: string): RangeDef;
     protected checkPseudoScripts(mo: string): void;
     protected checkPrimes(mo: string): void;
     protected checkMathAccent(mo: string): void;
