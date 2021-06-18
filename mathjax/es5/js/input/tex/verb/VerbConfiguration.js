@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.VerbConfiguration = exports.VerbMethods = void 0;
 var Configuration_js_1 = require("../Configuration.js");
 var TexConstants_js_1 = require("../TexConstants.js");
 var SymbolMap_js_1 = require("../SymbolMap.js");

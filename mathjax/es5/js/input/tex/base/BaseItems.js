@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -28,11 +30,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EquationItem = exports.EqnArrayItem = exports.ArrayItem = exports.DotsItem = exports.NonscriptItem = exports.NotItem = exports.FnItem = exports.MmlItem = exports.CellItem = exports.PositionItem = exports.StyleItem = exports.EndItem = exports.BeginItem = exports.RightItem = exports.Middle = exports.LeftItem = exports.OverItem = exports.SubsupItem = exports.PrimeItem = exports.CloseItem = exports.OpenItem = exports.StopItem = exports.StartItem = void 0;
 var MapHandler_js_1 = require("../MapHandler.js");
 var Entities_js_1 = require("../../../util/Entities.js");
 var MmlNode_js_1 = require("../../../core/MmlTree/MmlNode.js");
@@ -51,14 +55,14 @@ var StartItem = (function (_super) {
         get: function () {
             return 'start';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StartItem.prototype, "isOpen", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     StartItem.prototype.checkItem = function (item) {
@@ -83,14 +87,14 @@ var StopItem = (function (_super) {
         get: function () {
             return 'stop';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(StopItem.prototype, "isClose", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return StopItem;
@@ -105,14 +109,14 @@ var OpenItem = (function (_super) {
         get: function () {
             return 'open';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(OpenItem.prototype, "isOpen", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     OpenItem.prototype.checkItem = function (item) {
@@ -139,14 +143,14 @@ var CloseItem = (function (_super) {
         get: function () {
             return 'close';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(CloseItem.prototype, "isClose", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return CloseItem;
@@ -161,7 +165,7 @@ var PrimeItem = (function (_super) {
         get: function () {
             return 'prime';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     PrimeItem.prototype.checkItem = function (item) {
@@ -185,7 +189,7 @@ var SubsupItem = (function (_super) {
         get: function () {
             return 'subsup';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     SubsupItem.prototype.checkItem = function (item) {
@@ -214,8 +218,9 @@ var SubsupItem = (function (_super) {
         }
         if (_super.prototype.checkItem.call(this, item)[1]) {
             var error = this.getErrors(['', 'sub', 'sup'][position]);
-            throw new (TexError_js_1.default.bind.apply(TexError_js_1.default, __spread([void 0, error[0], error[1]], error.splice(2))))();
+            throw new (TexError_js_1.default.bind.apply(TexError_js_1.default, __spreadArray([void 0, error[0], error[1]], __read(error.splice(2)))))();
         }
+        return null;
     };
     SubsupItem.errors = Object.assign(Object.create(StackItem_js_1.BaseItem.errors), {
         'stop': ['MissingScript',
@@ -239,14 +244,14 @@ var OverItem = (function (_super) {
         get: function () {
             return 'over';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(OverItem.prototype, "isClose", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     OverItem.prototype.checkItem = function (item) {
@@ -275,28 +280,37 @@ var OverItem = (function (_super) {
 exports.OverItem = OverItem;
 var LeftItem = (function (_super) {
     __extends(LeftItem, _super);
-    function LeftItem(factory) {
+    function LeftItem(factory, delim) {
         var _this = _super.call(this, factory) || this;
-        _this.setProperty('delim', '(');
+        _this.setProperty('delim', delim);
         return _this;
     }
     Object.defineProperty(LeftItem.prototype, "kind", {
         get: function () {
             return 'left';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(LeftItem.prototype, "isOpen", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     LeftItem.prototype.checkItem = function (item) {
         if (item.isKind('right')) {
-            return [[this.factory.create('mml', ParseUtil_js_1.default.fenced(this.factory.configuration, this.getProperty('delim'), this.toMml(), item.getProperty('delim')))], true];
+            return [[this.factory.create('mml', ParseUtil_js_1.default.fenced(this.factory.configuration, this.getProperty('delim'), this.toMml(), item.getProperty('delim'), '', item.getProperty('color')))], true];
+        }
+        if (item.isKind('middle')) {
+            var def = { stretchy: true };
+            if (item.getProperty('color')) {
+                def.mathcolor = item.getProperty('color');
+            }
+            this.Push(this.create('node', 'TeXAtom', [], { texClass: MmlNode_js_1.TEXCLASS.CLOSE }), this.create('token', 'mo', def, item.getProperty('delim')), this.create('node', 'TeXAtom', [], { texClass: MmlNode_js_1.TEXCLASS.OPEN }));
+            this.env = {};
+            return [[this], true];
         }
         return _super.prototype.checkItem.call(this, item);
     };
@@ -307,25 +321,51 @@ var LeftItem = (function (_super) {
     return LeftItem;
 }(StackItem_js_1.BaseItem));
 exports.LeftItem = LeftItem;
+var Middle = (function (_super) {
+    __extends(Middle, _super);
+    function Middle(factory, delim, color) {
+        var _this = _super.call(this, factory) || this;
+        _this.setProperty('delim', delim);
+        color && _this.setProperty('color', color);
+        return _this;
+    }
+    Object.defineProperty(Middle.prototype, "kind", {
+        get: function () {
+            return 'middle';
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Middle.prototype, "isClose", {
+        get: function () {
+            return true;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return Middle;
+}(StackItem_js_1.BaseItem));
+exports.Middle = Middle;
 var RightItem = (function (_super) {
     __extends(RightItem, _super);
-    function RightItem(factory) {
+    function RightItem(factory, delim, color) {
         var _this = _super.call(this, factory) || this;
-        _this.setProperty('delim', ')');
+        _this.setProperty('delim', delim);
+        color && _this.setProperty('color', color);
         return _this;
     }
     Object.defineProperty(RightItem.prototype, "kind", {
         get: function () {
             return 'right';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(RightItem.prototype, "isClose", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return RightItem;
@@ -340,14 +380,14 @@ var BeginItem = (function (_super) {
         get: function () {
             return 'begin';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BeginItem.prototype, "isOpen", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     BeginItem.prototype.checkItem = function (item) {
@@ -377,14 +417,14 @@ var EndItem = (function (_super) {
         get: function () {
             return 'end';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(EndItem.prototype, "isClose", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return EndItem;
@@ -399,7 +439,7 @@ var StyleItem = (function (_super) {
         get: function () {
             return 'style';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     StyleItem.prototype.checkItem = function (item) {
@@ -421,7 +461,7 @@ var PositionItem = (function (_super) {
         get: function () {
             return 'position';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     PositionItem.prototype.checkItem = function (item) {
@@ -455,14 +495,14 @@ var CellItem = (function (_super) {
         get: function () {
             return 'cell';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(CellItem.prototype, "isClose", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return CellItem;
@@ -477,14 +517,14 @@ var MmlItem = (function (_super) {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlItem.prototype, "kind", {
         get: function () {
             return 'mml';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return MmlItem;
@@ -499,7 +539,7 @@ var FnItem = (function (_super) {
         get: function () {
             return 'fn';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     FnItem.prototype.checkItem = function (item) {
@@ -545,7 +585,7 @@ var NotItem = (function (_super) {
         get: function () {
             return 'not';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     NotItem.prototype.checkItem = function (item) {
@@ -582,6 +622,37 @@ var NotItem = (function (_super) {
     return NotItem;
 }(StackItem_js_1.BaseItem));
 exports.NotItem = NotItem;
+var NonscriptItem = (function (_super) {
+    __extends(NonscriptItem, _super);
+    function NonscriptItem() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Object.defineProperty(NonscriptItem.prototype, "kind", {
+        get: function () {
+            return 'nonscript';
+        },
+        enumerable: false,
+        configurable: true
+    });
+    NonscriptItem.prototype.checkItem = function (item) {
+        if (item.isKind('mml') && item.Size() === 1) {
+            var mml = item.First;
+            if (mml.isKind('mstyle') && mml.notParent) {
+                mml = NodeUtil_js_1.default.getChildren(NodeUtil_js_1.default.getChildren(mml)[0])[0];
+            }
+            if (mml.isKind('mspace')) {
+                if (mml !== item.First) {
+                    var mrow = this.create('node', 'mrow', [item.Pop()]);
+                    item.Push(mrow);
+                }
+                this.factory.configuration.addNode('nonscript', item.First);
+            }
+        }
+        return [[item], true];
+    };
+    return NonscriptItem;
+}(StackItem_js_1.BaseItem));
+exports.NonscriptItem = NonscriptItem;
 var DotsItem = (function (_super) {
     __extends(DotsItem, _super);
     function DotsItem() {
@@ -591,7 +662,7 @@ var DotsItem = (function (_super) {
         get: function () {
             return 'dots';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     DotsItem.prototype.checkItem = function (item) {
@@ -627,21 +698,21 @@ var ArrayItem = (function (_super) {
         get: function () {
             return 'array';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ArrayItem.prototype, "isOpen", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(ArrayItem.prototype, "copyEnv", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ArrayItem.prototype.checkItem = function (item) {
@@ -659,30 +730,7 @@ var ArrayItem = (function (_super) {
             }
             this.EndTable();
             this.clearEnv();
-            var scriptlevel = this.arraydef['scriptlevel'];
-            delete this.arraydef['scriptlevel'];
-            var mml = this.create('node', 'mtable', this.table, this.arraydef);
-            if (this.frame.length === 4) {
-                NodeUtil_js_1.default.setAttribute(mml, 'frame', this.dashed ? 'dashed' : 'solid');
-            }
-            else if (this.frame.length) {
-                if (this.arraydef['rowlines']) {
-                    this.arraydef['rowlines'] =
-                        this.arraydef['rowlines'].replace(/none( none)+$/, 'none');
-                }
-                mml = this.create('node', 'menclose', [mml], { notation: this.frame.join(' '), isFrame: true });
-                if ((this.arraydef['columnlines'] || 'none') !== 'none' ||
-                    (this.arraydef['rowlines'] || 'none') !== 'none') {
-                    NodeUtil_js_1.default.setAttribute(mml, 'padding', 0);
-                }
-            }
-            if (scriptlevel) {
-                mml = this.create('node', 'mstyle', [mml], { scriptlevel: scriptlevel });
-            }
-            if (this.getProperty('open') || this.getProperty('close')) {
-                mml = ParseUtil_js_1.default.fenced(this.factory.configuration, this.getProperty('open'), mml, this.getProperty('close'));
-            }
-            var newItem = this.factory.create('mml', mml);
+            var newItem = this.factory.create('mml', this.createMml());
             if (this.getProperty('requireClose')) {
                 if (item.isKind('close')) {
                     return [[newItem], true];
@@ -692,6 +740,33 @@ var ArrayItem = (function (_super) {
             return [[newItem, item], true];
         }
         return _super.prototype.checkItem.call(this, item);
+    };
+    ArrayItem.prototype.createMml = function () {
+        var scriptlevel = this.arraydef['scriptlevel'];
+        delete this.arraydef['scriptlevel'];
+        var mml = this.create('node', 'mtable', this.table, this.arraydef);
+        if (scriptlevel) {
+            mml.setProperty('scriptlevel', scriptlevel);
+        }
+        if (this.frame.length === 4) {
+            NodeUtil_js_1.default.setAttribute(mml, 'frame', this.dashed ? 'dashed' : 'solid');
+        }
+        else if (this.frame.length) {
+            if (this.arraydef['rowlines']) {
+                this.arraydef['rowlines'] =
+                    this.arraydef['rowlines'].replace(/none( none)+$/, 'none');
+            }
+            NodeUtil_js_1.default.setAttribute(mml, 'frame', '');
+            mml = this.create('node', 'menclose', [mml], { notation: this.frame.join(' ') });
+            if ((this.arraydef['columnlines'] || 'none') !== 'none' ||
+                (this.arraydef['rowlines'] || 'none') !== 'none') {
+                NodeUtil_js_1.default.setAttribute(mml, 'data-padding', 0);
+            }
+        }
+        if (this.getProperty('open') || this.getProperty('close')) {
+            mml = ParseUtil_js_1.default.fenced(this.factory.configuration, this.getProperty('open'), mml, this.getProperty('close'));
+        }
+        return mml;
     };
     ArrayItem.prototype.EndEntry = function () {
         var mtd = this.create('node', 'mtd', this.nodes);
@@ -746,6 +821,21 @@ var ArrayItem = (function (_super) {
             this.arraydef['rowspacing'] = rows.join(' ');
         }
     };
+    ArrayItem.prototype.addRowSpacing = function (spacing) {
+        if (this.arraydef['rowspacing']) {
+            var rows = this.arraydef['rowspacing'].split(/ /);
+            if (!this.getProperty('rowspacing')) {
+                var dimem = ParseUtil_js_1.default.dimen2em(rows[0]);
+                this.setProperty('rowspacing', dimem);
+            }
+            var rowspacing = this.getProperty('rowspacing');
+            while (rows.length < this.table.length) {
+                rows.push(ParseUtil_js_1.default.Em(rowspacing));
+            }
+            rows[this.table.length - 1] = ParseUtil_js_1.default.Em(Math.max(0, rowspacing + ParseUtil_js_1.default.dimen2em(spacing)));
+            this.arraydef['rowspacing'] = rows.join(' ');
+        }
+    };
     return ArrayItem;
 }(StackItem_js_1.BaseItem));
 exports.ArrayItem = ArrayItem;
@@ -757,6 +847,7 @@ var EqnArrayItem = (function (_super) {
             args[_i - 1] = arguments[_i];
         }
         var _this = _super.call(this, factory) || this;
+        _this.maxrow = 0;
         _this.factory.configuration.tags.start(args[0], args[2], args[1]);
         return _this;
     }
@@ -764,7 +855,7 @@ var EqnArrayItem = (function (_super) {
         get: function () {
             return 'eqnarray';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     EqnArrayItem.prototype.EndEntry = function () {
@@ -776,6 +867,9 @@ var EqnArrayItem = (function (_super) {
         this.Clear();
     };
     EqnArrayItem.prototype.EndRow = function () {
+        if (this.row.length > this.maxrow) {
+            this.maxrow = this.row.length;
+        }
         var mtr = 'mtr';
         var tag = this.factory.configuration.tags.getTag();
         if (tag) {
@@ -790,6 +884,21 @@ var EqnArrayItem = (function (_super) {
     EqnArrayItem.prototype.EndTable = function () {
         _super.prototype.EndTable.call(this);
         this.factory.configuration.tags.end();
+        this.extendArray('columnalign', this.maxrow);
+        this.extendArray('columnwidth', this.maxrow);
+        this.extendArray('columnspacing', this.maxrow - 1);
+    };
+    EqnArrayItem.prototype.extendArray = function (name, max) {
+        if (!this.arraydef[name])
+            return;
+        var repeat = this.arraydef[name].split(/ /);
+        var columns = __spreadArray([], __read(repeat));
+        if (columns.length > 1) {
+            while (columns.length < max) {
+                columns.push.apply(columns, __spreadArray([], __read(repeat)));
+            }
+            this.arraydef[name] = columns.slice(0, max).join(' ');
+        }
     };
     return EqnArrayItem;
 }(ArrayItem));
@@ -809,14 +918,14 @@ var EquationItem = (function (_super) {
         get: function () {
             return 'equation';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(EquationItem.prototype, "isOpen", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     EquationItem.prototype.checkItem = function (item) {

@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -40,11 +42,14 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SVG = exports.XLINKNS = exports.SVGNS = void 0;
 var OutputJax_js_1 = require("./common/OutputJax.js");
 var WrapperFactory_js_1 = require("./svg/WrapperFactory.js");
 var tex_js_1 = require("./svg/fonts/tex.js");
 var FontCache_js_1 = require("./svg/FontCache.js");
-exports.SVGNS = "http://www.w3.org/2000/svg";
+var string_js_1 = require("../util/string.js");
+var lengths_js_1 = require("../util/lengths.js");
+exports.SVGNS = 'http://www.w3.org/2000/svg';
 exports.XLINKNS = 'http://www.w3.org/1999/xlink';
 var SVG = (function (_super) {
     __extends(SVG, _super);
@@ -53,6 +58,8 @@ var SVG = (function (_super) {
         var _this = _super.call(this, options, WrapperFactory_js_1.SVGWrapperFactory, tex_js_1.TeXFont) || this;
         _this.minwidth = 0;
         _this.shift = 0;
+        _this.container = null;
+        _this.svgStyles = null;
         _this.fontCache = new FontCache_js_1.FontCache(_this);
         return _this;
     }
@@ -64,14 +71,23 @@ var SVG = (function (_super) {
     SVG.prototype.clearFontCache = function () {
         this.fontCache.clearCache();
     };
+    SVG.prototype.reset = function () {
+        this.clearFontCache();
+    };
     SVG.prototype.setScale = function (node) {
+        if (this.options.scale !== 1) {
+            this.adaptor.setStyle(node, 'fontSize', lengths_js_1.percent(this.options.scale));
+        }
     };
     SVG.prototype.escaped = function (math, html) {
         this.setDocument(html);
         return this.html('span', {}, [this.text(math.math)]);
     };
     SVG.prototype.styleSheet = function (html) {
-        var sheet = _super.prototype.styleSheet.call(this, html);
+        if (this.svgStyles) {
+            return this.svgStyles;
+        }
+        var sheet = this.svgStyles = _super.prototype.styleSheet.call(this, html);
         this.adaptor.setAttribute(sheet, 'id', SVG.STYLESHEETID);
         return sheet;
     };
@@ -101,18 +117,20 @@ var SVG = (function (_super) {
     };
     SVG.prototype.createRoot = function (wrapper) {
         var _a = wrapper.getBBox(), w = _a.w, h = _a.h, d = _a.d, pwidth = _a.pwidth;
-        var W = Math.max(w, .001);
+        var px = wrapper.metrics.em / 1000;
+        var W = Math.max(w, px);
+        var H = Math.max(h + d, px);
         var g = this.svg('g', {
             stroke: 'currentColor', fill: 'currentColor',
-            'stroke-width': 0, transform: 'matrix(1 0 0 -1 0 0)'
+            'stroke-width': 0, transform: 'scale(1,-1)'
         });
         var adaptor = this.adaptor;
         var svg = adaptor.append(this.container, this.svg('svg', {
             xmlns: exports.SVGNS,
-            width: this.ex(W), height: this.ex(h + d),
+            width: this.ex(W), height: this.ex(H),
             role: 'img', focusable: false,
             style: { 'vertical-align': this.ex(-d) },
-            viewBox: [0, this.fixed(-h * 1000, 1), this.fixed(W * 1000, 1), this.fixed((h + d) * 1000, 1)].join(' ')
+            viewBox: [0, this.fixed(-h * 1000, 1), this.fixed(W * 1000, 1), this.fixed(H * 1000, 1)].join(' ')
         }, [g]));
         if (W === .001) {
             adaptor.setAttribute(svg, 'preserveAspectRatio', 'xMidYMid slice');
@@ -124,9 +142,8 @@ var SVG = (function (_super) {
             adaptor.setStyle(svg, 'min-width', this.ex(W));
             adaptor.setAttribute(svg, 'width', pwidth);
             adaptor.removeAttribute(svg, 'viewBox');
-            var scale = wrapper.metrics.ex / (this.font.params.x_height * 1000);
-            adaptor.setAttribute(g, 'transform', 'matrix(1 0 0 -1 0 0) scale(' +
-                this.fixed(scale, 6) + ') translate(0, ' + this.fixed(-h * 1000, 1) + ')');
+            var scale = this.fixed(wrapper.metrics.ex / (this.font.params.x_height * 1000), 6);
+            adaptor.setAttribute(g, 'transform', "scale(" + scale + ",-" + scale + ") translate(0, " + this.fixed(-h * 1000, 1) + ")");
         }
         if (this.options.fontCache !== 'none') {
             adaptor.setAttribute(svg, 'xmlns:xlink', exports.XLINKNS);
@@ -145,6 +162,7 @@ var SVG = (function (_super) {
         this.fontCache.clearLocalID();
         if (this.minwidth) {
             adaptor.setStyle(svg, 'minWidth', this.ex(this.minwidth));
+            adaptor.setStyle(this.container, 'minWidth', this.ex(this.minwidth));
         }
         else if (this.shift) {
             var align = adaptor.getAttribute(this.container, 'justify') || 'center';
@@ -173,17 +191,20 @@ var SVG = (function (_super) {
         var scale = this.font.params.x_height / metrics.ex * metrics.em * 1000;
         var svg = this.svg('text', {
             'data-variant': variant,
-            transform: 'matrix(1 0 0 -1 0 0)', 'font-size': this.fixed(scale, 1) + 'px'
+            transform: 'scale(1,-1)', 'font-size': this.fixed(scale, 1) + 'px'
         }, [this.text(text)]);
         var adaptor = this.adaptor;
         if (variant !== '-explicitFont') {
-            var _a = __read(this.font.getCssFont(variant), 3), family = _a[0], italic = _a[1], bold = _a[2];
-            adaptor.setAttribute(svg, 'font-family', family);
-            if (italic) {
-                adaptor.setAttribute(svg, 'font-style', 'italic');
-            }
-            if (bold) {
-                adaptor.setAttribute(svg, 'font-weight', 'bold');
+            var c = string_js_1.unicodeChars(text);
+            if (c.length !== 1 || c[0] < 0x1D400 || c[0] > 0x1D7FF) {
+                var _a = __read(this.font.getCssFont(variant), 3), family = _a[0], italic = _a[1], bold = _a[2];
+                adaptor.setAttribute(svg, 'font-family', family);
+                if (italic) {
+                    adaptor.setAttribute(svg, 'font-style', 'italic');
+                }
+                if (bold) {
+                    adaptor.setAttribute(svg, 'font-weight', 'bold');
+                }
             }
         }
         return svg;
@@ -204,13 +225,15 @@ var SVG = (function (_super) {
         return { w: w, h: .75, d: .2 };
     };
     SVG.NAME = 'SVG';
-    SVG.OPTIONS = __assign({}, OutputJax_js_1.CommonOutputJax.OPTIONS, { internalSpeechTitles: true, titleID: 0, fontCache: 'local', localID: null });
+    SVG.OPTIONS = __assign(__assign({}, OutputJax_js_1.CommonOutputJax.OPTIONS), { internalSpeechTitles: true, titleID: 0, fontCache: 'local', localID: null });
     SVG.commonStyles = {
         'mjx-container[jax="SVG"]': {
             direction: 'ltr'
         },
         'mjx-container[jax="SVG"] > svg': {
-            overflow: 'visible'
+            overflow: 'visible',
+            'min-height': '1px',
+            'min-width': '1px'
         },
         'mjx-container[jax="SVG"] > svg a': {
             fill: 'blue', stroke: 'blue'

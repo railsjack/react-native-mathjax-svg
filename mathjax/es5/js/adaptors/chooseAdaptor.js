@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.chooseAdaptor = void 0;
 var liteAdaptor_js_1 = require("./liteAdaptor.js");
 var browserAdaptor_js_1 = require("./browserAdaptor.js");
 var choose;

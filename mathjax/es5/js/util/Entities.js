@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.numeric = exports.translate = exports.remove = exports.add = exports.entities = exports.options = void 0;
 var Retries_js_1 = require("./Retries.js");
 var AsyncLoad_js_1 = require("./AsyncLoad.js");
 exports.options = {
@@ -408,7 +409,10 @@ exports.entities = {
     xi: '\u03BE',
     yen: '\u00A5',
     zeta: '\u03B6',
-    zigrarr: '\u21DD'
+    zigrarr: '\u21DD',
+    nbsp: '\u00A0',
+    rsquo: '\u2019',
+    lsquo: '\u2018'
 };
 var loaded = {};
 function add(additions, file) {
@@ -444,13 +448,7 @@ function numeric(entity) {
     var n = (entity.charAt(0) === 'x' ?
         parseInt(entity.slice(1), 16) :
         parseInt(entity));
-    if (n < 0x10000) {
-        return String.fromCharCode(n);
-    }
-    n -= 0x10000;
-    var hi = (n >> 10) + 0xD800;
-    var lo = (n & 0x3FF) + 0xDC00;
-    return String.fromCharCode(hi, lo);
+    return String.fromCodePoint(n);
 }
 exports.numeric = numeric;
 //# sourceMappingURL=Entities.js.map

@@ -3,47 +3,36 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Magnifier = exports.SpeechExplorer = exports.AbstractKeyExplorer = void 0;
 var Explorer_js_1 = require("./Explorer.js");
 var sre_js_1 = require("../sre.js");
 var AbstractKeyExplorer = (function (_super) {
     __extends(AbstractKeyExplorer, _super);
     function AbstractKeyExplorer() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.attached = false;
+        _this.eventsAttached = false;
         _this.events = _super.prototype.Events.call(_this).concat([['keydown', _this.KeyDown.bind(_this)],
             ['focusin', _this.FocusIn.bind(_this)],
             ['focusout', _this.FocusOut.bind(_this)]]);
         _this.oldIndex = null;
         return _this;
     }
-    AbstractKeyExplorer.prototype.FocusIn = function (event) {
+    AbstractKeyExplorer.prototype.FocusIn = function (_event) {
     };
-    AbstractKeyExplorer.prototype.FocusOut = function (event) {
+    AbstractKeyExplorer.prototype.FocusOut = function (_event) {
         this.Stop();
     };
     AbstractKeyExplorer.prototype.Update = function (force) {
@@ -51,19 +40,33 @@ var AbstractKeyExplorer = (function (_super) {
         if (!this.active && !force)
             return;
         this.highlighter.unhighlight();
-        this.highlighter.highlight(this.walker.getFocus(true).getNodes());
+        var nodes = this.walker.getFocus(true).getNodes();
+        if (!nodes.length) {
+            this.walker.refocus();
+            nodes = this.walker.getFocus().getNodes();
+        }
+        this.highlighter.highlight(nodes);
     };
     AbstractKeyExplorer.prototype.Attach = function () {
         _super.prototype.Attach.call(this);
+        this.attached = true;
         this.oldIndex = this.node.tabIndex;
         this.node.tabIndex = 1;
         this.node.setAttribute('role', 'application');
     };
+    AbstractKeyExplorer.prototype.AddEvents = function () {
+        if (!this.eventsAttached) {
+            _super.prototype.AddEvents.call(this);
+            this.eventsAttached = true;
+        }
+    };
     AbstractKeyExplorer.prototype.Detach = function () {
-        this.node.tabIndex = this.oldIndex;
-        this.oldIndex = null;
-        this.node.removeAttribute('role');
-        _super.prototype.Detach.call(this);
+        if (this.active) {
+            this.node.tabIndex = this.oldIndex;
+            this.oldIndex = null;
+            this.node.removeAttribute('role');
+        }
+        this.attached = false;
     };
     AbstractKeyExplorer.prototype.Stop = function () {
         if (this.active) {
@@ -91,16 +94,23 @@ var SpeechExplorer = (function (_super) {
     }
     SpeechExplorer.prototype.Start = function () {
         var _this = this;
+        if (!this.attached)
+            return;
+        var options = this.getOptions();
         if (!this.init) {
             this.init = true;
-            sre_js_1.sreReady.then(function () {
-                _this.Speech(_this.walker);
-                _this.Start();
+            sre_js_1.sreReady().then(function () {
+                if (SRE.engineSetup().locale !== options.locale) {
+                    SRE.setupEngine({ locale: options.locale });
+                }
+                sre_js_1.sreReady().then(function () {
+                    _this.Speech(_this.walker);
+                    _this.Start();
+                });
             }).catch(function (error) { return console.log(error.message); });
             return;
         }
         _super.prototype.Start.call(this);
-        var options = this.getOptions();
         this.speechGenerator = sre.SpeechGeneratorFactory.generator('Direct');
         this.speechGenerator.setOptions(options);
         this.walker = sre.WalkerFactory.walker('table', this.node, this.speechGenerator, this.highlighter, this.mml);
@@ -114,14 +124,19 @@ var SpeechExplorer = (function (_super) {
     SpeechExplorer.prototype.Update = function (force) {
         if (force === void 0) { force = false; }
         _super.prototype.Update.call(this, force);
-        this.region.Update(this.walker.speech());
         var options = this.speechGenerator.getOptions();
+        SRE.setupEngine({ modality: options.modality,
+            locale: options.locale });
+        this.region.Update(this.walker.speech());
         if (options.modality === 'speech') {
-            this.document.options.a11y.speechRules = options.domain + '-' + options.style;
+            this.document.options.sre.domain = options.domain;
+            this.document.options.sre.style = options.style;
+            this.document.options.a11y.speechRules =
+                options.domain + '-' + options.style;
         }
     };
     SpeechExplorer.prototype.Speech = function (walker) {
-        var speech = walker.speech();
+        walker.speech();
         this.node.setAttribute('hasspeech', 'true');
         this.Update();
         if (this.restarted && this.document.options.a11y[this.showRegion]) {
@@ -130,6 +145,7 @@ var SpeechExplorer = (function (_super) {
     };
     SpeechExplorer.prototype.KeyDown = function (event) {
         var code = event.keyCode;
+        this.walker.modifier = event.shiftKey;
         if (code === 27) {
             this.Stop();
             this.stopEvent(event);
@@ -137,6 +153,8 @@ var SpeechExplorer = (function (_super) {
         }
         if (this.active) {
             this.Move(code);
+            if (this.triggerLink(code))
+                return;
             this.stopEvent(event);
             return;
         }
@@ -144,6 +162,19 @@ var SpeechExplorer = (function (_super) {
             this.Start();
             this.stopEvent(event);
         }
+    };
+    SpeechExplorer.prototype.triggerLink = function (code) {
+        var _a, _b;
+        if (code !== 13) {
+            return false;
+        }
+        var node = (_a = this.walker.getFocus().getNodes()) === null || _a === void 0 ? void 0 : _a[0];
+        var focus = (_b = node === null || node === void 0 ? void 0 : node.getAttribute('data-semantic-postfix')) === null || _b === void 0 ? void 0 : _b.match(/(^| )link($| )/);
+        if (focus) {
+            node.parentNode.dispatchEvent(new MouseEvent('click'));
+            return true;
+        }
+        return false;
     };
     SpeechExplorer.prototype.Move = function (key) {
         this.walker.move(key);
@@ -156,11 +187,14 @@ var SpeechExplorer = (function (_super) {
     };
     SpeechExplorer.prototype.getOptions = function () {
         var options = this.speechGenerator.getOptions();
-        var _a = __read(this.document.options.a11y.speechRules.split('-'), 2), domain = _a[0], style = _a[1];
+        var sreOptions = this.document.options.sre;
         if (options.modality === 'speech' &&
-            (options.domain !== domain || options.style !== style)) {
-            options.domain = domain;
-            options.style = style;
+            (options.locale !== sreOptions.locale ||
+                options.domain !== sreOptions.domain ||
+                options.style !== sreOptions.style)) {
+            options.domain = sreOptions.domain;
+            options.style = sreOptions.style;
+            options.locale = sreOptions.locale;
             this.walker.update(options);
         }
         return options;
@@ -186,6 +220,8 @@ var Magnifier = (function (_super) {
     };
     Magnifier.prototype.Start = function () {
         _super.prototype.Start.call(this);
+        if (!this.attached)
+            return;
         this.region.Show(this.node, this.highlighter);
         this.walker.activate();
         this.Update();
@@ -202,6 +238,7 @@ var Magnifier = (function (_super) {
     };
     Magnifier.prototype.KeyDown = function (event) {
         var code = event.keyCode;
+        this.walker.modifier = event.shiftKey;
         if (code === 27) {
             this.Stop();
             this.stopEvent(event);

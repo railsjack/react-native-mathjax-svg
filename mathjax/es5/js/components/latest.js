@@ -1,13 +1,14 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -26,6 +27,7 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.loadLatest = void 0;
 var CDN = new Map([
     ['cdnjs.cloudflare.com', {
             api: 'https://api.cdnjs.com/libraries/mathjax?fields=version',
@@ -212,6 +214,7 @@ function getXMLHttpRequest() {
         }
         catch (err) { }
     }
+    return null;
 }
 function requestXML(cdn, action, failure) {
     var request = getXMLHttpRequest();
@@ -239,7 +242,7 @@ function loadLatestGitVersion() {
     requestXML(GITHUB, function (json) {
         var e_3, _a;
         if (!(json instanceof Array))
-            return;
+            return false;
         try {
             for (var json_1 = __values(json), json_1_1 = json_1.next(); !json_1_1.done; json_1_1 = json_1.next()) {
                 var data = json_1_1.value;

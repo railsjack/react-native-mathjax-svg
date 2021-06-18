@@ -3,24 +3,27 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -38,7 +41,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractMathDocument = exports.resetAllOptions = exports.resetOptions = exports.RenderList = void 0;
 var Options_js_1 = require("../util/Options.js");
 var InputJax_js_1 = require("./InputJax.js");
 var OutputJax_js_1 = require("./OutputJax.js");
@@ -190,12 +199,24 @@ var RenderList = (function (_super) {
     return RenderList;
 }(PrioritizedList_js_1.PrioritizedList));
 exports.RenderList = RenderList;
+exports.resetOptions = {
+    all: false,
+    processed: false,
+    inputJax: null,
+    outputJax: null
+};
+exports.resetAllOptions = {
+    all: true,
+    processed: true,
+    inputJax: [],
+    outputJax: []
+};
 var DefaultInputJax = (function (_super) {
     __extends(DefaultInputJax, _super);
     function DefaultInputJax() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    DefaultInputJax.prototype.compile = function (math) {
+    DefaultInputJax.prototype.compile = function (_math) {
         return null;
     };
     return DefaultInputJax;
@@ -205,11 +226,11 @@ var DefaultOutputJax = (function (_super) {
     function DefaultOutputJax() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    DefaultOutputJax.prototype.typeset = function (math, document) {
-        if (document === void 0) { document = null; }
+    DefaultOutputJax.prototype.typeset = function (_math, _document) {
+        if (_document === void 0) { _document = null; }
         return null;
     };
-    DefaultOutputJax.prototype.escaped = function (math, document) {
+    DefaultOutputJax.prototype.escaped = function (_math, _document) {
         return null;
     };
     return DefaultOutputJax;
@@ -255,7 +276,7 @@ var AbstractMathDocument = (function () {
         get: function () {
             return this.constructor.KIND;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractMathDocument.prototype.addRenderAction = function (id) {
@@ -286,8 +307,8 @@ var AbstractMathDocument = (function () {
         if (options === void 0) { options = {}; }
         var _a = Options_js_1.userOptions({
             format: this.inputJax[0].name, display: true, end: MathItem_js_1.STATE.LAST,
-            em: 16, ex: 8, containerWidth: null, lineWidth: 1000000, scale: 1
-        }, options), format = _a.format, display = _a.display, end = _a.end, ex = _a.ex, em = _a.em, containerWidth = _a.containerWidth, lineWidth = _a.lineWidth, scale = _a.scale;
+            em: 16, ex: 8, containerWidth: null, lineWidth: 1000000, scale: 1, family: ''
+        }, options), format = _a.format, display = _a.display, end = _a.end, ex = _a.ex, em = _a.em, containerWidth = _a.containerWidth, lineWidth = _a.lineWidth, scale = _a.scale, family = _a.family;
         if (containerWidth === null) {
             containerWidth = 80 * ex;
         }
@@ -295,11 +316,17 @@ var AbstractMathDocument = (function () {
         var mitem = new this.options.MathItem(math, jax, display);
         mitem.start.node = this.adaptor.body(this.document);
         mitem.setMetrics(em, ex, containerWidth, lineWidth, scale);
+        if (this.outputJax.options.mtextInheritFont) {
+            mitem.outputData.mtextFamily = family;
+        }
+        if (this.outputJax.options.merrorInheritFont) {
+            mitem.outputData.merrorFamily = family;
+        }
         mitem.convert(this, end);
         return (mitem.typesetRoot || mitem.root);
     };
-    AbstractMathDocument.prototype.findMath = function (options) {
-        if (options === void 0) { options = null; }
+    AbstractMathDocument.prototype.findMath = function (_options) {
+        if (_options === void 0) { _options = null; }
         this.processed.set('findMath');
         return this;
     };
@@ -357,7 +384,7 @@ var AbstractMathDocument = (function () {
     };
     AbstractMathDocument.prototype.compileError = function (math, err) {
         math.root = this.mmlFactory.create('math', null, [
-            this.mmlFactory.create('merror', { 'data-mjx-error': err.message }, [
+            this.mmlFactory.create('merror', { 'data-mjx-error': err.message, title: err.message }, [
                 this.mmlFactory.create('mtext', null, [
                     this.mmlFactory.create('text').setText('Math input error')
                 ])
@@ -366,6 +393,7 @@ var AbstractMathDocument = (function () {
         if (math.display) {
             math.root.attributes.set('display', 'block');
         }
+        math.inputData.error = err.message;
     };
     AbstractMathDocument.prototype.typeset = function () {
         var e_8, _a;
@@ -397,7 +425,32 @@ var AbstractMathDocument = (function () {
         return this;
     };
     AbstractMathDocument.prototype.typesetError = function (math, err) {
-        math.typesetRoot = this.adaptor.node('span', { 'data-mjx-error': err.message }, [this.adaptor.text('Math output error')]);
+        math.typesetRoot = this.adaptor.node('mjx-container', {
+            class: 'MathJax mjx-output-error',
+            jax: this.outputJax.name,
+        }, [
+            this.adaptor.node('span', {
+                'data-mjx-error': err.message,
+                title: err.message,
+                style: {
+                    color: 'red',
+                    'background-color': 'yellow',
+                    'line-height': 'normal'
+                }
+            }, [
+                this.adaptor.text('Math output error')
+            ])
+        ]);
+        if (math.display) {
+            this.adaptor.setAttributes(math.typesetRoot, {
+                style: {
+                    display: 'block',
+                    margin: '1em 0',
+                    'text-align': 'center'
+                }
+            });
+        }
+        math.outputData.error = err.message;
     };
     AbstractMathDocument.prototype.getMetrics = function () {
         if (!this.processed.isSet('getMetrics')) {
@@ -426,8 +479,8 @@ var AbstractMathDocument = (function () {
         }
         return this;
     };
-    AbstractMathDocument.prototype.removeFromDocument = function (restore) {
-        if (restore === void 0) { restore = false; }
+    AbstractMathDocument.prototype.removeFromDocument = function (_restore) {
+        if (_restore === void 0) { _restore = false; }
         return this;
     };
     AbstractMathDocument.prototype.state = function (state, restore) {
@@ -458,8 +511,14 @@ var AbstractMathDocument = (function () {
         }
         return this;
     };
-    AbstractMathDocument.prototype.reset = function () {
-        this.processed.reset();
+    AbstractMathDocument.prototype.reset = function (options) {
+        var _a;
+        if (options === void 0) { options = { processed: true }; }
+        options = Options_js_1.userOptions(Object.assign({}, exports.resetOptions), options);
+        options.all && Object.assign(options, exports.resetAllOptions);
+        options.processed && this.processed.reset();
+        options.inputJax && this.inputJax.forEach(function (jax) { return jax.reset.apply(jax, __spreadArray([], __read(options.inputJax))); });
+        options.outputJax && (_a = this.outputJax).reset.apply(_a, __spreadArray([], __read(options.outputJax)));
         return this;
     };
     AbstractMathDocument.prototype.clear = function () {
@@ -470,6 +529,50 @@ var AbstractMathDocument = (function () {
     AbstractMathDocument.prototype.concat = function (list) {
         this.math.merge(list);
         return this;
+    };
+    AbstractMathDocument.prototype.clearMathItemsWithin = function (containers) {
+        var _a;
+        var items = this.getMathItemsWithin(containers);
+        (_a = this.math).remove.apply(_a, __spreadArray([], __read(items)));
+        return items;
+    };
+    AbstractMathDocument.prototype.getMathItemsWithin = function (elements) {
+        var e_11, _a, e_12, _b;
+        if (!Array.isArray(elements)) {
+            elements = [elements];
+        }
+        var adaptor = this.adaptor;
+        var items = [];
+        var containers = adaptor.getElements(elements, this.document);
+        try {
+            ITEMS: for (var _c = __values(this.math), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var item = _d.value;
+                try {
+                    for (var containers_1 = (e_12 = void 0, __values(containers)), containers_1_1 = containers_1.next(); !containers_1_1.done; containers_1_1 = containers_1.next()) {
+                        var container = containers_1_1.value;
+                        if (item.start.node && adaptor.contains(container, item.start.node)) {
+                            items.push(item);
+                            continue ITEMS;
+                        }
+                    }
+                }
+                catch (e_12_1) { e_12 = { error: e_12_1 }; }
+                finally {
+                    try {
+                        if (containers_1_1 && !containers_1_1.done && (_b = containers_1.return)) _b.call(containers_1);
+                    }
+                    finally { if (e_12) throw e_12.error; }
+                }
+            }
+        }
+        catch (e_11_1) { e_11 = { error: e_11_1 }; }
+        finally {
+            try {
+                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+            }
+            finally { if (e_11) throw e_11.error; }
+        }
+        return items;
     };
     AbstractMathDocument.KIND = 'MathDocument';
     AbstractMathDocument.OPTIONS = {
@@ -485,10 +588,7 @@ var AbstractMathDocument = (function () {
             doc.typesetError(math, err);
         },
         renderActions: Options_js_1.expandable({
-            find: [MathItem_js_1.STATE.FINDMATH, function (document) {
-                    var elements = document.options.elements;
-                    document.findMath(elements ? { elements: elements } : {});
-                }, function () { }, false],
+            find: [MathItem_js_1.STATE.FINDMATH, 'findMath', '', false],
             compile: [MathItem_js_1.STATE.COMPILED],
             metrics: [MathItem_js_1.STATE.METRICS, 'getMetrics', '', false],
             typeset: [MathItem_js_1.STATE.TYPESET],
@@ -499,5 +599,4 @@ var AbstractMathDocument = (function () {
     return AbstractMathDocument;
 }());
 exports.AbstractMathDocument = AbstractMathDocument;
-;
 //# sourceMappingURL=MathDocument.js.map

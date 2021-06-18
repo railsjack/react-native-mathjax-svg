@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RegisterHTMLHandler = void 0;
 var mathjax_js_1 = require("../mathjax.js");
 var HTMLHandler_js_1 = require("./html/HTMLHandler.js");
 function RegisterHTMLHandler(adaptor) {

@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -29,6 +31,7 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommonMpaddedMixin = void 0;
 function CommonMpaddedMixin(Base) {
     return (function (_super) {
         __extends(class_1, _super);
@@ -74,16 +77,16 @@ function CommonMpaddedMixin(Base) {
         };
         class_1.prototype.computeBBox = function (bbox, recompute) {
             if (recompute === void 0) { recompute = false; }
-            var _a = __read(this.getDimens(), 8), H = _a[0], D = _a[1], W = _a[2], dh = _a[3], dd = _a[4], dw = _a[5], x = _a[6], y = _a[7];
+            var _a = __read(this.getDimens(), 6), H = _a[0], D = _a[1], W = _a[2], dh = _a[3], dd = _a[4], dw = _a[5];
             bbox.w = W + dw;
             bbox.h = H + dh;
             bbox.d = D + dd;
             this.setChildPWidths(recompute, bbox.w);
         };
-        class_1.prototype.getWrapWidth = function (i) {
+        class_1.prototype.getWrapWidth = function (_i) {
             return this.getBBox().w;
         };
-        class_1.prototype.getChildAlign = function (i) {
+        class_1.prototype.getChildAlign = function (_i) {
             return this.node.attributes.get('data-align') || 'left';
         };
         return class_1;

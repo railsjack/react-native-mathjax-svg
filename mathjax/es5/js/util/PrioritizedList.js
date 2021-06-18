@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.PrioritizedList = void 0;
 var PrioritizedList = (function () {
     function PrioritizedList() {
         this.items = [];
@@ -31,9 +32,6 @@ var PrioritizedList = (function () {
         if (i >= 0) {
             this.items.splice(i, 1);
         }
-    };
-    PrioritizedList.prototype.toArray = function () {
-        return Array.from(this);
     };
     PrioritizedList.DEFAULTPRIORITY = 5;
     return PrioritizedList;

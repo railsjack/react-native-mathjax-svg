@@ -3,26 +3,30 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TeXFont = void 0;
 var FontData_js_1 = require("../FontData.js");
 var tex_js_1 = require("../../common/fonts/tex.js");
 var bold_italic_js_1 = require("./tex/bold-italic.js");
@@ -52,9 +56,10 @@ var tex_variant_js_1 = require("./tex/tex-variant.js");
 var delimiters_js_1 = require("../../common/fonts/tex/delimiters.js");
 var TeXFont = (function (_super) {
     __extends(TeXFont, _super);
-    function TeXFont() {
+    function TeXFont(options) {
         var e_1, _a;
-        var _this = _super.call(this) || this;
+        if (options === void 0) { options = null; }
+        var _this = _super.call(this, options) || this;
         var CLASS = _this.constructor;
         try {
             for (var _b = __values(Object.keys(CLASS.variantCacheIds)), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -85,7 +90,7 @@ var TeXFont = (function (_super) {
         'sans-serif': sans_serif_js_1.sansSerif,
         'bold-sans-serif': sans_serif_bold_js_1.sansSerifBold,
         'sans-serif-italic': sans_serif_italic_js_1.sansSerifItalic,
-        'bold-sans-serif-italic': sans_serif_bold_italic_js_1.sansSerifBoldItalic,
+        'sans-serif-bold-italic': sans_serif_bold_italic_js_1.sansSerifBoldItalic,
         'monospace': monospace_js_1.monospace,
         '-smallop': smallop_js_1.smallop,
         '-largeop': largeop_js_1.largeop,
@@ -111,7 +116,7 @@ var TeXFont = (function (_super) {
         'sans-serif': 'SS',
         'bold-sans-serif': 'BSS',
         'sans-serif-italic': 'SSI',
-        'bold-sans-serif-italic': 'BSSI',
+        'sans-serif-bold-italic': 'SSBI',
         'monospace': 'M',
         '-smallop': 'SO',
         '-largeop': 'LO',

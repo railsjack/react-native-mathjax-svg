@@ -1,13 +1,14 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -25,9 +26,10 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var ParseUtil_js_1 = require("./ParseUtil.js");
@@ -71,21 +73,21 @@ var TexParser = (function () {
         get: function () {
             return this.configuration.options;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TexParser.prototype, "itemFactory", {
         get: function () {
             return this.configuration.itemFactory;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TexParser.prototype, "tags", {
         get: function () {
             return this.configuration.tags;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(TexParser.prototype, "string", {
@@ -95,7 +97,7 @@ var TexParser = (function () {
         set: function (str) {
             this._string = str;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     TexParser.prototype.parse = function (kind, input) {
@@ -128,13 +130,9 @@ var TexParser = (function () {
     };
     TexParser.prototype.Parse = function () {
         var c;
-        var n;
         while (this.i < this.string.length) {
-            c = this.string.charAt(this.i++);
-            n = c.charCodeAt(0);
-            if (n >= 0xD800 && n < 0xDC00) {
-                c += this.string.charAt(this.i++);
-            }
+            c = this.getCodePoint();
+            this.i += c.length;
             this.parse('character', [this, c]);
         }
     };
@@ -174,27 +172,31 @@ var TexParser = (function () {
         var symbol = this.lookup('delimiter', c);
         return symbol ? symbol.char : null;
     };
+    TexParser.prototype.getCodePoint = function () {
+        var code = this.string.codePointAt(this.i);
+        return code === undefined ? '' : String.fromCodePoint(code);
+    };
     TexParser.prototype.nextIsSpace = function () {
-        return this.string.charAt(this.i).match(/\s/);
+        return !!this.string.charAt(this.i).match(/\s/);
     };
     TexParser.prototype.GetNext = function () {
         while (this.nextIsSpace()) {
             this.i++;
         }
-        return this.string.charAt(this.i);
+        return this.getCodePoint();
     };
     TexParser.prototype.GetCS = function () {
-        var CS = this.string.slice(this.i).match(/^([a-z]+|.) ?/i);
+        var CS = this.string.slice(this.i).match(/^(([a-z]+) ?|[\uD800-\uDBFF].|.)/i);
         if (CS) {
-            this.i += CS[1].length;
-            return CS[1];
+            this.i += CS[0].length;
+            return CS[2] || CS[1];
         }
         else {
             this.i++;
             return ' ';
         }
     };
-    TexParser.prototype.GetArgument = function (name, noneOK) {
+    TexParser.prototype.GetArgument = function (_name, noneOK) {
         switch (this.GetNext()) {
             case '':
                 if (!noneOK) {
@@ -228,9 +230,11 @@ var TexParser = (function () {
                 }
                 throw new TexError_js_1.default('MissingCloseBrace', 'Missing close brace');
         }
-        return this.string.charAt(this.i++);
+        var c = this.getCodePoint();
+        this.i += c.length;
+        return c;
     };
-    TexParser.prototype.GetBrackets = function (name, def) {
+    TexParser.prototype.GetBrackets = function (_name, def) {
         if (this.GetNext() !== '[') {
             return def;
         }
@@ -258,18 +262,15 @@ var TexParser = (function () {
         throw new TexError_js_1.default('MissingCloseBracket', 'Could not find closing \']\' for argument to %1', this.currentCS);
     };
     TexParser.prototype.GetDelimiter = function (name, braceOK) {
-        while (this.nextIsSpace()) {
-            this.i++;
-        }
-        var c = this.string.charAt(this.i);
-        this.i++;
+        var c = this.GetNext();
+        this.i += c.length;
         if (this.i <= this.string.length) {
             if (c === '\\') {
                 c += this.GetCS();
             }
             else if (c === '{' && braceOK) {
                 this.i--;
-                c = this.GetArgument(name);
+                c = this.GetArgument(name).trim();
             }
             if (this.contains('delimiter', c)) {
                 return this.convertDelimiter(c);
@@ -278,12 +279,9 @@ var TexParser = (function () {
         throw new TexError_js_1.default('MissingOrUnrecognizedDelim', 'Missing or unrecognized delimiter for %1', this.currentCS);
     };
     TexParser.prototype.GetDimen = function (name) {
-        if (this.nextIsSpace()) {
-            this.i++;
-        }
-        if (this.string.charAt(this.i) === '{') {
+        if (this.GetNext() === '{') {
             var dimen = this.GetArgument(name);
-            var _a = __read(ParseUtil_js_1.default.matchDimen(dimen), 3), value = _a[0], unit = _a[1], _ = _a[2];
+            var _a = __read(ParseUtil_js_1.default.matchDimen(dimen), 2), value = _a[0], unit = _a[1];
             if (value) {
                 return value + unit;
             }
@@ -298,7 +296,7 @@ var TexParser = (function () {
         }
         throw new TexError_js_1.default('MissingDimOrUnits', 'Missing dimension or its units for %1', this.currentCS);
     };
-    TexParser.prototype.GetUpTo = function (name, token) {
+    TexParser.prototype.GetUpTo = function (_name, token) {
         while (this.nextIsSpace()) {
             this.i++;
         }
@@ -306,7 +304,8 @@ var TexParser = (function () {
         var parens = 0;
         while (this.i < this.string.length) {
             var k = this.i;
-            var c = this.string.charAt(this.i++);
+            var c = this.GetNext();
+            this.i += c.length;
             switch (c) {
                 case '\\':
                     c += this.GetCS();
@@ -356,7 +355,7 @@ var TexParser = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             rest[_i - 1] = arguments[_i];
         }
-        return (_a = this.configuration.nodeFactory).create.apply(_a, __spread([kind], rest));
+        return (_a = this.configuration.nodeFactory).create.apply(_a, __spreadArray([kind], __read(rest)));
     };
     return TexParser;
 }());

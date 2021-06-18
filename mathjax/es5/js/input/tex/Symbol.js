@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Macro = exports.Symbol = void 0;
 var Symbol = (function () {
     function Symbol(_symbol, _char, _attributes) {
         this._symbol = _symbol;
@@ -10,27 +11,26 @@ var Symbol = (function () {
         get: function () {
             return this._symbol;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Symbol.prototype, "char", {
         get: function () {
             return this._char;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Symbol.prototype, "attributes", {
         get: function () {
             return this._attributes;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return Symbol;
 }());
 exports.Symbol = Symbol;
-;
 var Macro = (function () {
     function Macro(_symbol, _func, _args) {
         if (_args === void 0) { _args = []; }
@@ -42,25 +42,24 @@ var Macro = (function () {
         get: function () {
             return this._symbol;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Macro.prototype, "func", {
         get: function () {
             return this._func;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Macro.prototype, "args", {
         get: function () {
             return this._args;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return Macro;
 }());
 exports.Macro = Macro;
-;
 //# sourceMappingURL=Symbol.js.map

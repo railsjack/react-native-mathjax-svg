@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23,15 +25,16 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -49,11 +52,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EnrichHandler = exports.EnrichedMathDocumentMixin = exports.EnrichedMathItemMixin = void 0;
 var mathjax_js_1 = require("../mathjax.js");
 var MathItem_js_1 = require("../core/MathItem.js");
 var SerializedMmlVisitor_js_1 = require("../core/MmlTree/SerializedMmlVisitor.js");
@@ -79,22 +84,31 @@ function EnrichedMathItemMixin(BaseMathItem, MmlJax, toMathML) {
             }
             return node.toString();
         };
-        class_1.prototype.enrich = function (document) {
+        class_1.prototype.enrich = function (document, force) {
+            if (force === void 0) { force = false; }
             if (this.state() >= MathItem_js_1.STATE.ENRICHED)
                 return;
-            if (typeof sre === 'undefined' || !sre.Engine.isReady()) {
-                mathjax_js_1.mathjax.retryAfter(sre_js_1.sreReady);
+            if (!this.isEscaped && (document.options.enableEnrichment || force)) {
+                if (typeof sre === 'undefined' || !sre.Engine.isReady()) {
+                    mathjax_js_1.mathjax.retryAfter(sre_js_1.sreReady());
+                }
+                if (document.options.sre.speech !== currentSpeech) {
+                    SRE.setupEngine(document.options.sre);
+                    currentSpeech = document.options.sre.speech;
+                }
+                var math = new document.options.MathItem('', MmlJax);
+                try {
+                    var mml = this.inputData.originalMml = toMathML(this.root);
+                    math.math = this.serializeMml(SRE.toEnriched(mml));
+                    math.display = this.display;
+                    math.compile(document);
+                    this.root = math.root;
+                    this.inputData.enrichedMml = math.math;
+                }
+                catch (err) {
+                    document.options.enrichError(document, this, err);
+                }
             }
-            if (document.options.enrichSpeech !== currentSpeech) {
-                SRE.setupEngine({ speech: document.options.enrichSpeech });
-                currentSpeech = document.options.enrichSpeech;
-            }
-            var math = new document.options.MathItem('', MmlJax);
-            math.math = this.serializeMml(SRE.toEnriched(toMathML(this.root)));
-            math.display = this.display;
-            math.compile(document);
-            this.root = math.root;
-            this.inputData.originalMml = math.math;
             this.state(MathItem_js_1.STATE.ENRICHED);
         };
         class_1.prototype.attachSpeech = function (document) {
@@ -128,7 +142,7 @@ function EnrichedMathItemMixin(BaseMathItem, MmlJax, toMathML) {
             var e_2, _a;
             var attributes = node.attributes;
             if (!attributes)
-                return;
+                return '';
             var speech = attributes.getExplicit('data-semantic-speech');
             if (!attributes.getExplicit('data-semantic-parent') && speech) {
                 return speech;
@@ -149,6 +163,7 @@ function EnrichedMathItemMixin(BaseMathItem, MmlJax, toMathML) {
                 }
                 finally { if (e_2) throw e_2.error; }
             }
+            return '';
         };
         return class_1;
     }(BaseMathItem));
@@ -163,7 +178,7 @@ function EnrichedMathDocumentMixin(BaseDocument, MmlJax) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
                 }
-                var _this = _super.apply(this, __spread(args)) || this;
+                var _this = _super.apply(this, __spreadArray([], __read(args))) || this;
                 MmlJax.setMmlFactory(_this.mmlFactory);
                 var ProcessBits = _this.constructor.ProcessBits;
                 if (!ProcessBits.has('enriched')) {
@@ -199,22 +214,27 @@ function EnrichedMathDocumentMixin(BaseDocument, MmlJax) {
             class_2.prototype.enrich = function () {
                 var e_4, _a;
                 if (!this.processed.isSet('enriched')) {
-                    try {
-                        for (var _b = __values(this.math), _c = _b.next(); !_c.done; _c = _b.next()) {
-                            var math = _c.value;
-                            math.enrich(this);
-                        }
-                    }
-                    catch (e_4_1) { e_4 = { error: e_4_1 }; }
-                    finally {
+                    if (this.options.enableEnrichment) {
                         try {
-                            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                            for (var _b = __values(this.math), _c = _b.next(); !_c.done; _c = _b.next()) {
+                                var math = _c.value;
+                                math.enrich(this);
+                            }
                         }
-                        finally { if (e_4) throw e_4.error; }
+                        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                        finally {
+                            try {
+                                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                            }
+                            finally { if (e_4) throw e_4.error; }
+                        }
                     }
                     this.processed.set('enriched');
                 }
                 return this;
+            };
+            class_2.prototype.enrichError = function (_doc, _math, err) {
+                console.warn('Enrichment error:', err);
             };
             class_2.prototype.state = function (state, restore) {
                 if (restore === void 0) { restore = false; }
@@ -226,7 +246,12 @@ function EnrichedMathDocumentMixin(BaseDocument, MmlJax) {
             };
             return class_2;
         }(BaseDocument)),
-        _a.OPTIONS = __assign({}, BaseDocument.OPTIONS, { enrichSpeech: 'none', renderActions: Options_js_1.expandable(__assign({}, BaseDocument.OPTIONS.renderActions, { enrich: [MathItem_js_1.STATE.ENRICHED], attachSpeech: [MathItem_js_1.STATE.ATTACHSPEECH] })) }),
+        _a.OPTIONS = __assign(__assign({}, BaseDocument.OPTIONS), { enableEnrichment: true, enrichError: function (doc, math, err) { return doc.enrichError(doc, math, err); }, renderActions: Options_js_1.expandable(__assign(__assign({}, BaseDocument.OPTIONS.renderActions), { enrich: [MathItem_js_1.STATE.ENRICHED], attachSpeech: [MathItem_js_1.STATE.ATTACHSPEECH] })), sre: Options_js_1.expandable({
+                speech: 'none',
+                domain: 'mathspeak',
+                style: 'default',
+                locale: 'en'
+            }) }),
         _a;
 }
 exports.EnrichedMathDocumentMixin = EnrichedMathDocumentMixin;

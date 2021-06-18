@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractFindMath = void 0;
 var Options_js_1 = require("../util/Options.js");
 var AbstractFindMath = (function () {
     function AbstractFindMath(options) {

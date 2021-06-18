@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TexConstant = void 0;
 var TexConstant;
 (function (TexConstant) {
     TexConstant.Variant = {
@@ -22,7 +23,10 @@ var TexConstant;
         LOOPED: 'looped',
         STRETCHED: 'stretched',
         CALLIGRAPHIC: '-tex-calligraphic',
-        OLDSTYLE: '-tex-oldstyle'
+        BOLDCALLIGRAPHIC: '-tex-bold-calligraphic',
+        OLDSTYLE: '-tex-oldstyle',
+        BOLDOLDSTYLE: '-tex-bold-oldstyle',
+        MATHITALIC: '-tex-mathit'
     };
     TexConstant.Form = {
         PREFIX: 'prefix',
@@ -107,22 +111,6 @@ var TexConstant;
         STATUSLINE: 'statusline',
         TOOLTIP: 'tooltip',
         INPUT: 'input'
-    };
-    TexConstant.Length = {
-        VERYVERYTHINMATHSPACE: 'veryverythinmathspace',
-        VERYTHINMATHSPACE: 'verythinmathspace',
-        THINMATHSPACE: 'thinmathspace',
-        MEDIUMMATHSPACE: 'mediummathspace',
-        THICKMATHSPACE: 'thickmathspace',
-        VERYTHICKMATHSPACE: 'verythickmathspace',
-        VERYVERYTHICKMATHSPACE: 'veryverythickmathspace',
-        NEGATIVEVERYVERYTHINMATHSPACE: 'negativeveryverythinmathspace',
-        NEGATIVEVERYTHINMATHSPACE: 'negativeverythinmathspace',
-        NEGATIVETHINMATHSPACE: 'negativethinmathspace',
-        NEGATIVEMEDIUMMATHSPACE: 'negativemediummathspace',
-        NEGATIVETHICKMATHSPACE: 'negativethickmathspace',
-        NEGATIVEVERYTHICKMATHSPACE: 'negativeverythickmathspace',
-        NEGATIVEVERYVERYTHICKMATHSPACE: 'negativeveryverythickmathspace'
     };
     TexConstant.Overflow = {
         LINBREAK: 'linebreak',

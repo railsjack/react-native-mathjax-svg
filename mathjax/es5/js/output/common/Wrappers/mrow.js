@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -28,22 +30,25 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var BBox_js_1 = require("../BBox.js");
+exports.CommonInferredMrowMixin = exports.CommonMrowMixin = void 0;
+var BBox_js_1 = require("../../../util/BBox.js");
 function CommonMrowMixin(Base) {
     return (function (_super) {
         __extends(class_1, _super);
@@ -53,7 +58,7 @@ function CommonMrowMixin(Base) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            var _this = _super.apply(this, __spread(args)) || this;
+            var _this = _super.apply(this, __spreadArray([], __read(args))) || this;
             _this.stretchChildren();
             try {
                 for (var _b = __values(_this.childNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -77,7 +82,7 @@ function CommonMrowMixin(Base) {
             get: function () {
                 return false;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         class_1.prototype.stretchChildren = function () {
@@ -108,7 +113,9 @@ function CommonMrowMixin(Base) {
                         var child = _g.value;
                         var noStretch = (child.stretch.dir === 0);
                         if (all || noStretch) {
-                            var _h = child.getBBox(noStretch), h = _h.h, d = _h.d;
+                            var _h = child.getBBox(noStretch), h = _h.h, d = _h.d, rscale = _h.rscale;
+                            h *= rscale;
+                            d *= rscale;
                             if (h > H)
                                 H = h;
                             if (d > D)

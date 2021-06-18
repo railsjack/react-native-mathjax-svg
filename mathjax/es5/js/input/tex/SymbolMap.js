@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -28,21 +30,24 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EnvironmentMap = exports.CommandMap = exports.MacroMap = exports.DelimiterMap = exports.CharacterMap = exports.AbstractParseMap = exports.RegExpMap = exports.AbstractSymbolMap = void 0;
 var Symbol_js_1 = require("./Symbol.js");
 var MapHandler_js_1 = require("./MapHandler.js");
 var AbstractSymbolMap = (function () {
@@ -51,12 +56,11 @@ var AbstractSymbolMap = (function () {
         this._parser = _parser;
         MapHandler_js_1.MapHandler.register(this);
     }
-    ;
     Object.defineProperty(AbstractSymbolMap.prototype, "name", {
         get: function () {
             return this._name;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractSymbolMap.prototype.parserFor = function (symbol) {
@@ -76,7 +80,7 @@ var AbstractSymbolMap = (function () {
         set: function (parser) {
             this._parser = parser;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     return AbstractSymbolMap;
@@ -89,7 +93,6 @@ var RegExpMap = (function (_super) {
         _this._regExp = _regExp;
         return _this;
     }
-    ;
     RegExpMap.prototype.contains = function (symbol) {
         return this._regExp.test(symbol);
     };
@@ -114,6 +117,9 @@ var AbstractParseMap = (function (_super) {
     };
     AbstractParseMap.prototype.add = function (symbol, object) {
         this.map.set(symbol, object);
+    };
+    AbstractParseMap.prototype.remove = function (symbol) {
+        this.map.delete(symbol);
     };
     return AbstractParseMap;
 }(AbstractSymbolMap));
@@ -141,7 +147,6 @@ var CharacterMap = (function (_super) {
         }
         return _this;
     }
-    ;
     return CharacterMap;
 }(AbstractParseMap));
 exports.CharacterMap = CharacterMap;
@@ -180,7 +185,6 @@ var MacroMap = (function (_super) {
         }
         return _this;
     }
-    ;
     MacroMap.prototype.parserFor = function (symbol) {
         var macro = this.lookup(symbol);
         return macro ? macro.func : null;
@@ -192,7 +196,7 @@ var MacroMap = (function (_super) {
         if (!macro || !parser) {
             return null;
         }
-        return parser.apply(void 0, __spread([env, macro.symbol], macro.args)) || true;
+        return parser.apply(void 0, __spreadArray([env, macro.symbol], __read(macro.args))) || true;
     };
     return MacroMap;
 }(AbstractParseMap));
@@ -209,13 +213,12 @@ var CommandMap = (function (_super) {
         if (!macro || !parser) {
             return null;
         }
-        var args = ['\\' + macro.symbol].concat(macro.args);
         if (!parser) {
             return null;
         }
         var saveCommand = env.currentCS;
         env.currentCS = '\\' + symbol;
-        var result = parser.apply(void 0, __spread([env, '\\' + macro.symbol], macro.args));
+        var result = parser.apply(void 0, __spreadArray([env, '\\' + macro.symbol], __read(macro.args)));
         env.currentCS = saveCommand;
         return result || true;
     };
@@ -229,7 +232,6 @@ var EnvironmentMap = (function (_super) {
         _this.parser = parser;
         return _this;
     }
-    ;
     EnvironmentMap.prototype.parse = function (_a) {
         var _b = __read(_a, 2), env = _b[0], symbol = _b[1];
         var macro = this.lookup(symbol);

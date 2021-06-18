@@ -1,25 +1,55 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
+var e_1, _a;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CONFIG = exports.MathJax = exports.Loader = exports.PathFilters = exports.PackageError = exports.Package = void 0;
 var global_js_1 = require("./global.js");
 var package_js_1 = require("./package.js");
 var package_js_2 = require("./package.js");
-exports.Package = package_js_2.Package;
-exports.PackageError = package_js_2.PackageError;
-;
+Object.defineProperty(exports, "Package", { enumerable: true, get: function () { return package_js_2.Package; } });
+Object.defineProperty(exports, "PackageError", { enumerable: true, get: function () { return package_js_2.PackageError; } });
+var FunctionList_js_1 = require("../util/FunctionList.js");
+exports.PathFilters = {
+    source: function (data) {
+        if (exports.CONFIG.source.hasOwnProperty(data.name)) {
+            data.name = exports.CONFIG.source[data.name];
+        }
+        return true;
+    },
+    normalize: function (data) {
+        var name = data.name;
+        if (!name.match(/^(?:[a-z]+:\/)?\/|[a-z]:\\|\[/i)) {
+            data.name = '[mathjax]/' + name.replace(/^\.\//, '');
+        }
+        if (data.addExtension && !name.match(/\.[^\/]+$/)) {
+            data.name += '.js';
+        }
+        return true;
+    },
+    prefix: function (data) {
+        var match;
+        while ((match = data.name.match(/^\[([^\]]*)\]/))) {
+            if (!exports.CONFIG.paths.hasOwnProperty(match[1]))
+                break;
+            data.name = exports.CONFIG.paths[match[1]] + data.name.substr(match[0].length);
+        }
+        return true;
+    }
+};
 var Loader;
 (function (Loader) {
     function ready() {
-        var e_1, _a;
+        var e_2, _a;
         var names = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             names[_i] = arguments[_i];
@@ -35,19 +65,18 @@ var Loader;
                 promises.push(extension.promise);
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (names_1_1 && !names_1_1.done && (_a = names_1.return)) _a.call(names_1);
             }
-            finally { if (e_1) throw e_1.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         return Promise.all(promises);
     }
     Loader.ready = ready;
-    ;
     function load() {
-        var e_2, _a;
+        var e_3, _a;
         var names = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             names[_i] = arguments[_i];
@@ -68,20 +97,19 @@ var Loader;
                 promises.push(extension.promise);
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (names_2_1 && !names_2_1.done && (_a = names_2.return)) _a.call(names_2);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_3) throw e_3.error; }
         }
         package_js_1.Package.loadAll();
         return Promise.all(promises);
     }
     Loader.load = load;
-    ;
     function preLoad() {
-        var e_3, _a;
+        var e_4, _a;
         var names = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             names[_i] = arguments[_i];
@@ -97,23 +125,21 @@ var Loader;
                 extension.loaded();
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
         finally {
             try {
                 if (names_3_1 && !names_3_1.done && (_a = names_3.return)) _a.call(names_3);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_4) throw e_4.error; }
         }
     }
     Loader.preLoad = preLoad;
-    ;
     function defaultReady() {
         if (typeof exports.MathJax.startup !== 'undefined') {
             exports.MathJax.config.startup.ready();
         }
     }
     Loader.defaultReady = defaultReady;
-    ;
     function getRoot() {
         var root = __dirname + '/../../es5';
         if (typeof document !== 'undefined') {
@@ -125,8 +151,11 @@ var Loader;
         return root;
     }
     Loader.getRoot = getRoot;
+    Loader.pathFilters = new FunctionList_js_1.FunctionList();
+    Loader.pathFilters.add(exports.PathFilters.source, 0);
+    Loader.pathFilters.add(exports.PathFilters.normalize, 10);
+    Loader.pathFilters.add(exports.PathFilters.prefix, 20);
 })(Loader = exports.Loader || (exports.Loader = {}));
-;
 exports.MathJax = global_js_1.MathJax;
 if (typeof exports.MathJax.loader === 'undefined') {
     global_js_1.combineDefaults(exports.MathJax.config, 'loader', {
@@ -139,11 +168,30 @@ if (typeof exports.MathJax.loader === 'undefined') {
         load: [],
         ready: Loader.defaultReady.bind(Loader),
         failed: function (error) { return console.log("MathJax(" + (error.package || '?') + "): " + error.message); },
-        require: null
+        require: null,
+        pathFilters: [],
     });
     global_js_1.combineWithMathJax({
         loader: Loader
     });
+    try {
+        for (var _b = __values(exports.MathJax.config.loader.pathFilters), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var filter = _c.value;
+            if (Array.isArray(filter)) {
+                Loader.pathFilters.add(filter[0], filter[1]);
+            }
+            else {
+                Loader.pathFilters.add(filter);
+            }
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
 }
 exports.CONFIG = exports.MathJax.config.loader;
 //# sourceMappingURL=loader.js.map

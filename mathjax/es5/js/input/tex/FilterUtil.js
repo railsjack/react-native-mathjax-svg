@@ -1,13 +1,14 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var MmlNode_js_1 = require("../../core/MmlTree/MmlNode.js");
@@ -45,7 +46,7 @@ var FilterUtil;
     };
     FilterUtil.cleanAttributes = function (arg) {
         var node = arg.data.root;
-        node.walkTree(function (mml, d) {
+        node.walkTree(function (mml, _d) {
             var e_2, _a;
             var attribs = mml.attributes;
             if (!attribs) {
@@ -69,10 +70,11 @@ var FilterUtil;
         }, {});
     };
     FilterUtil.combineRelations = function (arg) {
-        var e_3, _a;
+        var e_3, _a, e_4, _b;
+        var remove = [];
         try {
-            for (var _b = __values(arg.data.getList('mo')), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var mo = _c.value;
+            for (var _c = __values(arg.data.getList('mo')), _e = _c.next(); !_e.done; _e = _c.next()) {
+                var mo = _e.value;
                 if (mo.getProperty('relationsCombined') || !mo.parent ||
                     (mo.parent && !NodeUtil_js_1.default.isType(mo.parent, 'mrow')) ||
                     NodeUtil_js_1.default.getTexClass(mo) !== MmlNode_js_1.TEXCLASS.REL) {
@@ -90,8 +92,21 @@ var FilterUtil;
                         _compareExplicit(mo, m2)) {
                         NodeUtil_js_1.default.appendChildren(mo, NodeUtil_js_1.default.getChildren(m2));
                         _copyExplicit(['stretchy', 'rspace'], mo, m2);
-                        NodeUtil_js_1.default.setProperties(mo, m2.getAllProperties());
+                        try {
+                            for (var _f = (e_4 = void 0, __values(m2.getPropertyNames())), _g = _f.next(); !_g.done; _g = _f.next()) {
+                                var name_1 = _g.value;
+                                mo.setProperty(name_1, m2.getProperty(name_1));
+                            }
+                        }
+                        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                        finally {
+                            try {
+                                if (_g && !_g.done && (_b = _f.return)) _b.call(_f);
+                            }
+                            finally { if (e_4) throw e_4.error; }
+                        }
                         children.splice(next, 1);
+                        remove.push(m2);
                         m2.parent = null;
                         m2.setProperty('relationsCombined', true);
                     }
@@ -111,10 +126,11 @@ var FilterUtil;
         catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                if (_e && !_e.done && (_a = _c.return)) _a.call(_c);
             }
             finally { if (e_3) throw e_3.error; }
         }
+        arg.data.removeFromList('mo', remove);
     };
     var _copyExplicit = function (attrs, node1, node2) {
         var attr1 = node1.attributes;
@@ -127,7 +143,7 @@ var FilterUtil;
         });
     };
     var _compareExplicit = function (node1, node2) {
-        var e_4, _a;
+        var e_5, _a;
         var filter = function (attr, space) {
             var exp = attr.getExplicitNames();
             return exp.filter(function (x) {
@@ -145,23 +161,24 @@ var FilterUtil;
         }
         try {
             for (var exp1_1 = __values(exp1), exp1_1_1 = exp1_1.next(); !exp1_1_1.done; exp1_1_1 = exp1_1.next()) {
-                var name_1 = exp1_1_1.value;
-                if (attr1.getExplicit(name_1) !== attr2.getExplicit(name_1)) {
+                var name_2 = exp1_1_1.value;
+                if (attr1.getExplicit(name_2) !== attr2.getExplicit(name_2)) {
                     return false;
                 }
             }
         }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
                 if (exp1_1_1 && !exp1_1_1.done && (_a = exp1_1.return)) _a.call(exp1_1);
             }
-            finally { if (e_4) throw e_4.error; }
+            finally { if (e_5) throw e_5.error; }
         }
         return true;
     };
     var _cleanSubSup = function (options, low, up) {
-        var e_5, _a;
+        var e_6, _a;
+        var remove = [];
         try {
             for (var _b = __values(options.getList('m' + low + up)), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var mml = _c.value;
@@ -180,15 +197,17 @@ var FilterUtil;
                 else {
                     options.root = newNode;
                 }
+                remove.push(mml);
             }
         }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_5) throw e_5.error; }
+            finally { if (e_6) throw e_6.error; }
         }
+        options.removeFromList('m' + low + up, remove);
     };
     FilterUtil.cleanSubSup = function (arg) {
         var options = arg.data;
@@ -199,7 +218,8 @@ var FilterUtil;
         _cleanSubSup(options, 'under', 'over');
     };
     var _moveLimits = function (options, underover, subsup) {
-        var e_6, _a;
+        var e_7, _a;
+        var remove = [];
         try {
             for (var _b = __values(options.getList(underover)), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var mml = _c.value;
@@ -217,16 +237,18 @@ var FilterUtil;
                     else {
                         options.root = node;
                     }
+                    remove.push(mml);
                 }
             }
         }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        catch (e_7_1) { e_7 = { error: e_7_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_6) throw e_6.error; }
+            finally { if (e_7) throw e_7.error; }
         }
+        options.removeFromList(underover, remove);
     };
     FilterUtil.moveLimits = function (arg) {
         var options = arg.data;

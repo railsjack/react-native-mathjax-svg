@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23,15 +25,16 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -49,11 +52,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setA11yOption = exports.setA11yOptions = exports.ExplorerHandler = exports.ExplorerMathDocumentMixin = exports.ExplorerMathItemMixin = void 0;
 var MathItem_js_1 = require("../core/MathItem.js");
 var semantic_enrich_js_1 = require("./semantic-enrich.js");
 var Options_js_1 = require("../util/Options.js");
@@ -71,34 +76,43 @@ function ExplorerMathItemMixin(BaseMathItem, toMathML) {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.explorers = {};
             _this.attached = [];
-            _this.restart = false;
+            _this.restart = [];
             _this.refocus = false;
             _this.savedId = null;
             return _this;
         }
-        class_1.prototype.explorable = function (document) {
+        class_1.prototype.explorable = function (document, force) {
+            if (force === void 0) { force = false; }
             if (this.state() >= MathItem_js_1.STATE.EXPLORER)
                 return;
-            var node = this.typesetRoot;
-            var mml = toMathML(this.root);
-            if (this.savedId) {
-                this.typesetRoot.setAttribute('sre-explorer-id', this.savedId);
-                this.savedId = null;
+            if (!this.isEscaped && (document.options.enableExplorer || force)) {
+                var node = this.typesetRoot;
+                var mml = toMathML(this.root);
+                if (this.savedId) {
+                    this.typesetRoot.setAttribute('sre-explorer-id', this.savedId);
+                    this.savedId = null;
+                }
+                this.explorers = initExplorers(document, node, mml);
+                this.attachExplorers(document);
             }
-            this.explorers = initExplorers(document, node, mml);
-            this.attachExplorers(document);
             this.state(MathItem_js_1.STATE.EXPLORER);
         };
         class_1.prototype.attachExplorers = function (document) {
-            var e_1, _a;
+            var e_1, _a, e_2, _b;
             this.attached = [];
+            var keyExplorers = [];
             try {
-                for (var _b = __values(Object.keys(this.explorers)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var key = _c.value;
+                for (var _c = __values(Object.keys(this.explorers)), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    var key = _d.value;
                     var explorer = this.explorers[key];
+                    if (explorer instanceof ke.AbstractKeyExplorer) {
+                        explorer.AddEvents();
+                        explorer.stoppable = false;
+                        keyExplorers.unshift(explorer);
+                    }
                     if (document.options.a11y[key]) {
                         explorer.Attach();
-                        this.attached.push(explorer);
+                        this.attached.push(key);
                     }
                     else {
                         explorer.Detach();
@@ -108,53 +122,40 @@ function ExplorerMathItemMixin(BaseMathItem, toMathML) {
             catch (e_1_1) { e_1 = { error: e_1_1 }; }
             finally {
                 try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                    if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
                 }
                 finally { if (e_1) throw e_1.error; }
             }
-            this.addExplorers(this.attached);
-        };
-        class_1.prototype.rerender = function (document, start) {
-            var e_2, _a;
-            if (start === void 0) { start = MathItem_js_1.STATE.RERENDER; }
-            this.savedId = this.typesetRoot.getAttribute('sre-explorer-id');
-            this.refocus = (window.document.activeElement === this.typesetRoot);
             try {
-                for (var _b = __values(this.attached), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var explorer = _c.value;
-                    if (explorer.active) {
-                        this.restart = true;
-                        explorer.Stop();
+                for (var keyExplorers_1 = __values(keyExplorers), keyExplorers_1_1 = keyExplorers_1.next(); !keyExplorers_1_1.done; keyExplorers_1_1 = keyExplorers_1.next()) {
+                    var explorer = keyExplorers_1_1.value;
+                    if (explorer.attached) {
+                        explorer.stoppable = true;
+                        break;
                     }
                 }
             }
             catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                    if (keyExplorers_1_1 && !keyExplorers_1_1.done && (_b = keyExplorers_1.return)) _b.call(keyExplorers_1);
                 }
                 finally { if (e_2) throw e_2.error; }
             }
-            _super.prototype.rerender.call(this, document, start);
         };
-        class_1.prototype.updateDocument = function (document) {
-            _super.prototype.updateDocument.call(this, document);
-            this.refocus && this.typesetRoot.focus();
-            this.restart && this.attached.forEach(function (x) { return x.Start(); });
-            this.refocus = this.restart = false;
-        };
-        class_1.prototype.addExplorers = function (explorers) {
+        class_1.prototype.rerender = function (document, start) {
             var e_3, _a;
-            if (explorers.length <= 1)
-                return;
-            var lastKeyExplorer = null;
+            if (start === void 0) { start = MathItem_js_1.STATE.RERENDER; }
+            this.savedId = this.typesetRoot.getAttribute('sre-explorer-id');
+            this.refocus = (window.document.activeElement === this.typesetRoot);
             try {
                 for (var _b = __values(this.attached), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var explorer = _c.value;
-                    if (!(explorer instanceof ke.AbstractKeyExplorer))
-                        continue;
-                    explorer.stoppable = false;
-                    lastKeyExplorer = explorer;
+                    var key = _c.value;
+                    var explorer = this.explorers[key];
+                    if (explorer.active) {
+                        this.restart.push(key);
+                        explorer.Stop();
+                    }
                 }
             }
             catch (e_3_1) { e_3 = { error: e_3_1 }; }
@@ -164,9 +165,15 @@ function ExplorerMathItemMixin(BaseMathItem, toMathML) {
                 }
                 finally { if (e_3) throw e_3.error; }
             }
-            if (lastKeyExplorer) {
-                lastKeyExplorer.stoppable = true;
-            }
+            _super.prototype.rerender.call(this, document, start);
+        };
+        class_1.prototype.updateDocument = function (document) {
+            var _this = this;
+            _super.prototype.updateDocument.call(this, document);
+            this.refocus && this.typesetRoot.focus();
+            this.restart.forEach(function (x) { return _this.explorers[x].Start(); });
+            this.restart = [];
+            this.refocus = false;
         };
         return class_1;
     }(BaseMathItem));
@@ -181,7 +188,7 @@ function ExplorerMathDocumentMixin(BaseDocument) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
                 }
-                var _this = _super.apply(this, __spread(args)) || this;
+                var _this = _super.apply(this, __spreadArray([], __read(args))) || this;
                 var ProcessBits = _this.constructor.ProcessBits;
                 if (!ProcessBits.has('explorer')) {
                     ProcessBits.allocate('explorer');
@@ -195,18 +202,20 @@ function ExplorerMathDocumentMixin(BaseDocument) {
             class_2.prototype.explorable = function () {
                 var e_4, _a;
                 if (!this.processed.isSet('explorer')) {
-                    try {
-                        for (var _b = __values(this.math), _c = _b.next(); !_c.done; _c = _b.next()) {
-                            var math = _c.value;
-                            math.explorable(this);
-                        }
-                    }
-                    catch (e_4_1) { e_4 = { error: e_4_1 }; }
-                    finally {
+                    if (this.options.enableExplorer) {
                         try {
-                            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                            for (var _b = __values(this.math), _c = _b.next(); !_c.done; _c = _b.next()) {
+                                var math = _c.value;
+                                math.explorable(this);
+                            }
                         }
-                        finally { if (e_4) throw e_4.error; }
+                        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                        finally {
+                            try {
+                                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                            }
+                            finally { if (e_4) throw e_4.error; }
+                        }
                     }
                     this.processed.set('explorer');
                 }
@@ -222,14 +231,14 @@ function ExplorerMathDocumentMixin(BaseDocument) {
             };
             return class_2;
         }(BaseDocument)),
-        _a.OPTIONS = __assign({}, BaseDocument.OPTIONS, { enrichSpeech: 'shallow', renderActions: Options_js_1.expandable(__assign({}, BaseDocument.OPTIONS.renderActions, { explorable: [MathItem_js_1.STATE.EXPLORER] })), a11y: {
+        _a.OPTIONS = __assign(__assign({}, BaseDocument.OPTIONS), { enableExplorer: true, renderActions: Options_js_1.expandable(__assign(__assign({}, BaseDocument.OPTIONS.renderActions), { explorable: [MathItem_js_1.STATE.EXPLORER] })), sre: Options_js_1.expandable(__assign(__assign({}, BaseDocument.OPTIONS.sre), { speech: 'shallow' })), a11y: {
                 align: 'top',
                 backgroundColor: 'Blue',
-                backgroundOpacity: .2,
+                backgroundOpacity: 20,
                 braille: false,
                 flame: false,
                 foregroundColor: 'Black',
-                foregroundOpacity: 1,
+                foregroundOpacity: 100,
                 highlight: 'None',
                 hover: false,
                 infoPrefix: false,
@@ -240,7 +249,6 @@ function ExplorerMathDocumentMixin(BaseDocument) {
                 magnify: '400%',
                 mouseMagnifier: false,
                 speech: true,
-                speechRules: 'mathspeak-default',
                 subtitles: true,
                 treeColoring: false,
                 viewBraille: false
@@ -274,10 +282,11 @@ var allExplorers = {
         for (var _i = 2; _i < arguments.length; _i++) {
             rest[_i - 2] = arguments[_i];
         }
-        var explorer = (_a = ke.SpeechExplorer).create.apply(_a, __spread([doc, doc.explorerRegions.speechRegion, node], rest));
-        var _b = __read(doc.options.a11y.speechRules.split('-'), 2), domain = _b[0], style = _b[1];
-        explorer.speechGenerator.setOptions({ locale: 'en', domain: domain,
-            style: style, modality: 'speech' });
+        var explorer = (_a = ke.SpeechExplorer).create.apply(_a, __spreadArray([doc, doc.explorerRegions.speechRegion, node], __read(rest)));
+        explorer.speechGenerator.setOptions({
+            locale: doc.options.sre.locale, domain: doc.options.sre.domain,
+            style: doc.options.sre.style, modality: 'speech', cache: false
+        });
         explorer.showRegion = 'subtitles';
         return explorer;
     },
@@ -287,7 +296,7 @@ var allExplorers = {
         for (var _i = 2; _i < arguments.length; _i++) {
             rest[_i - 2] = arguments[_i];
         }
-        var explorer = (_a = ke.SpeechExplorer).create.apply(_a, __spread([doc, doc.explorerRegions.brailleRegion, node], rest));
+        var explorer = (_a = ke.SpeechExplorer).create.apply(_a, __spreadArray([doc, doc.explorerRegions.brailleRegion, node], __read(rest)));
         explorer.speechGenerator.setOptions({ locale: 'nemeth', domain: 'default',
             style: 'default', modality: 'braille' });
         explorer.showRegion = 'viewBraille';
@@ -299,47 +308,47 @@ var allExplorers = {
         for (var _i = 2; _i < arguments.length; _i++) {
             rest[_i - 2] = arguments[_i];
         }
-        return (_a = ke.Magnifier).create.apply(_a, __spread([doc, doc.explorerRegions.magnifier, node], rest));
+        return (_a = ke.Magnifier).create.apply(_a, __spreadArray([doc, doc.explorerRegions.magnifier, node], __read(rest)));
     },
     mouseMagnifier: function (doc, node) {
-        var rest = [];
+        var _rest = [];
         for (var _i = 2; _i < arguments.length; _i++) {
-            rest[_i - 2] = arguments[_i];
+            _rest[_i - 2] = arguments[_i];
         }
         return me.ContentHoverer.create(doc, doc.explorerRegions.magnifier, node, function (x) { return x.hasAttribute('data-semantic-type'); }, function (x) { return x; });
     },
     hover: function (doc, node) {
-        var rest = [];
+        var _rest = [];
         for (var _i = 2; _i < arguments.length; _i++) {
-            rest[_i - 2] = arguments[_i];
+            _rest[_i - 2] = arguments[_i];
         }
         return me.FlameHoverer.create(doc, null, node);
     },
     infoType: function (doc, node) {
-        var rest = [];
+        var _rest = [];
         for (var _i = 2; _i < arguments.length; _i++) {
-            rest[_i - 2] = arguments[_i];
+            _rest[_i - 2] = arguments[_i];
         }
         return me.ValueHoverer.create(doc, doc.explorerRegions.tooltip1, node, function (x) { return x.hasAttribute('data-semantic-type'); }, function (x) { return x.getAttribute('data-semantic-type'); });
     },
     infoRole: function (doc, node) {
-        var rest = [];
+        var _rest = [];
         for (var _i = 2; _i < arguments.length; _i++) {
-            rest[_i - 2] = arguments[_i];
+            _rest[_i - 2] = arguments[_i];
         }
         return me.ValueHoverer.create(doc, doc.explorerRegions.tooltip2, node, function (x) { return x.hasAttribute('data-semantic-role'); }, function (x) { return x.getAttribute('data-semantic-role'); });
     },
     infoPrefix: function (doc, node) {
-        var rest = [];
+        var _rest = [];
         for (var _i = 2; _i < arguments.length; _i++) {
-            rest[_i - 2] = arguments[_i];
+            _rest[_i - 2] = arguments[_i];
         }
         return me.ValueHoverer.create(doc, doc.explorerRegions.tooltip3, node, function (x) { return x.hasAttribute('data-semantic-prefix'); }, function (x) { return x.getAttribute('data-semantic-prefix'); });
     },
     flame: function (doc, node) {
-        var rest = [];
+        var _rest = [];
         for (var _i = 2; _i < arguments.length; _i++) {
-            rest[_i - 2] = arguments[_i];
+            _rest[_i - 2] = arguments[_i];
         }
         return TreeExplorer_js_1.FlameColorer.create(doc, null, node);
     },
@@ -348,7 +357,7 @@ var allExplorers = {
         for (var _i = 2; _i < arguments.length; _i++) {
             rest[_i - 2] = arguments[_i];
         }
-        return TreeExplorer_js_1.TreeColorer.create.apply(TreeExplorer_js_1.TreeColorer, __spread([doc, null, node], rest));
+        return TreeExplorer_js_1.TreeColorer.create.apply(TreeExplorer_js_1.TreeColorer, __spreadArray([doc, null, node], __read(rest)));
     }
 };
 function initExplorers(document, node, mml) {
@@ -371,9 +380,17 @@ function initExplorers(document, node, mml) {
 }
 function setA11yOptions(document, options) {
     var e_6, _a;
+    var sreOptions = SRE.engineSetup();
     for (var key in options) {
         if (document.options.a11y[key] !== undefined) {
             setA11yOption(document, key, options[key]);
+            if (key === 'locale') {
+                document.options.sre[key] = options[key];
+            }
+            continue;
+        }
+        if (sreOptions[key] !== undefined) {
+            document.options.sre[key] = options[key];
         }
     }
     try {
@@ -436,12 +453,130 @@ function setA11yOption(document, option, value) {
     }
 }
 exports.setA11yOption = setA11yOption;
+var csPrefsSetting = {};
+var csPrefsVariables = function (menu, prefs) {
+    var e_7, _a;
+    var srVariable = menu.pool.lookup('speechRules');
+    var _loop_1 = function (pref) {
+        if (csPrefsSetting[pref])
+            return "continue";
+        menu.factory.get('variable')(menu.factory, {
+            name: 'csprf_' + pref,
+            setter: function (value) {
+                csPrefsSetting[pref] = value;
+                srVariable.setValue('clearspeak-' +
+                    sre.ClearspeakPreferences.addPreference(sre.Engine.DOMAIN_TO_STYLES['clearspeak'], pref, value));
+            },
+            getter: function () { return csPrefsSetting[pref] || 'Auto'; }
+        }, menu.pool);
+    };
+    try {
+        for (var prefs_1 = __values(prefs), prefs_1_1 = prefs_1.next(); !prefs_1_1.done; prefs_1_1 = prefs_1.next()) {
+            var pref = prefs_1_1.value;
+            _loop_1(pref);
+        }
+    }
+    catch (e_7_1) { e_7 = { error: e_7_1 }; }
+    finally {
+        try {
+            if (prefs_1_1 && !prefs_1_1.done && (_a = prefs_1.return)) _a.call(prefs_1);
+        }
+        finally { if (e_7) throw e_7.error; }
+    }
+};
+var csSelectionBox = function (menu, locale) {
+    var e_8, _a;
+    var prefs = sre.ClearspeakPreferences.getLocalePreferences();
+    var props = prefs[locale];
+    if (!props) {
+        var csEntry = menu.findID('Accessibility', 'Speech', 'Clearspeak');
+        if (csEntry) {
+            csEntry.disable();
+        }
+        return null;
+    }
+    csPrefsVariables(menu, Object.keys(props));
+    var items = [];
+    var _loop_2 = function (prop) {
+        items.push({
+            'title': prop,
+            'values': props[prop].map(function (x) { return x.replace(RegExp('^' + prop + '_'), ''); }),
+            'variable': 'csprf_' + prop
+        });
+    };
+    try {
+        for (var _b = __values(Object.getOwnPropertyNames(props)), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var prop = _c.value;
+            _loop_2(prop);
+        }
+    }
+    catch (e_8_1) { e_8 = { error: e_8_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_8) throw e_8.error; }
+    }
+    var sb = menu.factory.get('selectionBox')(menu.factory, {
+        'title': 'Clearspeak Preferences',
+        'signature': '',
+        'order': 'alphabetic',
+        'grid': 'square',
+        'selections': items
+    }, menu);
+    return { 'type': 'command',
+        'id': 'ClearspeakPreferences',
+        'content': 'Select Preferences',
+        'action': function () { return sb.post(0, 0); } };
+};
 var csMenu = function (menu, sub) {
-    var items = sre.ClearspeakPreferences.smartPreferences(menu.mathItem, 'en');
-    return ContextMenu.SubMenu.parse({
+    var locale = menu.pool.lookup('locale').getValue();
+    var box = csSelectionBox(menu, locale);
+    var items = [];
+    try {
+        items = sre.ClearspeakPreferences.smartPreferences(menu.mathItem, locale);
+    }
+    catch (e) { }
+    if (box) {
+        items.splice(2, 0, box);
+    }
+    return menu.factory.get('subMenu')(menu.factory, {
         items: items,
         id: 'Clearspeak'
     }, sub);
 };
 MJContextMenu_js_1.MJContextMenu.DynamicSubmenus.set('Clearspeak', csMenu);
+var iso = {
+    'de': 'German',
+    'en': 'English',
+    'es': 'Spanish',
+    'fr': 'French',
+    'hi': 'Hindi',
+    'it': 'Italian'
+};
+var language = function (menu, sub) {
+    var e_9, _a;
+    var radios = [];
+    try {
+        for (var _b = __values(sre.Variables.LOCALES), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var lang = _c.value;
+            if (lang === 'nemeth')
+                continue;
+            radios.push({ type: 'radio', id: lang,
+                content: iso[lang] || lang, variable: 'locale' });
+        }
+    }
+    catch (e_9_1) { e_9 = { error: e_9_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+        }
+        finally { if (e_9) throw e_9.error; }
+    }
+    radios.sort(function (x, y) { return x.content.localeCompare(y.content, 'en'); });
+    return menu.factory.get('subMenu')(menu.factory, {
+        items: radios, id: 'Language'
+    }, sub);
+};
+MJContextMenu_js_1.MJContextMenu.DynamicSubmenus.set('A11yLanguage', language);
 //# sourceMappingURL=explorer.js.map

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FontCache = void 0;
 var FontCache = (function () {
     function FontCache(jax) {
         this.cache = new Map();

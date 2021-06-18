@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractOutputJax = void 0;
 var Options_js_1 = require("../util/Options.js");
 var FunctionList_js_1 = require("../util/FunctionList.js");
 var AbstractOutputJax = (function () {
@@ -14,7 +15,7 @@ var AbstractOutputJax = (function () {
         get: function () {
             return this.constructor.NAME;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractOutputJax.prototype.setAdaptor = function (adaptor) {
@@ -22,12 +23,18 @@ var AbstractOutputJax = (function () {
     };
     AbstractOutputJax.prototype.initialize = function () {
     };
-    AbstractOutputJax.prototype.getMetrics = function (document) {
+    AbstractOutputJax.prototype.reset = function () {
+        var _args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            _args[_i] = arguments[_i];
+        }
     };
-    AbstractOutputJax.prototype.styleSheet = function (document) {
+    AbstractOutputJax.prototype.getMetrics = function (_document) {
+    };
+    AbstractOutputJax.prototype.styleSheet = function (_document) {
         return null;
     };
-    AbstractOutputJax.prototype.pageElements = function (document) {
+    AbstractOutputJax.prototype.pageElements = function (_document) {
         return null;
     };
     AbstractOutputJax.prototype.executeFilters = function (filters, math, document, data) {

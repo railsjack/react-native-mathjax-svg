@@ -3,26 +3,30 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TagsFactory = exports.AllTags = exports.NoTags = exports.AbstractTags = exports.TagInfo = exports.Label = void 0;
 var TexParser_js_1 = require("./TexParser.js");
 var Label = (function () {
     function Label(tag, id) {
@@ -92,7 +96,7 @@ var AbstractTags = (function () {
         get: function () {
             return this.currentTag.env;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractTags.prototype.end = function () {
@@ -112,7 +116,7 @@ var AbstractTags = (function () {
         get: function () {
             return this.currentTag.noTag;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractTags.prototype, "label", {
@@ -122,7 +126,7 @@ var AbstractTags = (function () {
         set: function (label) {
             this.currentTag.labelId = label;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractTags.prototype.formatUrl = function (id, base) {
@@ -132,7 +136,7 @@ var AbstractTags = (function () {
         return '(' + tag + ')';
     };
     AbstractTags.prototype.formatId = function (id) {
-        return 'mjx-eqn-' + id.replace(/\s/g, '_');
+        return 'mjx-eqn:' + id.replace(/\s/g, '_');
     };
     AbstractTags.prototype.formatNumber = function (n) {
         return n.toString();
@@ -179,6 +183,10 @@ var AbstractTags = (function () {
         this.allIds = {};
     };
     AbstractTags.prototype.startEquation = function (math) {
+        this.history = [];
+        this.stack = [];
+        this.clearTag();
+        this.currentTag = new TagInfo('', undefined, undefined);
         this.labels = {};
         this.ids = {};
         this.counter = this.allCounter;
@@ -226,7 +234,6 @@ var AbstractTags = (function () {
     return AbstractTags;
 }());
 exports.AbstractTags = AbstractTags;
-;
 var NoTags = (function (_super) {
     __extends(NoTags, _super);
     function NoTags() {
@@ -265,7 +272,6 @@ var TagsFactory;
         tags: defaultTags,
         tagSide: 'right',
         tagIndent: '0.8em',
-        multlineWidth: '85%',
         useLabelIds: true,
         ignoreDuplicateLabels: false
     };

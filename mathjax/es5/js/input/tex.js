@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -39,17 +41,8 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
-    if (m) return m.call(o);
-    return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TeX = void 0;
 var InputJax_js_1 = require("../core/InputJax.js");
 var Options_js_1 = require("../util/Options.js");
 var FindTeX_js_1 = require("./tex/FindTeX.js");
@@ -71,9 +64,10 @@ var TeX = (function (_super) {
         _this.findTeX = _this.options['FindTeX'] || new FindTeX_js_1.FindTeX(find);
         var packages = _this.options.packages;
         var configuration = _this.configuration = TeX.configure(packages);
-        var parseOptions = _this._parseOptions = new ParseOptions_js_1.default(configuration, [_this.options, Tags_js_1.TagsFactory.OPTIONS]);
+        var parseOptions = _this._parseOptions =
+            new ParseOptions_js_1.default(configuration, [_this.options, Tags_js_1.TagsFactory.OPTIONS]);
         Options_js_1.userOptions(parseOptions.options, rest);
-        configuration.config(configuration, _this);
+        configuration.config(_this);
         TeX.tags(parseOptions, configuration);
         _this.postFilters.add(FilterUtil_js_1.default.cleanSubSup, -6);
         _this.postFilters.add(FilterUtil_js_1.default.setInherited, -5);
@@ -84,25 +78,8 @@ var TeX = (function (_super) {
         return _this;
     }
     TeX.configure = function (packages) {
-        var e_1, _a;
-        var configuration = Configuration_js_1.Configuration.empty();
-        try {
-            for (var packages_1 = __values(packages), packages_1_1 = packages_1.next(); !packages_1_1.done; packages_1_1 = packages_1.next()) {
-                var key = packages_1_1.value;
-                var conf = Configuration_js_1.ConfigurationHandler.get(key);
-                if (conf) {
-                    configuration.append(conf);
-                }
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (packages_1_1 && !packages_1_1.done && (_a = packages_1.return)) _a.call(packages_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        configuration.init(configuration);
+        var configuration = new Configuration_js_1.ParserConfiguration(packages, ['tex']);
+        configuration.init();
         return configuration;
     };
     TeX.tags = function (options, configuration) {
@@ -119,9 +96,13 @@ var TeX = (function (_super) {
         get: function () {
             return this._parseOptions;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
+    TeX.prototype.reset = function (tag) {
+        if (tag === void 0) { tag = 0; }
+        this.parseOptions.tags.reset(tag);
+    };
     TeX.prototype.compile = function (math, document) {
         this.parseOptions.clear();
         this.executeFilters(this.preFilters, math, document, this.parseOptions);
@@ -129,18 +110,23 @@ var TeX = (function (_super) {
         this.latex = math.math;
         var node;
         this.parseOptions.tags.startEquation(math);
+        var globalEnv;
         try {
             var parser = new TexParser_js_1.default(this.latex, { display: display, isInner: false }, this.parseOptions);
             node = parser.mml();
+            globalEnv = parser.stack.global;
         }
         catch (err) {
             if (!(err instanceof TexError_js_1.default)) {
                 throw err;
             }
             this.parseOptions.error = true;
-            node = this.formatError(err);
+            node = this.options.formatError(this, err);
         }
         node = this.parseOptions.nodeFactory.create('node', 'math', [node]);
+        if (globalEnv === null || globalEnv === void 0 ? void 0 : globalEnv.indentalign) {
+            NodeUtil_js_1.default.setAttribute(node, 'indentalign', globalEnv.indentalign);
+        }
         if (display) {
             NodeUtil_js_1.default.setAttribute(node, 'display', 'block');
         }
@@ -150,7 +136,6 @@ var TeX = (function (_super) {
         this.mathNode = this.parseOptions.root;
         return this.mathNode;
     };
-    ;
     TeX.prototype.findMath = function (strings) {
         return this.findTeX.findMath(strings);
     };
@@ -158,9 +143,8 @@ var TeX = (function (_super) {
         var message = err.message.replace(/\n.*/, '');
         return this.parseOptions.nodeFactory.create('error', message, err.id, this.latex);
     };
-    ;
     TeX.NAME = 'TeX';
-    TeX.OPTIONS = __assign({}, InputJax_js_1.AbstractInputJax.OPTIONS, { FindTeX: null, packages: ['base'], digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/, maxBuffer: 5 * 1024 });
+    TeX.OPTIONS = __assign(__assign({}, InputJax_js_1.AbstractInputJax.OPTIONS), { FindTeX: null, packages: ['base'], digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/, maxBuffer: 5 * 1024, formatError: function (jax, err) { return jax.formatError(err); } });
     return TeX;
 }(InputJax_js_1.AbstractInputJax));
 exports.TeX = TeX;

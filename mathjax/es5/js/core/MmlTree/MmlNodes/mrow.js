@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23,17 +25,19 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MmlInferredMrow = exports.MmlMrow = void 0;
 var MmlNode_js_1 = require("../MmlNode.js");
 var MmlMrow = (function (_super) {
     __extends(MmlMrow, _super);
@@ -46,7 +50,7 @@ var MmlMrow = (function (_super) {
         get: function () {
             return 'mrow';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMrow.prototype, "isSpacelike", {
@@ -69,7 +73,7 @@ var MmlMrow = (function (_super) {
             }
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMrow.prototype, "isEmbellished", {
@@ -104,7 +108,7 @@ var MmlMrow = (function (_super) {
             }
             return embellished;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlMrow.prototype.core = function () {
@@ -170,8 +174,7 @@ var MmlMrow = (function (_super) {
     };
     MmlMrow.prototype.setTeXclass = function (prev) {
         var e_5, _a, e_6, _b;
-        if ((this.getProperty('open') != null || this.getProperty('close') != null) &&
-            (!prev || prev.getProperty('fnOp') != null)) {
+        if (this.getProperty('open') != null || this.getProperty('close') != null) {
             this.getPrevClass(prev);
             prev = null;
             try {
@@ -224,21 +227,21 @@ var MmlInferredMrow = (function (_super) {
         get: function () {
             return 'inferredMrow';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlInferredMrow.prototype, "isInferred", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlInferredMrow.prototype, "notParent", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlInferredMrow.prototype.toString = function () {

@@ -3,16 +3,19 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SVGmaction = void 0;
 var Wrapper_js_1 = require("../Wrapper.js");
 var maction_js_1 = require("../../common/Wrappers/maction.js");
 var maction_js_2 = require("../../common/Wrappers/maction.js");
@@ -73,13 +76,13 @@ var SVGmaction = (function (_super) {
         }
     };
     SVGmaction.actions = new Map([
-        ['toggle', [function (node, data) {
+        ['toggle', [function (node, _data) {
                     node.adaptor.setAttribute(node.element, 'data-toggle', node.node.attributes.get('selection'));
                     var math = node.factory.jax.math;
                     var document = node.factory.jax.document;
                     var mml = node.node;
                     node.setEventHandler('click', function (event) {
-                        if (!math.start.node) {
+                        if (!math.end.node) {
                             math.start.node = math.end.node = math.typesetRoot;
                             math.start.n = math.end.n = 0;
                         }
@@ -92,7 +95,7 @@ var SVGmaction = (function (_super) {
                     var tip = node.childNodes[1];
                     if (!tip)
                         return;
-                    var rect = node.adaptor.firstChild(node.element);
+                    var rect = node.firstChild();
                     if (tip.node.isKind('mtext')) {
                         var text = tip.node.getText();
                         node.adaptor.insert(node.svg('title', {}, [node.text(text)]), rect);

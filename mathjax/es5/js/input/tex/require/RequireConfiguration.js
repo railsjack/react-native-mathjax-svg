@@ -1,13 +1,14 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -25,25 +26,29 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RequireConfiguration = exports.options = exports.RequireMethods = exports.RequireLoad = void 0;
 var Configuration_js_1 = require("../Configuration.js");
 var SymbolMap_js_1 = require("../SymbolMap.js");
 var TexError_js_1 = require("../TexError.js");
+var global_js_1 = require("../../../components/global.js");
 var package_js_1 = require("../../../components/package.js");
 var loader_js_1 = require("../../../components/loader.js");
 var mathjax_js_1 = require("../../../mathjax.js");
 var Options_js_1 = require("../../../util/Options.js");
-var MJCONFIG = (global.MathJax ? global.MathJax.config || {} : {});
+var MJCONFIG = global_js_1.MathJax.config;
 function RegisterExtension(jax, name) {
     var _a;
     var require = jax.parseOptions.options.require;
+    var required = jax.parseOptions.packageData.get('require').required;
     var extension = name.substr(require.prefix.length);
-    if (require.required.indexOf(extension) < 0) {
-        require.required.push(extension);
+    if (required.indexOf(extension) < 0) {
+        required.push(extension);
         RegisterDependencies(jax, loader_js_1.CONFIG.dependencies[name]);
         var handler = Configuration_js_1.ConfigurationHandler.get(extension);
         if (handler) {
@@ -51,9 +56,10 @@ function RegisterExtension(jax, name) {
             if (handler.options && Object.keys(handler.options).length === 1 && handler.options[extension]) {
                 options_1 = (_a = {}, _a[extension] = options_1, _a);
             }
-            jax.configuration.register(handler, jax, options_1);
-            if (handler.preprocessors.length && !handler.options.configured) {
-                handler.options.configured = true;
+            jax.configuration.add(extension, jax, options_1);
+            var configured = jax.parseOptions.packageData.get('require').configured;
+            if (handler.preprocessors.length && !configured.has(extension)) {
+                configured.set(extension, true);
                 mathjax_js_1.mathjax.retryAfter(Promise.resolve());
             }
         }
@@ -86,20 +92,23 @@ function RequireLoad(parser, name) {
     var allowed = (allow.hasOwnProperty(extension) ? allow[extension] :
         allow.hasOwnProperty(name) ? allow[name] : options.defaultAllow);
     if (!allowed) {
-        throw new TexError_js_1.default('BadRequire', 'Extension "%1" is now allowed to be loaded', extension);
+        throw new TexError_js_1.default('BadRequire', 'Extension "%1" is not allowed to be loaded', extension);
     }
     if (package_js_1.Package.packages.has(extension)) {
-        RegisterExtension(options.jax, extension);
+        RegisterExtension(parser.configuration.packageData.get('require').jax, extension);
     }
     else {
         mathjax_js_1.mathjax.retryAfter(loader_js_1.Loader.load(extension));
     }
 }
 exports.RequireLoad = RequireLoad;
-function config(config, jax) {
+function config(_config, jax) {
+    jax.parseOptions.packageData.set('require', {
+        jax: jax,
+        required: __spreadArray([], __read(jax.options.packages)),
+        configured: new Map()
+    });
     var options = jax.parseOptions.options.require;
-    options.jax = jax;
-    options.required = __spread(jax.options.packages);
     var prefix = options.prefix;
     if (prefix.match(/[^_a-zA-Z0-9]/)) {
         throw Error('Illegal characters used in \\require prefix');
@@ -122,7 +131,11 @@ exports.options = {
     require: {
         allow: Options_js_1.expandable({
             base: false,
-            'all-packages': false
+            'all-packages': false,
+            autoload: false,
+            configmacros: false,
+            tagformat: false,
+            setoptions: false
         }),
         defaultAllow: true,
         prefix: 'tex'

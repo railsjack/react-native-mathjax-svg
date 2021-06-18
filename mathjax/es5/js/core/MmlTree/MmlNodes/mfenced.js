@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23,23 +25,25 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MmlMfenced = void 0;
 var MmlNode_js_1 = require("../MmlNode.js");
 var MmlMfenced = (function (_super) {
     __extends(MmlMfenced, _super);
     function MmlMfenced() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.texClass = MmlNode_js_1.TEXCLASS.INNER;
+        _this.texclass = MmlNode_js_1.TEXCLASS.INNER;
         _this.separators = [];
         _this.open = null;
         _this.close = null;
@@ -49,7 +53,7 @@ var MmlMfenced = (function (_super) {
         get: function () {
             return 'mfenced';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlMfenced.prototype.setTeXclass = function (prev) {
@@ -137,7 +141,7 @@ var MmlMfenced = (function (_super) {
         node.parent = this;
         return node;
     };
-    MmlMfenced.defaults = __assign({}, MmlNode_js_1.AbstractMmlNode.defaults, { open: '(', close: ')', separators: ',' });
+    MmlMfenced.defaults = __assign(__assign({}, MmlNode_js_1.AbstractMmlNode.defaults), { open: '(', close: ')', separators: ',' });
     return MmlMfenced;
 }(MmlNode_js_1.AbstractMmlNode));
 exports.MmlMfenced = MmlMfenced;

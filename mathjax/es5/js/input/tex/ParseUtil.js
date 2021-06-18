@@ -15,15 +15,16 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var MmlNode_js_1 = require("../../core/MmlTree/MmlNode.js");
@@ -31,7 +32,6 @@ var NodeUtil_js_1 = require("./NodeUtil.js");
 var TexParser_js_1 = require("./TexParser.js");
 var TexError_js_1 = require("./TexError.js");
 var Entities_js_1 = require("../../util/Entities.js");
-require("../../util/entities/n.js");
 var ParseUtil;
 (function (ParseUtil) {
     var emPerInch = 7.2;
@@ -67,9 +67,8 @@ var ParseUtil;
         var em = Em(UNIT_CASES[unit](parseFloat(value || '1')));
         return [em.slice(0, -2), 'em', length];
     }
-    ;
     function dimen2em(dim) {
-        var _a = __read(matchDimen(dim), 3), value = _a[0], unit = _a[1], _ = _a[2];
+        var _a = __read(matchDimen(dim), 2), value = _a[0], unit = _a[1];
         var m = parseFloat(value || '1');
         var func = UNIT_CASES[unit];
         return func ? func(m) : 0;
@@ -82,8 +81,17 @@ var ParseUtil;
         return m.toFixed(3).replace(/\.?0+$/, '') + 'em';
     }
     ParseUtil.Em = Em;
-    function fenced(configuration, open, mml, close, big) {
+    function cols() {
+        var W = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            W[_i] = arguments[_i];
+        }
+        return W.map(function (n) { return Em(n); }).join(' ');
+    }
+    ParseUtil.cols = cols;
+    function fenced(configuration, open, mml, close, big, color) {
         if (big === void 0) { big = ''; }
+        if (color === void 0) { color = ''; }
         var nf = configuration.nodeFactory;
         var mrow = nf.create('node', 'mrow', [], { open: open, close: close, texClass: MmlNode_js_1.TEXCLASS.INNER });
         var mo;
@@ -94,13 +102,7 @@ var ParseUtil;
             var openNode = nf.create('text', open);
             mo = nf.create('node', 'mo', [], { fence: true, stretchy: true, symmetric: true, texClass: MmlNode_js_1.TEXCLASS.OPEN }, openNode);
         }
-        NodeUtil_js_1.default.appendChildren(mrow, [mo]);
-        if (NodeUtil_js_1.default.isType(mml, 'mrow') && NodeUtil_js_1.default.isInferred(mml)) {
-            NodeUtil_js_1.default.appendChildren(mrow, NodeUtil_js_1.default.getChildren(mml));
-        }
-        else {
-            NodeUtil_js_1.default.appendChildren(mrow, [mml]);
-        }
+        NodeUtil_js_1.default.appendChildren(mrow, [mo, mml]);
         if (big) {
             mo = new TexParser_js_1.default('\\' + big + 'r' + close, configuration.parser.stack.env, configuration).mml();
         }
@@ -108,6 +110,7 @@ var ParseUtil;
             var closeNode = nf.create('text', close);
             mo = nf.create('node', 'mo', [], { fence: true, stretchy: true, symmetric: true, texClass: MmlNode_js_1.TEXCLASS.CLOSE }, closeNode);
         }
+        color && mo.attributes.set('mathcolor', color);
         NodeUtil_js_1.default.appendChildren(mrow, [mo]);
         return mrow;
     }
@@ -145,7 +148,8 @@ var ParseUtil;
                 (!NodeUtil_js_1.default.isType(child, 'TeXAtom') ||
                     (NodeUtil_js_1.default.getChildren(child)[0] &&
                         NodeUtil_js_1.default.getChildren(NodeUtil_js_1.default.getChildren(child)[0]).length)))) {
-                if (NodeUtil_js_1.default.isEmbellished(child)) {
+                if (NodeUtil_js_1.default.isEmbellished(child) ||
+                    (NodeUtil_js_1.default.isType(child, 'TeXAtom') && NodeUtil_js_1.default.getTexClass(child) === MmlNode_js_1.TEXCLASS.REL)) {
                     var mi = configuration.nodeFactory.create('node', 'mi');
                     nodes.unshift(mi);
                 }
@@ -154,8 +158,12 @@ var ParseUtil;
         }
     }
     ParseUtil.fixInitialMO = fixInitialMO;
-    function internalMath(parser, text, level) {
-        var def = (parser.stack.env['font'] ? { mathvariant: parser.stack.env['font'] } : {});
+    function internalMath(parser, text, level, font) {
+        if (parser.configuration.options.internalMath) {
+            return parser.configuration.options.internalMath(parser, text, level, font);
+        }
+        var mathvariant = font || parser.stack.env.font;
+        var def = (mathvariant ? { mathvariant: mathvariant } : {});
         var mml = [], i = 0, k = 0, c, node, match = '', braces = 0;
         if (text.match(/\\?[${}\\]|\\\(|\\(eq)?ref\s*\{/)) {
             while (i < text.length) {
@@ -245,6 +253,31 @@ var ParseUtil;
         var textNode = parser.create('text', text);
         return parser.create('node', 'mtext', [], def, textNode);
     }
+    ParseUtil.internalText = internalText;
+    function underOver(parser, base, script, pos, stack) {
+        ParseUtil.checkMovableLimits(base);
+        if (NodeUtil_js_1.default.isType(base, 'munderover') && NodeUtil_js_1.default.isEmbellished(base)) {
+            NodeUtil_js_1.default.setProperties(NodeUtil_js_1.default.getCoreMO(base), { lspace: 0, rspace: 0 });
+            var mo = parser.create('node', 'mo', [], { rspace: 0 });
+            base = parser.create('node', 'mrow', [mo, base]);
+        }
+        var mml = parser.create('node', 'munderover', [base]);
+        NodeUtil_js_1.default.setChild(mml, pos === 'over' ? mml.over : mml.under, script);
+        var node = mml;
+        if (stack) {
+            node = parser.create('node', 'TeXAtom', [mml], { texClass: MmlNode_js_1.TEXCLASS.OP, movesupsub: true });
+        }
+        NodeUtil_js_1.default.setProperty(node, 'subsupOK', true);
+        return node;
+    }
+    ParseUtil.underOver = underOver;
+    function checkMovableLimits(base) {
+        var symbol = (NodeUtil_js_1.default.isType(base, 'mo') ? NodeUtil_js_1.default.getForm(base) : null);
+        if (NodeUtil_js_1.default.getProperty(base, 'movablelimits') || (symbol && symbol[3] && symbol[3].movablelimits)) {
+            NodeUtil_js_1.default.setProperties(base, { movablelimits: false });
+        }
+    }
+    ParseUtil.checkMovableLimits = checkMovableLimits;
     function trimSpaces(text) {
         if (typeof (text) !== 'string') {
             return text;
@@ -265,7 +298,7 @@ var ParseUtil;
             array.arraydef.align = 'baseline -1';
         }
         else if (align === 'c') {
-            array.arraydef.align = 'center';
+            array.arraydef.align = 'axis';
         }
         else if (align) {
             array.arraydef.align = align;
@@ -313,6 +346,21 @@ var ParseUtil;
         return s1 + s2;
     }
     ParseUtil.addArgs = addArgs;
+    function checkMaxMacros(parser, isMacro) {
+        if (isMacro === void 0) { isMacro = true; }
+        if (++parser.macroCount <= parser.configuration.options['maxMacros']) {
+            return;
+        }
+        if (isMacro) {
+            throw new TexError_js_1.default('MaxMacroSub1', 'MathJax maximum macro substitution count exceeded; ' +
+                'is here a recursive macro call?');
+        }
+        else {
+            throw new TexError_js_1.default('MaxMacroSub2', 'MathJax maximum substitution count exceeded; ' +
+                'is there a recursive latex environment?');
+        }
+    }
+    ParseUtil.checkMaxMacros = checkMaxMacros;
     function checkEqnEnv(parser) {
         if (parser.stack.global.eqnenv) {
             throw new TexError_js_1.default('ErroneousNestingEq', 'Erroneous nesting of equation structures');
@@ -320,20 +368,41 @@ var ParseUtil;
         parser.stack.global.eqnenv = true;
     }
     ParseUtil.checkEqnEnv = checkEqnEnv;
-    ;
-    function MmlFilterAttribute(parser, name, value) {
+    function copyNode(node, parser) {
+        var tree = node.copy();
+        var options = parser.configuration;
+        tree.walkTree(function (n) {
+            var e_1, _a;
+            options.addNode(n.kind, n);
+            var lists = (n.getProperty('in-lists') || '').split(/,/);
+            try {
+                for (var lists_1 = __values(lists), lists_1_1 = lists_1.next(); !lists_1_1.done; lists_1_1 = lists_1.next()) {
+                    var list = lists_1_1.value;
+                    options.addNode(list, n);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (lists_1_1 && !lists_1_1.done && (_a = lists_1.return)) _a.call(lists_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        });
+        return tree;
+    }
+    ParseUtil.copyNode = copyNode;
+    function MmlFilterAttribute(_parser, _name, value) {
         return value;
     }
     ParseUtil.MmlFilterAttribute = MmlFilterAttribute;
-    ;
     function getFontDef(parser) {
         var font = parser.stack.env['font'];
         return (font ? { mathvariant: font } : {});
     }
     ParseUtil.getFontDef = getFontDef;
-    ;
     function keyvalOptions(attrib, allowed, error) {
-        var e_1, _a;
+        var e_2, _a;
         if (allowed === void 0) { allowed = null; }
         if (error === void 0) { error = false; }
         var def = readKeyval(attrib);
@@ -343,18 +412,18 @@ var ParseUtil;
                     var key = _c.value;
                     if (!allowed.hasOwnProperty(key)) {
                         if (error) {
-                            throw new TexError_js_1.default('InvalidOption', 'Invalid optional argument: %1', key);
+                            throw new TexError_js_1.default('InvalidOption', 'Invalid option: %1', key);
                         }
                         delete def[key];
                     }
                 }
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
                     if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
                 }
-                finally { if (e_1) throw e_1.error; }
+                finally { if (e_2) throw e_2.error; }
             }
         }
         return def;
@@ -436,7 +505,6 @@ var ParseUtil;
         }
         return [stopCount ? 'true' : removeBraces(value, start), '', text.slice(index)];
     }
-    ;
 })(ParseUtil || (ParseUtil = {}));
 exports.default = ParseUtil;
 //# sourceMappingURL=ParseUtil.js.map

@@ -6,21 +6,15 @@ var TexConstants_js_1 = require("../TexConstants.js");
 var ParseMethods_js_1 = require("../ParseMethods.js");
 var ParseUtil_js_1 = require("../ParseUtil.js");
 var MmlNode_js_1 = require("../../../core/MmlTree/MmlNode.js");
-var COLS = function (W) {
-    var WW = [];
-    for (var i = 0, m = W.length; i < m; i++) {
-        WW[i] = ParseUtil_js_1.default.Em(W[i]);
-    }
-    return WW.join(' ');
-};
+var lengths_js_1 = require("../../../util/lengths.js");
 new sm.CharacterMap('AMSmath-mathchar0mo', ParseMethods_js_1.default.mathchar0mo, {
     iiiint: ['\u2A0C', { texClass: MmlNode_js_1.TEXCLASS.OP }]
 });
 new sm.CommandMap('AMSmath-macros', {
     mathring: ['Accent', '02DA'],
     nobreakspace: 'Tilde',
-    negmedspace: ['Spacer', TexConstants_js_1.TexConstant.Length.NEGATIVEMEDIUMMATHSPACE],
-    negthickspace: ['Spacer', TexConstants_js_1.TexConstant.Length.NEGATIVETHICKMATHSPACE],
+    negmedspace: ['Spacer', lengths_js_1.MATHSPACE.negativemediummathspace],
+    negthickspace: ['Spacer', lengths_js_1.MATHSPACE.negativethickmathspace],
     idotsint: ['MultiIntegral', '\\int\\cdots\\int'],
     dddot: ['Accent', '20DB'],
     ddddot: ['Accent', '20DC'],
@@ -50,29 +44,32 @@ new sm.CommandMap('AMSmath-macros', {
     cfrac: 'CFrac',
     shoveleft: ['HandleShove', TexConstants_js_1.TexConstant.Align.LEFT],
     shoveright: ['HandleShove', TexConstants_js_1.TexConstant.Align.RIGHT],
-    xrightarrow: ['xArrow', 0x2192, 5, 6],
-    xleftarrow: ['xArrow', 0x2190, 7, 3]
-}, AmsMethods_js_1.default);
+    xrightarrow: ['xArrow', 0x2192, 5, 10],
+    xleftarrow: ['xArrow', 0x2190, 10, 5]
+}, AmsMethods_js_1.AmsMethods);
 new sm.EnvironmentMap('AMSmath-environment', ParseMethods_js_1.default.environment, {
+    'equation*': ['Equation', null, false],
     'eqnarray*': ['EqnArray', null, false, true, 'rcl',
-        '0 ' + TexConstants_js_1.TexConstant.Length.THICKMATHSPACE, '.5em'],
-    align: ['EqnArray', null, true, true, 'rlrlrlrlrlrl',
-        COLS([0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0])],
-    'align*': ['EqnArray', null, false, true, 'rlrlrlrlrlrl',
-        COLS([0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0])],
+        ParseUtil_js_1.default.cols(0, lengths_js_1.MATHSPACE.thickmathspace), '.5em'],
+    align: ['EqnArray', null, true, true, 'rl', ParseUtil_js_1.default.cols(0, 2)],
+    'align*': ['EqnArray', null, false, true, 'rl', ParseUtil_js_1.default.cols(0, 2)],
     multline: ['Multline', null, true],
     'multline*': ['Multline', null, false],
-    split: ['EqnArray', null, false, false, 'rl', COLS([0])],
+    split: ['EqnArray', null, false, false, 'rl', ParseUtil_js_1.default.cols(0)],
     gather: ['EqnArray', null, true, true, 'c'],
     'gather*': ['EqnArray', null, false, true, 'c'],
     alignat: ['AlignAt', null, true, true],
     'alignat*': ['AlignAt', null, false, true],
     alignedat: ['AlignAt', null, false, false],
-    aligned: ['AmsEqnArray', null, null, null, 'rlrlrlrlrlrl',
-        COLS([0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0]), '.5em', 'D'],
+    aligned: ['AmsEqnArray', null, null, null, 'rl', ParseUtil_js_1.default.cols(0, 2), '.5em', 'D'],
     gathered: ['AmsEqnArray', null, null, null, 'c', null, '.5em', 'D'],
-    subarray: ['Array', null, null, null, null, COLS([0]), '0.1em', 'S', 1],
-    smallmatrix: ['Array', null, null, null, 'c', COLS([1 / 3]),
+    xalignat: ['XalignAt', null, true, true],
+    'xalignat*': ['XalignAt', null, false, true],
+    xxalignat: ['XalignAt', null, false, false],
+    flalign: ['FlalignArray', null, true, false, true, 'rlc', 'auto auto fit'],
+    'flalign*': ['FlalignArray', null, false, false, true, 'rlc', 'auto auto fit'],
+    subarray: ['Array', null, null, null, null, ParseUtil_js_1.default.cols(0), '0.1em', 'S', 1],
+    smallmatrix: ['Array', null, null, null, 'c', ParseUtil_js_1.default.cols(1 / 3),
         '.2em', 'S', 1],
     matrix: ['Array', null, null, null, 'c'],
     pmatrix: ['Array', null, '(', ')', 'c'],
@@ -81,7 +78,7 @@ new sm.EnvironmentMap('AMSmath-environment', ParseMethods_js_1.default.environme
     vmatrix: ['Array', null, '\\vert', '\\vert', 'c'],
     Vmatrix: ['Array', null, '\\Vert', '\\Vert', 'c'],
     cases: ['Array', null, '\\{', '.', 'll', null, '.2em', 'T']
-}, AmsMethods_js_1.default);
+}, AmsMethods_js_1.AmsMethods);
 new sm.DelimiterMap('AMSmath-delimiter', ParseMethods_js_1.default.delimiter, {
     '\\lvert': ['\u007C', { texClass: MmlNode_js_1.TEXCLASS.OPEN }],
     '\\rvert': ['\u007C', { texClass: MmlNode_js_1.TEXCLASS.CLOSE }],
@@ -136,10 +133,10 @@ new sm.CharacterMap('AMSsymbols-mathchar0mi', ParseMethods_js_1.default.mathchar
     checkmark: '\u2713',
     maltese: '\u2720'
 });
-new sm.CharacterMap('AMSsymbols-mathchar0m0', ParseMethods_js_1.default.mathchar0mo, {
+new sm.CharacterMap('AMSsymbols-mathchar0mo', ParseMethods_js_1.default.mathchar0mo, {
     dotplus: '\u2214',
     ltimes: '\u22C9',
-    smallsetminus: '\u2216',
+    smallsetminus: ['\u2216', { variantForm: true }],
     rtimes: '\u22CA',
     Cap: '\u22D2',
     doublecap: '\u22D2',
@@ -267,7 +264,7 @@ new sm.CharacterMap('AMSsymbols-mathchar0m0', ParseMethods_js_1.default.mathchar
     precnapprox: '\u2AB9',
     succnapprox: '\u2ABA',
     nsim: '\u2241',
-    ncong: '\u2246',
+    ncong: '\u2247',
     nshortmid: ['\u2224', { variantForm: true }],
     nshortparallel: ['\u2226', { variantForm: true }],
     nmid: '\u2224',
@@ -341,5 +338,5 @@ new sm.DelimiterMap('AMSsymbols-delimiter', ParseMethods_js_1.default.delimiter,
 new sm.CommandMap('AMSsymbols-macros', {
     implies: ['Macro', '\\;\\Longrightarrow\\;'],
     impliedby: ['Macro', '\\;\\Longleftarrow\\;']
-}, AmsMethods_js_1.default);
+}, AmsMethods_js_1.AmsMethods);
 //# sourceMappingURL=AmsMappings.js.map

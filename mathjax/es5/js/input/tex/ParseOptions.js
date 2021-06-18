@@ -15,40 +15,43 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var StackItemFactory_js_1 = require("./StackItemFactory.js");
-var MapHandler_js_1 = require("./MapHandler.js");
 var NodeFactory_js_1 = require("./NodeFactory.js");
+var NodeUtil_js_1 = require("./NodeUtil.js");
 var Options_js_1 = require("../../util/Options.js");
 var ParseOptions = (function () {
     function ParseOptions(configuration, options) {
         if (options === void 0) { options = []; }
         this.options = {};
+        this.packageData = new Map();
         this.parsers = [];
         this.root = null;
         this.nodeLists = {};
         this.error = false;
-        this.handlers = new MapHandler_js_1.SubHandlers(configuration);
+        this.handlers = configuration.handlers;
         this.nodeFactory = new NodeFactory_js_1.NodeFactory();
         this.nodeFactory.configuration = this;
         this.nodeFactory.setCreators(configuration.nodes);
         this.itemFactory = new StackItemFactory_js_1.default(configuration.items);
         this.itemFactory.configuration = this;
-        Options_js_1.defaultOptions.apply(void 0, __spread([this.options], options));
+        Options_js_1.defaultOptions.apply(void 0, __spreadArray([this.options], __read(options)));
         Options_js_1.defaultOptions(this.options, configuration.options);
     }
     ParseOptions.prototype.pushParser = function (parser) {
@@ -61,7 +64,7 @@ var ParseOptions = (function () {
         get: function () {
             return this.parsers[0];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     ParseOptions.prototype.clear = function () {
@@ -77,6 +80,11 @@ var ParseOptions = (function () {
             list = this.nodeLists[property] = [];
         }
         list.push(node);
+        if (node.kind !== property) {
+            var inlists = (NodeUtil_js_1.default.getProperty(node, 'in-lists') || '');
+            var lists = (inlists ? inlists.split(/,/) : []).concat(property).join(',');
+            NodeUtil_js_1.default.setProperty(node, 'in-lists', lists);
+        }
     };
     ParseOptions.prototype.getList = function (property) {
         var e_1, _a;
@@ -99,6 +107,26 @@ var ParseOptions = (function () {
         }
         this.nodeLists[property] = result;
         return result;
+    };
+    ParseOptions.prototype.removeFromList = function (property, nodes) {
+        var e_2, _a;
+        var list = this.nodeLists[property] || [];
+        try {
+            for (var nodes_1 = __values(nodes), nodes_1_1 = nodes_1.next(); !nodes_1_1.done; nodes_1_1 = nodes_1.next()) {
+                var node = nodes_1_1.value;
+                var i = list.indexOf(node);
+                if (i >= 0) {
+                    list.splice(i, 1);
+                }
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (nodes_1_1 && !nodes_1_1.done && (_a = nodes_1.return)) _a.call(nodes_1);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
     };
     ParseOptions.prototype.inTree = function (node) {
         while (node && node !== this.root) {

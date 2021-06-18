@@ -1,13 +1,14 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -25,9 +26,10 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var NodeUtil_js_1 = require("./NodeUtil.js");
@@ -51,7 +53,7 @@ var Stack = (function () {
         set: function (env) {
             this._env = env;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Stack.prototype.Push = function () {
@@ -75,7 +77,7 @@ var Stack = (function () {
                 }
                 if (top_1) {
                     this.Pop();
-                    this.Push.apply(this, __spread(top_1));
+                    this.Push.apply(this, __spreadArray([], __read(top_1)));
                     continue;
                 }
                 this.stack.push(item);

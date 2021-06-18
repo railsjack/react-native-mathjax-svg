@@ -15,26 +15,30 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractExplorer = void 0;
+require("../sre.js");
 var AbstractExplorer = (function () {
     function AbstractExplorer(document, region, node) {
-        var rest = [];
+        var _rest = [];
         for (var _i = 3; _i < arguments.length; _i++) {
-            rest[_i - 3] = arguments[_i];
+            _rest[_i - 3] = arguments[_i];
         }
         this.document = document;
         this.region = region;
@@ -64,7 +68,7 @@ var AbstractExplorer = (function () {
         for (var _i = 3; _i < arguments.length; _i++) {
             rest[_i - 3] = arguments[_i];
         }
-        var explorer = new (this.bind.apply(this, __spread([void 0, document, region, node], rest)))();
+        var explorer = new (this.bind.apply(this, __spreadArray([void 0, document, region, node], __read(rest))))();
         return explorer;
     };
     AbstractExplorer.prototype.Events = function () {
@@ -77,7 +81,7 @@ var AbstractExplorer = (function () {
         set: function (flag) {
             this._active = flag;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractExplorer.prototype.Attach = function () {
@@ -135,9 +139,9 @@ var AbstractExplorer = (function () {
     AbstractExplorer.prototype.getHighlighter = function () {
         var opts = this.document.options.a11y;
         var foreground = { color: opts.foregroundColor.toLowerCase(),
-            alpha: opts.foregroundOpacity };
+            alpha: opts.foregroundOpacity / 100 };
         var background = { color: opts.backgroundColor.toLowerCase(),
-            alpha: opts.backgroundOpacity };
+            alpha: opts.backgroundOpacity / 100 };
         return sre.HighlighterFactory.highlighter(background, foreground, { renderer: this.document.outputJax.name, browser: 'v3' });
     };
     AbstractExplorer.prototype.stopEvent = function (event) {

@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -14,7 +16,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
-var CssStyles_js_1 = require("../../output/common/CssStyles.js");
+exports.HoverRegion = exports.LiveRegion = exports.ToolTip = exports.StringRegion = exports.DummyRegion = exports.AbstractRegion = void 0;
+var StyleList_js_1 = require("../../util/StyleList.js");
 require("../sre.js");
 var AbstractRegion = (function () {
     function AbstractRegion(document) {
@@ -84,7 +87,7 @@ var DummyRegion = (function (_super) {
     DummyRegion.prototype.AddElement = function () { };
     DummyRegion.prototype.AddStyles = function () { };
     DummyRegion.prototype.position = function () { };
-    DummyRegion.prototype.highlight = function (highlighter) { };
+    DummyRegion.prototype.highlight = function (_highlighter) { };
     return DummyRegion;
 }(AbstractRegion));
 exports.DummyRegion = DummyRegion;
@@ -119,7 +122,7 @@ var ToolTip = (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     ToolTip.className = 'MJX_ToolTip';
-    ToolTip.style = new CssStyles_js_1.CssStyles((_a = {},
+    ToolTip.style = new StyleList_js_1.CssStyles((_a = {},
         _a['.' + ToolTip.className] = {
             position: 'absolute', display: 'inline-block',
             height: '1px', width: '1px'
@@ -143,7 +146,7 @@ var LiveRegion = (function (_super) {
         return _this;
     }
     LiveRegion.className = 'MJX_LiveRegion';
-    LiveRegion.style = new CssStyles_js_1.CssStyles((_b = {},
+    LiveRegion.style = new StyleList_js_1.CssStyles((_b = {},
         _b['.' + LiveRegion.className] = {
             position: 'absolute', top: '0', height: '1px', width: '1px',
             padding: '1px', overflow: 'hidden'
@@ -247,7 +250,7 @@ var HoverRegion = (function (_super) {
         return mjx;
     };
     HoverRegion.className = 'MJX_HoverRegion';
-    HoverRegion.style = new CssStyles_js_1.CssStyles((_c = {},
+    HoverRegion.style = new StyleList_js_1.CssStyles((_c = {},
         _c['.' + HoverRegion.className] = {
             position: 'absolute', height: '1px', width: '1px',
             padding: '1px', overflow: 'hidden'

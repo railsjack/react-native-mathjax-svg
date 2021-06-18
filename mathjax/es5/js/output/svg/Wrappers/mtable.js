@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -28,15 +30,16 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SVGmtable = void 0;
 var Wrapper_js_1 = require("../Wrapper.js");
 var mtable_js_1 = require("../../common/Wrappers/mtable.js");
 var mtable_js_2 = require("../../../core/MmlTree/MmlNodes/mtable.js");
-var WFUZZ = .25;
 var CLASSPREFIX = 'mjx-';
 var SVGmtable = (function (_super) {
     __extends(SVGmtable, _super);
@@ -65,7 +68,7 @@ var SVGmtable = (function (_super) {
         var _d = this.getTableData(), H = _d.H, D = _d.D;
         var HD = this.getEqualRowHeight();
         var rSpace = this.getRowHalfSpacing();
-        var rLines = __spread([this.fLine], this.rLines, [this.fLine]);
+        var rLines = __spreadArray(__spreadArray([this.fLine], __read(this.rLines)), [this.fLine]);
         var y = this.getBBox().h - rLines[0];
         for (var i = 0; i < this.numRows; i++) {
             var row = this.childNodes[i];
@@ -82,7 +85,7 @@ var SVGmtable = (function (_super) {
     };
     SVGmtable.prototype.handleColor = function () {
         _super.prototype.handleColor.call(this);
-        var rect = this.adaptor.firstChild(this.element);
+        var rect = this.firstChild();
         if (rect) {
             this.adaptor.setAttribute(rect, 'width', this.fixed(this.getWidth()));
         }
@@ -127,7 +130,7 @@ var SVGmtable = (function (_super) {
         }
     };
     SVGmtable.prototype.handleFrame = function (svg) {
-        if (this.frame) {
+        if (this.frame && this.fLine) {
             var _a = this.getBBox(), h = _a.h, d = _a.d, w = _a.w;
             var style = this.node.attributes.get('frame');
             this.adaptor.append(svg, this.makeFrame(w, h, d, style));
@@ -139,7 +142,7 @@ var SVGmtable = (function (_super) {
         }
         var _a = this.getBBox(), w = _a.w, L = _a.L, R = _a.R;
         var W = L + this.pWidth + R;
-        var _b = __read(this.getAlignShift(), 2), align = _b[0], shift = _b[1];
+        var align = this.getAlignShift()[0];
         var CW = Math.max(this.isTop ? W : 0, this.container.getWrapWidth(this.containerI)) - L - R;
         var dw = w - (this.pWidth > CW ? CW : this.pWidth);
         var dx = (align === 'left' ? 0 : align === 'right' ? dw : dw / 2);
@@ -188,20 +191,18 @@ var SVGmtable = (function (_super) {
         }
         return properties;
     };
-    SVGmtable.prototype.handleLabels = function (svg, parent, dx) {
+    SVGmtable.prototype.handleLabels = function (svg, _parent, dx) {
         if (!this.hasLabels)
             return;
         var labels = this.labels;
         var attributes = this.node.attributes;
-        var adaptor = this.adaptor;
         var side = attributes.get('side');
         this.spaceLabels();
         this.isTop ? this.topTable(svg, labels, side) : this.subTable(svg, labels, side, dx);
     };
     SVGmtable.prototype.spaceLabels = function () {
         var adaptor = this.adaptor;
-        var equal = this.node.attributes.get('equalrows');
-        var _a = this.getBBox(), h = _a.h, d = _a.d;
+        var h = this.getBBox().h;
         var L = this.getTableData().L;
         var space = this.getRowHalfSpacing();
         var y = h - this.fLine;
@@ -225,21 +226,22 @@ var SVGmtable = (function (_super) {
         var _a = this.getBBox(), h = _a.h, d = _a.d, w = _a.w, L = _a.L, R = _a.R;
         var W = L + (this.pWidth || w) + R;
         var LW = this.getTableData().L;
-        var _b = __read(this.getPadAlignShift(side), 3), pad = _b[0], align = _b[1], shift = _b[2];
-        var translate = (shift ? " translate(" + this.fixed(shift) + " 0)" : '');
+        var _b = __read(this.getPadAlignShift(side), 3), align = _b[1], shift = _b[2];
+        var dx = shift + (align === 'right' ? -W : align === 'center' ? -W / 2 : 0) + L;
+        var matrix = 'matrix(1 0 0 -1 0 0)';
         var scale = "scale(" + this.jax.fixed((this.font.params.x_height * 1000) / this.metrics.ex, 2) + ")";
-        var transform = "translate(0, " + this.fixed(h) + ") matrix(1 0 0 -1 0 0) " + scale;
+        var transform = "translate(0 " + this.fixed(h) + ") " + matrix + " " + scale;
         var table = this.svg('svg', {
             'data-table': true,
             preserveAspectRatio: (align === 'left' ? 'xMinYMid' : align === 'right' ? 'xMaxYMid' : 'xMidYMid'),
-            viewBox: [this.fixed(-L), this.fixed(-h), this.fixed(W), this.fixed(h + d)].join(' ')
+            viewBox: [this.fixed(-dx), this.fixed(-h), 1, this.fixed(h + d)].join(' ')
         }, [
-            this.svg('g', { transform: 'matrix(1 0 0 -1 0 0)' + translate }, adaptor.childNodes(svg))
+            this.svg('g', { transform: matrix }, adaptor.childNodes(svg))
         ]);
         labels = this.svg('svg', {
             'data-labels': true,
             preserveAspectRatio: (side === 'left' ? 'xMinYMid' : 'xMaxYMid'),
-            viewBox: [0, this.fixed(-h), this.fixed(LW), this.fixed(h + d)].join(' ')
+            viewBox: [side === 'left' ? 0 : this.fixed(LW), this.fixed(-h), 1, this.fixed(h + d)].join(' ')
         }, [labels]);
         adaptor.append(svg, this.svg('g', { transform: transform }, [table, labels]));
         this.place(-L, 0, svg);
@@ -249,7 +251,7 @@ var SVGmtable = (function (_super) {
         var _a = this.getBBox(), w = _a.w, L = _a.L, R = _a.R;
         var W = L + (this.pWidth || w) + R;
         var labelW = this.getTableData().L;
-        var _b = __read(this.getAlignShift(), 2), align = _b[0], shift = _b[1];
+        var align = this.getAlignShift()[0];
         var CW = Math.max(W, this.container.getWrapWidth(this.containerI));
         this.place(side === 'left' ?
             (align === 'left' ? 0 : align === 'right' ? W - CW + dx : (W - CW) / 2 + dx) - L :
@@ -258,22 +260,22 @@ var SVGmtable = (function (_super) {
     };
     SVGmtable.kind = mtable_js_2.MmlMtable.prototype.kind;
     SVGmtable.styles = {
-        'g[data-mml-node="mtable"] > line[data-line]': {
+        'g[data-mml-node="mtable"] > line[data-line], svg[data-table] > g > line[data-line]': {
             'stroke-width': '70px',
             fill: 'none'
         },
-        'g[data-mml-node="mtable"] > rect[data-frame]': {
+        'g[data-mml-node="mtable"] > rect[data-frame], svg[data-table] > g > rect[data-frame]': {
             'stroke-width': '70px',
             fill: 'none'
         },
-        'g[data-mml-node="mtable"] > .mjx-dashed': {
+        'g[data-mml-node="mtable"] > .mjx-dashed, svg[data-table] > g > .mjx-dashed': {
             'stroke-dasharray': '140'
         },
-        'g[data-mml-node="mtable"] > .mjx-dotted': {
+        'g[data-mml-node="mtable"] > .mjx-dotted, svg[data-table] > g > .mjx-dotted': {
             'stroke-linecap': 'round',
             'stroke-dasharray': '0,140'
         },
-        'g[data-mml-node="mtable"] > svg': {
+        'g[data-mml-node="mtable"] > g > svg': {
             overflow: 'visible'
         }
     };

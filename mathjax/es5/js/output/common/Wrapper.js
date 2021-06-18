@@ -3,24 +3,27 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -38,17 +41,19 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommonWrapper = void 0;
 var Wrapper_js_1 = require("../../core/Tree/Wrapper.js");
 var MmlNode_js_1 = require("../../core/MmlTree/MmlNode.js");
 var string_js_1 = require("../../util/string.js");
 var LENGTHS = require("../../util/lengths.js");
 var Styles_js_1 = require("../../util/Styles.js");
-var BBox_js_1 = require("./BBox.js");
+var BBox_js_1 = require("../../util/BBox.js");
 var FontData_js_1 = require("./FontData.js");
 var SMALLSIZE = 2 / 18;
 function MathMLSpace(script, size) {
@@ -86,28 +91,28 @@ var CommonWrapper = (function (_super) {
         get: function () {
             return this.factory.jax;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(CommonWrapper.prototype, "adaptor", {
         get: function () {
             return this.factory.jax.adaptor;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(CommonWrapper.prototype, "metrics", {
         get: function () {
             return this.factory.jax.math.metrics;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(CommonWrapper.prototype, "fixesPWidth", {
         get: function () {
             return !this.node.notParent && !this.node.isToken;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     CommonWrapper.prototype.wrap = function (node, parent) {
@@ -190,11 +195,14 @@ var CommonWrapper = (function (_super) {
     };
     CommonWrapper.prototype.copySkewIC = function (bbox) {
         var first = this.childNodes[0];
-        if (first && first.bbox.sk) {
+        if (first === null || first === void 0 ? void 0 : first.bbox.sk) {
             bbox.sk = first.bbox.sk;
         }
+        if (first === null || first === void 0 ? void 0 : first.bbox.dx) {
+            bbox.dx = first.bbox.dx;
+        }
         var last = this.childNodes[this.childNodes.length - 1];
-        if (last && last.bbox.ic) {
+        if (last === null || last === void 0 ? void 0 : last.bbox.ic) {
             bbox.ic = last.bbox.ic;
             bbox.w += bbox.ic;
         }
@@ -279,7 +287,7 @@ var CommonWrapper = (function (_super) {
         if (this.removedStyles && this.removedStyles.fontSize && !fontsize) {
             fontsize = this.removedStyles.fontSize;
         }
-        if (fontsize && !mathsize) {
+        if (fontsize && !attributes.getExplicit('mathsize')) {
             mathsize = fontsize;
         }
         if (mathsize !== '1') {
@@ -300,8 +308,11 @@ var CommonWrapper = (function (_super) {
     };
     CommonWrapper.prototype.getMathMLSpacing = function () {
         var node = this.node.coreMO();
+        var child = node.coreParent();
+        var parent = child.parent;
+        if (!parent || !parent.isKind('mrow') || parent.childNodes.length === 1)
+            return;
         var attributes = node.attributes;
-        var parent = this.jax.nodeMap.get(node.coreParent());
         var isScript = (attributes.get('scriptlevel') > 0);
         this.bbox.L = (attributes.isSet('lspace') ?
             Math.max(0, this.length2em(attributes.get('lspace'))) :
@@ -309,6 +320,16 @@ var CommonWrapper = (function (_super) {
         this.bbox.R = (attributes.isSet('rspace') ?
             Math.max(0, this.length2em(attributes.get('rspace'))) :
             MathMLSpace(isScript, node.rspace));
+        var n = parent.childIndex(child);
+        if (n === 0)
+            return;
+        var prev = parent.childNodes[n - 1];
+        if (!prev.isEmbellished)
+            return;
+        var bbox = this.jax.nodeMap.get(prev).getBBox();
+        if (bbox.R) {
+            this.bbox.L = Math.max(0, this.bbox.L - bbox.R);
+        }
     };
     CommonWrapper.prototype.getTeXSpacing = function (isTop, hasSpacing) {
         if (!hasSpacing) {
@@ -329,7 +350,7 @@ var CommonWrapper = (function (_super) {
     };
     CommonWrapper.prototype.isTopEmbellished = function () {
         return (this.node.isEmbellished &&
-            !(this.node.Parent && this.node.Parent.isEmbellished));
+            !(this.node.parent && this.node.parent.isEmbellished));
     };
     CommonWrapper.prototype.core = function () {
         return this.jax.nodeMap.get(this.node.core());
@@ -373,7 +394,7 @@ var CommonWrapper = (function (_super) {
     };
     CommonWrapper.prototype.getAlignShift = function () {
         var _a;
-        var _b = (_a = this.node.attributes).getList.apply(_a, __spread(MmlNode_js_1.indentAttributes)), indentalign = _b.indentalign, indentshift = _b.indentshift, indentalignfirst = _b.indentalignfirst, indentshiftfirst = _b.indentshiftfirst;
+        var _b = (_a = this.node.attributes).getList.apply(_a, __spreadArray([], __read(MmlNode_js_1.indentAttributes))), indentalign = _b.indentalign, indentshift = _b.indentshift, indentalignfirst = _b.indentalignfirst, indentshiftfirst = _b.indentshiftfirst;
         if (indentalignfirst !== 'indentalign') {
             indentalign = indentalignfirst;
         }
@@ -400,13 +421,13 @@ var CommonWrapper = (function (_super) {
     CommonWrapper.prototype.getAlignY = function (H, D, h, d, align) {
         return (align === 'top' ? H - h :
             align === 'bottom' ? d - D :
-                align === 'middle' ? ((H - h) - (D - d)) / 2 :
+                align === 'center' ? ((H - h) - (D - d)) / 2 :
                     0);
     };
     CommonWrapper.prototype.getWrapWidth = function (i) {
         return this.childNodes[i].getBBox().w;
     };
-    CommonWrapper.prototype.getChildAlign = function (i) {
+    CommonWrapper.prototype.getChildAlign = function (_i) {
         return 'left';
     };
     CommonWrapper.prototype.percent = function (m) {
@@ -427,8 +448,15 @@ var CommonWrapper = (function (_super) {
         }
         return LENGTHS.length2em(length, size, scale, this.jax.pxPerEm);
     };
-    CommonWrapper.prototype.unicodeChars = function (text) {
-        return string_js_1.unicodeChars(text);
+    CommonWrapper.prototype.unicodeChars = function (text, name) {
+        if (name === void 0) { name = this.variant; }
+        var chars = string_js_1.unicodeChars(text);
+        var variant = this.font.getVariant(name);
+        if (variant && variant.chars) {
+            var map_1 = variant.chars;
+            chars = chars.map(function (n) { return ((map_1[n] || [])[3] || {}).smp || n; });
+        }
+        return chars;
     };
     CommonWrapper.prototype.remapChars = function (chars) {
         return chars;

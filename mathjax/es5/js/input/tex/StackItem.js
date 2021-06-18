@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -28,21 +30,24 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BaseItem = exports.MmlStack = void 0;
 var TexError_js_1 = require("./TexError.js");
 var MmlStack = (function () {
     function MmlStack(_nodes) {
@@ -52,7 +57,7 @@ var MmlStack = (function () {
         get: function () {
             return this._nodes;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlStack.prototype.Push = function () {
@@ -61,7 +66,7 @@ var MmlStack = (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             nodes[_i] = arguments[_i];
         }
-        (_a = this._nodes).push.apply(_a, __spread(nodes));
+        (_a = this._nodes).push.apply(_a, __spreadArray([], __read(nodes)));
     };
     MmlStack.prototype.Pop = function () {
         return this._nodes.pop();
@@ -73,7 +78,7 @@ var MmlStack = (function () {
         set: function (node) {
             this._nodes[this.Size() - 1] = node;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlStack.prototype, "Last", {
@@ -83,7 +88,7 @@ var MmlStack = (function () {
         set: function (node) {
             this._nodes[0] = node;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlStack.prototype.Peek = function (n) {
@@ -111,7 +116,7 @@ var MmlStack = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             rest[_i - 1] = arguments[_i];
         }
-        return (_a = this.factory.configuration.nodeFactory).create.apply(_a, __spread([kind], rest));
+        return (_a = this.factory.configuration.nodeFactory).create.apply(_a, __spreadArray([kind], __read(rest)));
     };
     return MmlStack;
 }());
@@ -136,7 +141,7 @@ var BaseItem = (function (_super) {
         get: function () {
             return 'base';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseItem.prototype, "env", {
@@ -146,14 +151,14 @@ var BaseItem = (function (_super) {
         set: function (value) {
             this._env = value;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseItem.prototype, "copyEnv", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     BaseItem.prototype.getProperty = function (key) {
@@ -167,21 +172,21 @@ var BaseItem = (function (_super) {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseItem.prototype, "isClose", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(BaseItem.prototype, "isFinal", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     BaseItem.prototype.isKind = function (kind) {
@@ -243,7 +248,8 @@ var BaseItem = (function (_super) {
     BaseItem.errors = {
         end: ['MissingBeginExtraEnd', 'Missing \\begin{%1} or extra \\end{%1}'],
         close: ['ExtraCloseMissingOpen', 'Extra close brace or missing open brace'],
-        right: ['MissingLeftExtraRight', 'Missing \\left or extra \\right']
+        right: ['MissingLeftExtraRight', 'Missing \\left or extra \\right'],
+        middle: ['ExtraMiddle', 'Extra \\middle']
     };
     return BaseItem;
 }(MmlStack));

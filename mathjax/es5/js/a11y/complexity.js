@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -39,21 +41,24 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ComplexityHandler = exports.ComplexityMathDocumentMixin = exports.ComplexityMathItemMixin = void 0;
 var MathItem_js_1 = require("../core/MathItem.js");
 var semantic_enrich_js_1 = require("./semantic-enrich.js");
 var visitor_js_1 = require("./complexity/visitor.js");
@@ -65,12 +70,15 @@ function ComplexityMathItemMixin(BaseMathItem, computeComplexity) {
         function class_1() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        class_1.prototype.complexity = function (document) {
-            if (this.state() < MathItem_js_1.STATE.COMPLEXITY) {
-                this.enrich(document);
+        class_1.prototype.complexity = function (document, force) {
+            if (force === void 0) { force = false; }
+            if (this.state() >= MathItem_js_1.STATE.COMPLEXITY)
+                return;
+            if (!this.isEscaped && (document.options.enableComplexity || force)) {
+                this.enrich(document, true);
                 computeComplexity(this.root);
-                this.state(MathItem_js_1.STATE.COMPLEXITY);
             }
+            this.state(MathItem_js_1.STATE.COMPLEXITY);
         };
         return class_1;
     }(BaseMathItem));
@@ -85,7 +93,7 @@ function ComplexityMathDocumentMixin(BaseDocument) {
                 for (var _i = 0; _i < arguments.length; _i++) {
                     args[_i] = arguments[_i];
                 }
-                var _this = _super.apply(this, __spread(args)) || this;
+                var _this = _super.apply(this, __spreadArray([], __read(args))) || this;
                 var ProcessBits = _this.constructor.ProcessBits;
                 if (!ProcessBits.has('complexity')) {
                     ProcessBits.allocate('complexity');
@@ -100,18 +108,20 @@ function ComplexityMathDocumentMixin(BaseDocument) {
             class_2.prototype.complexity = function () {
                 var e_1, _a;
                 if (!this.processed.isSet('complexity')) {
-                    try {
-                        for (var _b = __values(this.math), _c = _b.next(); !_c.done; _c = _b.next()) {
-                            var math = _c.value;
-                            math.complexity(this);
-                        }
-                    }
-                    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                    finally {
+                    if (this.options.enableComplexity) {
                         try {
-                            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                            for (var _b = __values(this.math), _c = _b.next(); !_c.done; _c = _b.next()) {
+                                var math = _c.value;
+                                math.complexity(this);
+                            }
                         }
-                        finally { if (e_1) throw e_1.error; }
+                        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                        finally {
+                            try {
+                                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                            }
+                            finally { if (e_1) throw e_1.error; }
+                        }
                     }
                     this.processed.set('complexity');
                 }
@@ -127,7 +137,7 @@ function ComplexityMathDocumentMixin(BaseDocument) {
             };
             return class_2;
         }(BaseDocument)),
-        _a.OPTIONS = __assign({}, BaseDocument.OPTIONS, visitor_js_1.ComplexityVisitor.OPTIONS, { ComplexityVisitor: visitor_js_1.ComplexityVisitor, renderActions: Options_js_1.expandable(__assign({}, BaseDocument.OPTIONS.renderActions, { complexity: [MathItem_js_1.STATE.COMPLEXITY] })) }),
+        _a.OPTIONS = __assign(__assign(__assign({}, BaseDocument.OPTIONS), visitor_js_1.ComplexityVisitor.OPTIONS), { enableComplexity: true, ComplexityVisitor: visitor_js_1.ComplexityVisitor, renderActions: Options_js_1.expandable(__assign(__assign({}, BaseDocument.OPTIONS.renderActions), { complexity: [MathItem_js_1.STATE.COMPLEXITY] })) }),
         _a;
 }
 exports.ComplexityMathDocumentMixin = ComplexityMathDocumentMixin;
@@ -136,8 +146,7 @@ function ComplexityHandler(handler, MmlJax) {
     if (!handler.documentClass.prototype.enrich && MmlJax) {
         handler = semantic_enrich_js_1.EnrichHandler(handler, MmlJax);
     }
-    handler.documentClass =
-        ComplexityMathDocumentMixin(handler.documentClass);
+    handler.documentClass = ComplexityMathDocumentMixin(handler.documentClass);
     return handler;
 }
 exports.ComplexityHandler = ComplexityHandler;

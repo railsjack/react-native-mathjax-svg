@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23,15 +25,16 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -50,6 +53,7 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.XMLNode = exports.TextNode = exports.AbstractMmlEmptyNode = exports.AbstractMmlBaseNode = exports.AbstractMmlLayoutNode = exports.AbstractMmlTokenNode = exports.AbstractMmlNode = exports.indentAttributes = exports.TEXCLASSNAMES = exports.TEXCLASS = void 0;
 var Attributes_js_1 = require("./Attributes.js");
 var Node_js_1 = require("../Tree/Node.js");
 exports.TEXCLASS = {
@@ -86,9 +90,9 @@ var AbstractMmlNode = (function (_super) {
         if (attributes === void 0) { attributes = {}; }
         if (children === void 0) { children = []; }
         var _this = _super.call(this, factory) || this;
-        _this.texClass = null;
         _this.prevClass = null;
         _this.prevLevel = null;
+        _this.texclass = null;
         if (_this.arity < 0) {
             _this.childNodes = [factory.create('inferredMrow')];
             _this.childNodes[0].parent = _this;
@@ -98,53 +102,112 @@ var AbstractMmlNode = (function (_super) {
         _this.attributes.setList(attributes);
         return _this;
     }
+    AbstractMmlNode.prototype.copy = function (keepIds) {
+        var e_1, _a, e_2, _b;
+        if (keepIds === void 0) { keepIds = false; }
+        var node = this.factory.create(this.kind);
+        node.properties = __assign({}, this.properties);
+        if (this.attributes) {
+            var attributes = this.attributes.getAllAttributes();
+            try {
+                for (var _c = __values(Object.keys(attributes)), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    var name_1 = _d.value;
+                    if (name_1 !== 'id' || keepIds) {
+                        node.attributes.set(name_1, attributes[name_1]);
+                    }
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+        if (this.childNodes && this.childNodes.length) {
+            var children = this.childNodes;
+            if (children.length === 1 && children[0].isInferred) {
+                children = children[0].childNodes;
+            }
+            try {
+                for (var children_1 = __values(children), children_1_1 = children_1.next(); !children_1_1.done; children_1_1 = children_1.next()) {
+                    var child = children_1_1.value;
+                    if (child) {
+                        node.appendChild(child.copy());
+                    }
+                    else {
+                        node.childNodes.push(null);
+                    }
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (children_1_1 && !children_1_1.done && (_b = children_1.return)) _b.call(children_1);
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+        }
+        return node;
+    };
+    Object.defineProperty(AbstractMmlNode.prototype, "texClass", {
+        get: function () {
+            return this.texclass;
+        },
+        set: function (texClass) {
+            this.texclass = texClass;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(AbstractMmlNode.prototype, "isToken", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlNode.prototype, "isEmbellished", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlNode.prototype, "isSpacelike", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlNode.prototype, "linebreakContainer", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlNode.prototype, "hasNewLine", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlNode.prototype, "arity", {
         get: function () {
             return Infinity;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlNode.prototype, "isInferred", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlNode.prototype, "Parent", {
@@ -155,14 +218,14 @@ var AbstractMmlNode = (function (_super) {
             }
             return parent;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlNode.prototype, "notParent", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractMmlNode.prototype.setChildren = function (children) {
@@ -172,9 +235,34 @@ var AbstractMmlNode = (function (_super) {
         return _super.prototype.setChildren.call(this, children);
     };
     AbstractMmlNode.prototype.appendChild = function (child) {
+        var e_3, _a;
+        var _this = this;
         if (this.arity < 0) {
             this.childNodes[0].appendChild(child);
             return child;
+        }
+        if (child.isInferred) {
+            if (this.arity === Infinity) {
+                child.childNodes.forEach(function (node) { return _super.prototype.appendChild.call(_this, node); });
+                return child;
+            }
+            var original = child;
+            child = this.factory.create('mrow');
+            child.setChildren(original.childNodes);
+            child.attributes = original.attributes;
+            try {
+                for (var _b = __values(original.getPropertyNames()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var name_2 = _c.value;
+                    child.setProperty(name_2, original.getProperty(name_2));
+                }
+            }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_3) throw e_3.error; }
+            }
         }
         return _super.prototype.appendChild.call(this, child);
     };
@@ -195,7 +283,7 @@ var AbstractMmlNode = (function (_super) {
         return 0;
     };
     AbstractMmlNode.prototype.childPosition = function () {
-        var e_1, _a;
+        var e_4, _a;
         var child = this;
         var parent = child.parent;
         while (parent && parent.notParent) {
@@ -213,12 +301,12 @@ var AbstractMmlNode = (function (_super) {
                     i++;
                 }
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
             finally {
                 try {
                     if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
                 }
-                finally { if (e_1) throw e_1.error; }
+                finally { if (e_4) throw e_4.error; }
             }
         }
         return null;
@@ -263,7 +351,7 @@ var AbstractMmlNode = (function (_super) {
         return this.isEmbellished && this.coreMO().hasSpacingAttributes();
     };
     AbstractMmlNode.prototype.setInheritedAttributes = function (attributes, display, level, prime) {
-        var e_2, _a;
+        var e_5, _a;
         if (attributes === void 0) { attributes = {}; }
         if (display === void 0) { display = false; }
         if (level === void 0) { level = 0; }
@@ -272,7 +360,7 @@ var AbstractMmlNode = (function (_super) {
         try {
             for (var _b = __values(Object.keys(attributes)), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var key = _c.value;
-                if (defaults.hasOwnProperty(key)) {
+                if (defaults.hasOwnProperty(key) || AbstractMmlNode.alwaysInherit.hasOwnProperty(key)) {
                     var _d = __read(attributes[key], 2), node = _d[0], value = _d[1];
                     var noinherit = (AbstractMmlNode.noInherit[node] || {})[this.kind] || {};
                     if (!noinherit[key]) {
@@ -281,12 +369,12 @@ var AbstractMmlNode = (function (_super) {
                 }
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_5) throw e_5.error; }
         }
         var displaystyle = this.attributes.getExplicit('displaystyle');
         if (displaystyle === undefined) {
@@ -314,38 +402,38 @@ var AbstractMmlNode = (function (_super) {
         this.setChildInheritedAttributes(attributes, display, level, prime);
     };
     AbstractMmlNode.prototype.setChildInheritedAttributes = function (attributes, display, level, prime) {
-        var e_3, _a;
+        var e_6, _a;
         try {
             for (var _b = __values(this.childNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var child = _c.value;
                 child.setInheritedAttributes(attributes, display, level, prime);
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_6) throw e_6.error; }
         }
     };
     AbstractMmlNode.prototype.addInheritedAttributes = function (current, attributes) {
-        var e_4, _a;
+        var e_7, _a;
         var updated = __assign({}, current);
         try {
             for (var _b = __values(Object.keys(attributes)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var name_1 = _c.value;
-                if (name_1 !== 'displaystyle' && name_1 !== 'scriptlevel' && name_1 !== 'style') {
-                    updated[name_1] = [this.kind, attributes[name_1]];
+                var name_3 = _c.value;
+                if (name_3 !== 'displaystyle' && name_3 !== 'scriptlevel' && name_3 !== 'style') {
+                    updated[name_3] = [this.kind, attributes[name_3]];
                 }
             }
         }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        catch (e_7_1) { e_7 = { error: e_7_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_4) throw e_4.error; }
+            finally { if (e_7) throw e_7.error; }
         }
         return updated;
     };
@@ -376,25 +464,25 @@ var AbstractMmlNode = (function (_super) {
         this.verifyChildren(options);
     };
     AbstractMmlNode.prototype.verifyAttributes = function (options) {
-        var e_5, _a;
+        var e_8, _a;
         if (options['checkAttributes']) {
             var attributes = this.attributes;
             var bad = [];
             try {
                 for (var _b = __values(attributes.getExplicitNames()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var name_2 = _c.value;
-                    if (name_2.substr(0, 5) !== 'data-' && attributes.getDefault(name_2) === undefined &&
-                        !name_2.match(/^(?:class|style|id|(?:xlink:)?href)$/)) {
-                        bad.push(name_2);
+                    var name_4 = _c.value;
+                    if (name_4.substr(0, 5) !== 'data-' && attributes.getDefault(name_4) === undefined &&
+                        !name_4.match(/^(?:class|style|id|(?:xlink:)?href)$/)) {
+                        bad.push(name_4);
                     }
                 }
             }
-            catch (e_5_1) { e_5 = { error: e_5_1 }; }
+            catch (e_8_1) { e_8 = { error: e_8_1 }; }
             finally {
                 try {
                     if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
                 }
-                finally { if (e_5) throw e_5.error; }
+                finally { if (e_8) throw e_8.error; }
             }
             if (bad.length) {
                 this.mError('Unknown attributes for ' + this.kind + ' node: ' + bad.join(', '), options);
@@ -402,25 +490,25 @@ var AbstractMmlNode = (function (_super) {
         }
     };
     AbstractMmlNode.prototype.verifyChildren = function (options) {
-        var e_6, _a;
+        var e_9, _a;
         try {
             for (var _b = __values(this.childNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var child = _c.value;
                 child.verifyTree(options);
             }
         }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        catch (e_9_1) { e_9 = { error: e_9_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_6) throw e_6.error; }
+            finally { if (e_9) throw e_9.error; }
         }
     };
     AbstractMmlNode.prototype.mError = function (message, options, short) {
         if (short === void 0) { short = false; }
         if (this.parent && this.parent.isKind('merror')) {
-            return;
+            return null;
         }
         var merror = this.factory.create('merror');
         if (options['fullErrors'] || short) {
@@ -453,6 +541,10 @@ var AbstractMmlNode = (function (_super) {
             mtable: { groupalign: true }
         }
     };
+    AbstractMmlNode.alwaysInherit = {
+        scriptminsize: true,
+        scriptsizemultiplier: true
+    };
     AbstractMmlNode.verifyDefaults = {
         checkArity: true,
         checkAttributes: false,
@@ -472,11 +564,11 @@ var AbstractMmlTokenNode = (function (_super) {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractMmlTokenNode.prototype.getText = function () {
-        var e_7, _a;
+        var e_10, _a;
         var text = '';
         try {
             for (var _b = __values(this.childNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -486,17 +578,17 @@ var AbstractMmlTokenNode = (function (_super) {
                 }
             }
         }
-        catch (e_7_1) { e_7 = { error: e_7_1 }; }
+        catch (e_10_1) { e_10 = { error: e_10_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_7) throw e_7.error; }
+            finally { if (e_10) throw e_10.error; }
         }
         return text;
     };
     AbstractMmlTokenNode.prototype.setChildInheritedAttributes = function (attributes, display, level, prime) {
-        var e_8, _a;
+        var e_11, _a;
         try {
             for (var _b = __values(this.childNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var child = _c.value;
@@ -505,16 +597,16 @@ var AbstractMmlTokenNode = (function (_super) {
                 }
             }
         }
-        catch (e_8_1) { e_8 = { error: e_8_1 }; }
+        catch (e_11_1) { e_11 = { error: e_11_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_8) throw e_8.error; }
+            finally { if (e_11) throw e_11.error; }
         }
     };
     AbstractMmlTokenNode.prototype.walkTree = function (func, data) {
-        var e_9, _a;
+        var e_12, _a;
         func(this, data);
         try {
             for (var _b = __values(this.childNodes), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -524,16 +616,16 @@ var AbstractMmlTokenNode = (function (_super) {
                 }
             }
         }
-        catch (e_9_1) { e_9 = { error: e_9_1 }; }
+        catch (e_12_1) { e_12 = { error: e_12_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_9) throw e_9.error; }
+            finally { if (e_12) throw e_12.error; }
         }
         return data;
     };
-    AbstractMmlTokenNode.defaults = __assign({}, AbstractMmlNode.defaults, { mathvariant: 'normal', mathsize: Attributes_js_1.INHERIT });
+    AbstractMmlTokenNode.defaults = __assign(__assign({}, AbstractMmlNode.defaults), { mathvariant: 'normal', mathsize: Attributes_js_1.INHERIT });
     return AbstractMmlTokenNode;
 }(AbstractMmlNode));
 exports.AbstractMmlTokenNode = AbstractMmlTokenNode;
@@ -546,21 +638,21 @@ var AbstractMmlLayoutNode = (function (_super) {
         get: function () {
             return this.childNodes[0].isSpacelike;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlLayoutNode.prototype, "isEmbellished", {
         get: function () {
             return this.childNodes[0].isEmbellished;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlLayoutNode.prototype, "arity", {
         get: function () {
             return -1;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractMmlLayoutNode.prototype.core = function () {
@@ -587,7 +679,7 @@ var AbstractMmlBaseNode = (function (_super) {
         get: function () {
             return this.childNodes[0].isEmbellished;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractMmlBaseNode.prototype.core = function () {
@@ -597,7 +689,7 @@ var AbstractMmlBaseNode = (function (_super) {
         return this.childNodes[0].coreMO();
     };
     AbstractMmlBaseNode.prototype.setTeXclass = function (prev) {
-        var e_10, _a;
+        var e_13, _a;
         this.getPrevClass(prev);
         this.texClass = exports.TEXCLASS.ORD;
         var base = this.childNodes[0];
@@ -622,12 +714,12 @@ var AbstractMmlBaseNode = (function (_super) {
                 }
             }
         }
-        catch (e_10_1) { e_10 = { error: e_10_1 }; }
+        catch (e_13_1) { e_13 = { error: e_13_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_10) throw e_10.error; }
+            finally { if (e_13) throw e_13.error; }
         }
         return prev;
     };
@@ -644,84 +736,84 @@ var AbstractMmlEmptyNode = (function (_super) {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "isEmbellished", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "isSpacelike", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "linebreakContainer", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "hasNewLine", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "arity", {
         get: function () {
             return 0;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "isInferred", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "notParent", {
         get: function () {
             return false;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "Parent", {
         get: function () {
             return this.parent;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "texClass", {
         get: function () {
             return exports.TEXCLASS.NONE;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "prevClass", {
         get: function () {
             return exports.TEXCLASS.NONE;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(AbstractMmlEmptyNode.prototype, "prevLevel", {
         get: function () {
             return 0;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractMmlEmptyNode.prototype.hasSpacingAttributes = function () {
@@ -731,7 +823,7 @@ var AbstractMmlEmptyNode = (function (_super) {
         get: function () {
             return null;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractMmlEmptyNode.prototype.core = function () {
@@ -752,11 +844,11 @@ var AbstractMmlEmptyNode = (function (_super) {
     AbstractMmlEmptyNode.prototype.texSpacing = function () {
         return '';
     };
-    AbstractMmlEmptyNode.prototype.setInheritedAttributes = function (attributes, display, level, prime) { };
-    AbstractMmlEmptyNode.prototype.inheritAttributesFrom = function (node) { };
-    AbstractMmlEmptyNode.prototype.verifyTree = function (options) { };
-    AbstractMmlEmptyNode.prototype.mError = function (message, options, short) {
-        if (short === void 0) { short = false; }
+    AbstractMmlEmptyNode.prototype.setInheritedAttributes = function (_attributes, _display, _level, _prime) { };
+    AbstractMmlEmptyNode.prototype.inheritAttributesFrom = function (_node) { };
+    AbstractMmlEmptyNode.prototype.verifyTree = function (_options) { };
+    AbstractMmlEmptyNode.prototype.mError = function (_message, _options, _short) {
+        if (_short === void 0) { _short = false; }
     };
     return AbstractMmlEmptyNode;
 }(Node_js_1.AbstractEmptyNode));
@@ -772,7 +864,7 @@ var TextNode = (function (_super) {
         get: function () {
             return 'text';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     TextNode.prototype.getText = function () {
@@ -781,6 +873,9 @@ var TextNode = (function (_super) {
     TextNode.prototype.setText = function (text) {
         this.text = text;
         return this;
+    };
+    TextNode.prototype.copy = function () {
+        return this.factory.create(this.kind).setText(this.getText());
     };
     TextNode.prototype.toString = function () {
         return this.text;
@@ -800,7 +895,7 @@ var XMLNode = (function (_super) {
         get: function () {
             return 'XML';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     XMLNode.prototype.getXML = function () {
@@ -813,7 +908,10 @@ var XMLNode = (function (_super) {
         return this;
     };
     XMLNode.prototype.getSerializedXML = function () {
-        return this.adaptor.outerHTML(this.xml);
+        return this.adaptor.serializeXML(this.xml);
+    };
+    XMLNode.prototype.copy = function () {
+        return this.factory.create(this.kind).setXML(this.adaptor.clone(this.xml));
     };
     XMLNode.prototype.toString = function () {
         return 'XML data';

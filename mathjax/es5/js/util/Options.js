@@ -1,13 +1,14 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -25,25 +26,36 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.lookup = exports.separateOptions = exports.selectOptionsFromKeys = exports.selectOptions = exports.userOptions = exports.defaultOptions = exports.insert = exports.copy = exports.keys = exports.makeArray = exports.expandable = exports.Expandable = exports.OPTIONS = exports.REMOVE = exports.APPEND = exports.isObject = void 0;
 var OBJECT = {}.constructor;
 function isObject(obj) {
     return typeof obj === 'object' && obj !== null &&
         (obj.constructor === OBJECT || obj.constructor === Expandable);
 }
+exports.isObject = isObject;
 exports.APPEND = '[+]';
 exports.REMOVE = '[-]';
+exports.OPTIONS = {
+    invalidOption: 'warn',
+    optionError: function (message, _key) {
+        if (exports.OPTIONS.invalidOption === 'fatal') {
+            throw new Error(message);
+        }
+        console.warn('MathJax: ' + message);
+    }
+};
 var Expandable = (function () {
     function Expandable() {
     }
     return Expandable;
 }());
 exports.Expandable = Expandable;
-;
 function expandable(def) {
     return Object.assign(Object.create(Expandable.prototype), def);
 }
@@ -96,7 +108,8 @@ function insert(dst, src, warn) {
             if (typeof key === 'symbol') {
                 key = key.toString();
             }
-            throw new Error('Invalid option "' + key + '" (no default value).');
+            exports.OPTIONS.optionError("Invalid option \"" + key + "\" (no default value).", key);
+            return "continue";
         }
         var sval = src[key], dval = dst[key];
         if (isObject(sval) && dval !== null &&
@@ -110,7 +123,7 @@ function insert(dst, src, warn) {
                     dval = dst[key] = dval.filter(function (x) { return sval[exports.REMOVE].indexOf(x) < 0; });
                 }
                 if (sval[exports.APPEND]) {
-                    dst[key] = __spread(dval, sval[exports.APPEND]);
+                    dst[key] = __spreadArray(__spreadArray([], __read(dval)), __read(sval[exports.APPEND]));
                 }
             }
             else {
@@ -188,7 +201,7 @@ function selectOptions(options) {
 }
 exports.selectOptions = selectOptions;
 function selectOptionsFromKeys(options, object) {
-    return selectOptions.apply(void 0, __spread([options], Object.keys(object)));
+    return selectOptions.apply(void 0, __spreadArray([options], __read(Object.keys(object))));
 }
 exports.selectOptionsFromKeys = selectOptionsFromKeys;
 function separateOptions(options) {
@@ -230,4 +243,9 @@ function separateOptions(options) {
     return results;
 }
 exports.separateOptions = separateOptions;
+function lookup(name, lookup, def) {
+    if (def === void 0) { def = null; }
+    return (lookup.hasOwnProperty(name) ? lookup[name] : def);
+}
+exports.lookup = lookup;
 //# sourceMappingURL=Options.js.map

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.texSize3 = void 0;
 exports.texSize3 = {
-    0x20: [0, 0, .25],
     0x28: [1.45, .949, .736],
     0x29: [1.45, .949, .736],
     0x2F: [1.45, .949, 1.044],
@@ -10,7 +10,6 @@ exports.texSize3 = {
     0x5D: [1.45, .949, .528],
     0x7B: [1.45, .949, .75],
     0x7D: [1.45, .949, .75],
-    0xA0: [0, 0, .25],
     0x2C6: [.772, -0.564, 1.444],
     0x2DC: [.749, -0.61, 1.444],
     0x302: [.772, -0.564, 0],

@@ -15,11 +15,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NodeFactory = void 0;
 var NodeUtil_js_1 = require("./NodeUtil.js");
 var NodeFactory = (function () {
     function NodeFactory() {
@@ -30,43 +32,17 @@ var NodeFactory = (function () {
             'error': NodeFactory.createError
         };
     }
-    NodeFactory.prototype.setMmlFactory = function (mmlFactory) {
-        this.mmlFactory = mmlFactory;
-    };
     NodeFactory.createNode = function (factory, kind, children, def, text) {
         if (children === void 0) { children = []; }
         if (def === void 0) { def = {}; }
         var node = factory.mmlFactory.create(kind);
-        var arity = node.arity;
-        if (arity === Infinity || arity === -1) {
-            if (children.length === 1 && children[0].isInferred) {
-                node.setChildren(NodeUtil_js_1.default.getChildren(children[0]));
-            }
-            else {
-                node.setChildren(children);
-            }
-        }
-        else {
-            var cleanChildren = [];
-            for (var i = 0, child = void 0; child = children[i]; i++) {
-                if (child.isInferred) {
-                    var mrow = factory.mmlFactory.create('mrow', {}, NodeUtil_js_1.default.getChildren(child));
-                    NodeUtil_js_1.default.copyAttributes(child, mrow);
-                    cleanChildren.push(mrow);
-                }
-                else {
-                    cleanChildren.push(child);
-                }
-            }
-            node.setChildren(cleanChildren);
-        }
+        node.setChildren(children);
         if (text) {
             node.appendChild(text);
         }
         NodeUtil_js_1.default.setProperties(node, def);
         return node;
     };
-    ;
     NodeFactory.createToken = function (factory, kind, def, text) {
         if (def === void 0) { def = {}; }
         if (text === void 0) { text = ''; }
@@ -79,14 +55,15 @@ var NodeFactory = (function () {
         }
         return factory.mmlFactory.create('text').setText(text);
     };
-    ;
     NodeFactory.createError = function (factory, message) {
         var text = factory.create('text', message);
         var mtext = factory.create('node', 'mtext', [], {}, text);
-        var error = factory.create('node', 'merror', [mtext]);
+        var error = factory.create('node', 'merror', [mtext], { 'data-mjx-error': message });
         return error;
     };
-    ;
+    NodeFactory.prototype.setMmlFactory = function (mmlFactory) {
+        this.mmlFactory = mmlFactory;
+    };
     NodeFactory.prototype.set = function (kind, func) {
         this.factory[kind] = func;
     };
@@ -101,7 +78,7 @@ var NodeFactory = (function () {
             rest[_i - 1] = arguments[_i];
         }
         var func = this.factory[kind] || this.factory['node'];
-        var node = func.apply(void 0, __spread([this, rest[0]], rest.slice(1)));
+        var node = func.apply(void 0, __spreadArray([this, rest[0]], __read(rest.slice(1))));
         if (kind === 'node') {
             this.configuration.addNode(rest[0], node);
         }

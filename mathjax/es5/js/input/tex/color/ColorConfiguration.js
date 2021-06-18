@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ColorConfiguration = void 0;
 var SymbolMap_js_1 = require("../SymbolMap.js");
 var Configuration_js_1 = require("../Configuration.js");
 var ColorMethods_js_1 = require("./ColorMethods.js");
@@ -11,8 +12,8 @@ new SymbolMap_js_1.CommandMap('color', {
     colorbox: 'ColorBox',
     fcolorbox: 'FColorBox'
 }, ColorMethods_js_1.ColorMethods);
-var config = function (config, jax) {
-    jax.parseOptions.options.color.model = new ColorUtil_js_1.ColorModel();
+var config = function (_config, jax) {
+    jax.parseOptions.packageData.set('color', { model: new ColorUtil_js_1.ColorModel() });
 };
 exports.ColorConfiguration = Configuration_js_1.Configuration.create('color', {
     handler: {

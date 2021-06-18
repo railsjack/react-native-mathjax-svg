@@ -1,13 +1,14 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -25,11 +26,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Styles = void 0;
 var TRBL = ['top', 'right', 'bottom', 'left'];
 var WSC = ['width', 'style', 'color'];
 function splitSpaces(text) {
@@ -121,7 +124,7 @@ function splitSame(name) {
 }
 function combineSame(name) {
     var e_4, _a;
-    var children = __spread(Styles.connect[name].children);
+    var children = __spreadArray([], __read(Styles.connect[name].children));
     var value = this.styles[this.childName(name, children.shift())];
     try {
         for (var children_2 = __values(children), children_2_1 = children_2.next(); !children_2_1.done; children_2_1 = children_2.next()) {
@@ -315,7 +318,7 @@ function saveFontParts(name, value) {
         finally { if (e_10) throw e_10.error; }
     }
 }
-function combineFont(name) { }
+function combineFont(_name) { }
 var Styles = (function () {
     function Styles(cssText) {
         if (cssText === void 0) { cssText = ''; }
@@ -343,7 +346,7 @@ var Styles = (function () {
             }
             return styles.join('; ');
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Styles.prototype.set = function (name, value) {
