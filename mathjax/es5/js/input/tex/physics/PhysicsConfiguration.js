@@ -1,6 +1,7 @@
 "use strict";
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.PhysicsConfiguration = void 0;
 var Configuration_js_1 = require("../Configuration.js");
 var PhysicsItems_js_1 = require("./PhysicsItems.js");
 require("./PhysicsMappings.js");

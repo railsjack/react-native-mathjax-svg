@@ -3,24 +3,27 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -39,15 +42,16 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommonTextNodeMixin = void 0;
 function CommonTextNodeMixin(Base) {
     return (function (_super) {
         __extends(class_1, _super);
         function class_1() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        class_1.prototype.computeBBox = function (bbox, recompute) {
+        class_1.prototype.computeBBox = function (bbox, _recompute) {
             var e_1, _a;
-            if (recompute === void 0) { recompute = false; }
+            if (_recompute === void 0) { _recompute = false; }
             var variant = this.parent.variant;
             var text = this.node.getText();
             if (variant === '-explicitFont') {
@@ -58,15 +62,14 @@ function CommonTextNodeMixin(Base) {
                 bbox.w = w;
             }
             else {
-                var c = this.parent.stretch.c;
-                var chars = this.parent.remapChars(c ? [c] : this.unicodeChars(text));
+                var chars = this.remappedText(text, variant);
                 bbox.empty();
                 try {
                     for (var chars_1 = __values(chars), chars_1_1 = chars_1.next(); !chars_1_1.done; chars_1_1 = chars_1.next()) {
                         var char = chars_1_1.value;
                         var _c = __read(this.getVariantChar(variant, char), 4), h = _c[0], d = _c[1], w = _c[2], data = _c[3];
                         if (data.unknown) {
-                            var cbox = this.jax.measureText(String.fromCharCode(char), variant);
+                            var cbox = this.jax.measureText(String.fromCodePoint(char), variant);
                             w = cbox.w;
                             h = cbox.h;
                             d = cbox.d;
@@ -92,6 +95,10 @@ function CommonTextNodeMixin(Base) {
                 }
                 bbox.clean();
             }
+        };
+        class_1.prototype.remappedText = function (text, variant) {
+            var c = this.parent.stretch.c;
+            return (c ? [c] : this.parent.remapChars(this.unicodeChars(text, variant)));
         };
         class_1.prototype.getStyles = function () { };
         class_1.prototype.getVariant = function () { };

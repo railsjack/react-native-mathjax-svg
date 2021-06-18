@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -28,18 +30,25 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var BBox_js_1 = require("../BBox.js");
+exports.CommonMmultiscriptsMixin = exports.ScriptNames = exports.NextScript = void 0;
+var BBox_js_1 = require("../../../util/BBox.js");
 exports.NextScript = {
     base: 'subList',
     subList: 'supList',
@@ -52,9 +61,14 @@ function CommonMmultiscriptsMixin(Base) {
     return (function (_super) {
         __extends(class_1, _super);
         function class_1() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            var _this = _super.apply(this, __spreadArray([], __read(args))) || this;
             _this.scriptData = null;
             _this.firstPrescript = 0;
+            _this.getScriptData();
             return _this;
         }
         class_1.prototype.combinePrePost = function (pre, post) {
@@ -65,10 +79,10 @@ function CommonMmultiscriptsMixin(Base) {
         class_1.prototype.computeBBox = function (bbox, recompute) {
             if (recompute === void 0) { recompute = false; }
             var scriptspace = this.font.params.scriptspace;
-            var data = this.getScriptData();
+            var data = this.scriptData;
             var sub = this.combinePrePost(data.sub, data.psub);
             var sup = this.combinePrePost(data.sup, data.psup);
-            var _a = __read(this.getUVQ(data.base, sub, sup), 2), u = _a[0], v = _a[1];
+            var _a = __read(this.getUVQ(sub, sup), 2), u = _a[0], v = _a[1];
             bbox.empty();
             if (data.numPrescripts) {
                 bbox.combine(data.psup, scriptspace, u);
@@ -85,9 +99,6 @@ function CommonMmultiscriptsMixin(Base) {
             this.setChildPWidths(recompute);
         };
         class_1.prototype.getScriptData = function () {
-            if (this.scriptData) {
-                return this.scriptData;
-            }
             var data = this.scriptData = {
                 base: null, sub: BBox_js_1.BBox.empty(), sup: BBox_js_1.BBox.empty(), psub: BBox_js_1.BBox.empty(), psup: BBox_js_1.BBox.empty(),
                 numPrescripts: 0, numScripts: 0
@@ -95,10 +106,9 @@ function CommonMmultiscriptsMixin(Base) {
             var lists = this.getScriptBBoxLists();
             this.combineBBoxLists(data.sub, data.sup, lists.subList, lists.supList);
             this.combineBBoxLists(data.psub, data.psup, lists.psubList, lists.psupList);
-            this.scriptData.base = lists.base[0];
-            this.scriptData.numPrescripts = lists.psubList.length;
-            this.scriptData.numScripts = lists.subList.length;
-            return this.scriptData;
+            data.base = lists.base[0];
+            data.numPrescripts = lists.psubList.length;
+            data.numScripts = lists.subList.length;
         };
         class_1.prototype.getScriptBBoxLists = function () {
             var e_1, _a;
@@ -156,18 +166,18 @@ function CommonMmultiscriptsMixin(Base) {
             var w = bbox.w, h = bbox.h, d = bbox.d, rscale = bbox.rscale;
             return [w * rscale, h * rscale, d * rscale];
         };
-        class_1.prototype.getUVQ = function (basebox, subbox, supbox) {
+        class_1.prototype.getUVQ = function (subbox, supbox) {
             var _a;
             if (!this.UVQ) {
                 var _b = __read([0, 0, 0], 3), u = _b[0], v = _b[1], q = _b[2];
                 if (subbox.h === 0 && subbox.d === 0) {
-                    u = this.getU(basebox, supbox);
+                    u = this.getU();
                 }
                 else if (supbox.h === 0 && supbox.d === 0) {
-                    u = -this.getV(basebox, subbox);
+                    u = -this.getV();
                 }
                 else {
-                    _a = __read(_super.prototype.getUVQ.call(this, basebox, subbox, supbox), 3), u = _a[0], v = _a[1], q = _a[2];
+                    _a = __read(_super.prototype.getUVQ.call(this, subbox, supbox), 3), u = _a[0], v = _a[1], q = _a[2];
                 }
                 this.UVQ = [u, v, q];
             }

@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -29,6 +31,7 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SVGmfrac = void 0;
 var Wrapper_js_1 = require("../Wrapper.js");
 var mfrac_js_1 = require("../../common/Wrappers/mfrac.js");
 var mfrac_js_2 = require("../../../core/MmlTree/MmlNodes/mfrac.js");
@@ -45,7 +48,7 @@ var SVGmfrac = (function (_super) {
             this.makeBevelled(display);
         }
         else {
-            var thickness = this.length2em(String(linethickness));
+            var thickness = this.length2em(String(linethickness), .06);
             if (thickness === 0) {
                 this.makeAtop(display);
             }

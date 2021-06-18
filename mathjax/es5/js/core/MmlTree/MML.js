@@ -1,6 +1,7 @@
 "use strict";
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MML = void 0;
 var MmlNode_js_1 = require("./MmlNode.js");
 var math_js_1 = require("./MmlNodes/math.js");
 var mi_js_1 = require("./MmlNodes/mi.js");
@@ -72,7 +73,7 @@ exports.MML = (_a = {},
     _a[semantics_js_1.MmlAnnotation.prototype.kind] = semantics_js_1.MmlAnnotation,
     _a[semantics_js_1.MmlAnnotationXML.prototype.kind] = semantics_js_1.MmlAnnotationXML,
     _a[TeXAtom_js_1.TeXAtom.prototype.kind] = TeXAtom_js_1.TeXAtom,
-    _a[mathchoice_js_1.mathchoice.prototype.kind] = mathchoice_js_1.mathchoice,
+    _a[mathchoice_js_1.MathChoice.prototype.kind] = mathchoice_js_1.MathChoice,
     _a[MmlNode_js_1.TextNode.prototype.kind] = MmlNode_js_1.TextNode,
     _a[MmlNode_js_1.XMLNode.prototype.kind] = MmlNode_js_1.XMLNode,
     _a);

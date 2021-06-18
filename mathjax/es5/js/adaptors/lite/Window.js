@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LiteWindow = void 0;
 var Element_js_1 = require("./Element.js");
 var Document_js_1 = require("./Document.js");
 var List_js_1 = require("./List.js");

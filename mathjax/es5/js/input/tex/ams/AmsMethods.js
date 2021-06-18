@@ -1,21 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NEW_OPS = exports.AmsMethods = void 0;
 var ParseUtil_js_1 = require("../ParseUtil.js");
 var NodeUtil_js_1 = require("../NodeUtil.js");
 var TexConstants_js_1 = require("../TexConstants.js");
 var TexParser_js_1 = require("../TexParser.js");
 var TexError_js_1 = require("../TexError.js");
 var Symbol_js_1 = require("../Symbol.js");
-var MapHandler_js_1 = require("../MapHandler.js");
 var BaseMethods_js_1 = require("../base/BaseMethods.js");
 var MmlNode_js_1 = require("../../../core/MmlTree/MmlNode.js");
-var AmsMethods = {};
-AmsMethods.AmsEqnArray = function (parser, begin, numbered, taggable, align, spacing, style) {
+exports.AmsMethods = {};
+exports.AmsMethods.AmsEqnArray = function (parser, begin, numbered, taggable, align, spacing, style) {
     var args = parser.GetBrackets('\\begin{' + begin.getName() + '}');
     var array = BaseMethods_js_1.default.EqnArray(parser, begin, numbered, taggable, align, spacing, style);
     return ParseUtil_js_1.default.setArrayAlign(array, args);
 };
-AmsMethods.AlignAt = function (parser, begin, numbered, taggable) {
+exports.AmsMethods.AlignAt = function (parser, begin, numbered, taggable) {
     var name = begin.getName();
     var n, valign, align = '', spacing = [];
     if (!taggable) {
@@ -33,12 +33,12 @@ AmsMethods.AlignAt = function (parser, begin, numbered, taggable) {
     }
     var spaceStr = spacing.join(' ');
     if (taggable) {
-        return AmsMethods.EqnArray(parser, begin, numbered, taggable, align, spaceStr);
+        return exports.AmsMethods.EqnArray(parser, begin, numbered, taggable, align, spaceStr);
     }
-    var array = AmsMethods.EqnArray(parser, begin, numbered, taggable, align, spaceStr);
+    var array = exports.AmsMethods.EqnArray(parser, begin, numbered, taggable, align, spaceStr);
     return ParseUtil_js_1.default.setArrayAlign(array, valign);
 };
-AmsMethods.Multline = function (parser, begin, numbered) {
+exports.AmsMethods.Multline = function (parser, begin, numbered) {
     parser.Push(begin);
     ParseUtil_js_1.default.checkEqnEnv(parser);
     var item = parser.itemFactory.create('multline', numbered, parser.stack);
@@ -52,32 +52,37 @@ AmsMethods.Multline = function (parser, begin, numbered) {
     };
     return item;
 };
-AmsMethods.HandleDeclareOp = function (parser, name) {
+exports.NEW_OPS = 'ams-declare-ops';
+exports.AmsMethods.HandleDeclareOp = function (parser, name) {
     var limits = (parser.GetStar() ? '' : '\\nolimits\\SkipLimits');
     var cs = ParseUtil_js_1.default.trimSpaces(parser.GetArgument(name));
     if (cs.charAt(0) === '\\') {
         cs = cs.substr(1);
     }
     var op = parser.GetArgument(name);
-    op = op.replace(/\*/g, '\\text{*}').replace(/-/g, '\\text{-}');
-    parser.configuration.handlers.retrieve(MapHandler_js_1.ExtensionMaps.NEW_COMMAND).
-        add(cs, new Symbol_js_1.Macro(cs, AmsMethods.Macro, ['\\mathop{\\rm ' + op + '}' + limits]));
+    if (!op.match(/\\text/)) {
+        op = op.replace(/\*/g, '\\text{*}').replace(/-/g, '\\text{-}');
+    }
+    parser.configuration.handlers.retrieve(exports.NEW_OPS).
+        add(cs, new Symbol_js_1.Macro(cs, exports.AmsMethods.Macro, ['\\mathop{\\rm ' + op + '}' + limits]));
 };
-AmsMethods.HandleOperatorName = function (parser, name) {
+exports.AmsMethods.HandleOperatorName = function (parser, name) {
     var limits = (parser.GetStar() ? '' : '\\nolimits\\SkipLimits');
     var op = ParseUtil_js_1.default.trimSpaces(parser.GetArgument(name));
-    op = op.replace(/\*/g, '\\text{*}').replace(/-/g, '\\text{-}');
+    if (!op.match(/\\text/)) {
+        op = op.replace(/\*/g, '\\text{*}').replace(/-/g, '\\text{-}');
+    }
     parser.string = '\\mathop{\\rm ' + op + '}' + limits + ' ' +
         parser.string.slice(parser.i);
     parser.i = 0;
 };
-AmsMethods.SkipLimits = function (parser, name) {
+exports.AmsMethods.SkipLimits = function (parser, _name) {
     var c = parser.GetNext(), i = parser.i;
     if (c === '\\' && ++parser.i && parser.GetCS() !== 'limits') {
         parser.i = i;
     }
 };
-AmsMethods.MultiIntegral = function (parser, name, integral) {
+exports.AmsMethods.MultiIntegral = function (parser, name, integral) {
     var next = parser.GetNext();
     if (next === '\\') {
         var i = parser.i;
@@ -95,25 +100,30 @@ AmsMethods.MultiIntegral = function (parser, name, integral) {
     parser.string = integral + ' ' + parser.string.slice(parser.i);
     parser.i = 0;
 };
-AmsMethods.xArrow = function (parser, name, chr, l, r) {
-    var def = { width: '+' + (l + r) + 'mu', lspace: l + 'mu' };
+exports.AmsMethods.xArrow = function (parser, name, chr, l, r) {
+    var def = { width: '+' + ParseUtil_js_1.default.Em((l + r) / 18), lspace: ParseUtil_js_1.default.Em(l / 18) };
     var bot = parser.GetBrackets(name);
     var first = parser.ParseArg(name);
-    var arrow = parser.create('token', 'mo', { stretchy: true, texClass: MmlNode_js_1.TEXCLASS.REL }, String.fromCharCode(chr));
+    var dstrut = parser.create('node', 'mspace', [], { depth: '.25em' });
+    var arrow = parser.create('token', 'mo', { stretchy: true, texClass: MmlNode_js_1.TEXCLASS.REL }, String.fromCodePoint(chr));
+    arrow = parser.create('node', 'mstyle', [arrow], { scriptlevel: 0 });
     var mml = parser.create('node', 'munderover', [arrow]);
-    var mpadded = parser.create('node', 'mpadded', [first], def);
-    NodeUtil_js_1.default.setAttribute(mpadded, 'voffset', '.15em');
+    var mpadded = parser.create('node', 'mpadded', [first, dstrut], def);
+    NodeUtil_js_1.default.setAttribute(mpadded, 'voffset', '-.2em');
+    NodeUtil_js_1.default.setAttribute(mpadded, 'height', '-.2em');
     NodeUtil_js_1.default.setChild(mml, mml.over, mpadded);
     if (bot) {
         var bottom = new TexParser_js_1.default(bot, parser.stack.env, parser.configuration).mml();
-        mpadded = parser.create('node', 'mpadded', [bottom], def);
-        NodeUtil_js_1.default.setAttribute(mpadded, 'voffset', '-.24em');
+        var bstrut = parser.create('node', 'mspace', [], { height: '.75em' });
+        mpadded = parser.create('node', 'mpadded', [bottom, bstrut], def);
+        NodeUtil_js_1.default.setAttribute(mpadded, 'voffset', '.15em');
+        NodeUtil_js_1.default.setAttribute(mpadded, 'depth', '-.15em');
         NodeUtil_js_1.default.setChild(mml, mml.under, mpadded);
     }
     NodeUtil_js_1.default.setProperty(mml, 'subsupOK', true);
     parser.Push(mml);
 };
-AmsMethods.HandleShove = function (parser, name, shove) {
+exports.AmsMethods.HandleShove = function (parser, _name, shove) {
     var top = parser.stack.Top();
     if (top.kind !== 'multline') {
         throw new TexError_js_1.default('CommandOnlyAllowedInEnv', '%1 only allowed in %2 environment', parser.currentCS, 'multline');
@@ -123,7 +133,7 @@ AmsMethods.HandleShove = function (parser, name, shove) {
     }
     top.setProperty('shove', shove);
 };
-AmsMethods.CFrac = function (parser, name) {
+exports.AmsMethods.CFrac = function (parser, name) {
     var lr = ParseUtil_js_1.default.trimSpaces(parser.GetBrackets(name, ''));
     var num = parser.GetArgument(name);
     var den = parser.GetArgument(name);
@@ -142,7 +152,7 @@ AmsMethods.CFrac = function (parser, name) {
     }
     parser.Push(frac);
 };
-AmsMethods.Genfrac = function (parser, name, left, right, thick, style) {
+exports.AmsMethods.Genfrac = function (parser, name, left, right, thick, style) {
     if (left == null) {
         left = parser.GetDelimiterArg(name);
     }
@@ -182,7 +192,7 @@ AmsMethods.Genfrac = function (parser, name, left, right, thick, style) {
     }
     parser.Push(frac);
 };
-AmsMethods.HandleTag = function (parser, name) {
+exports.AmsMethods.HandleTag = function (parser, name) {
     if (!parser.tags.currentTag.taggable && parser.tags.env) {
         throw new TexError_js_1.default('CommandNotAllowedInEnv', '%1 not allowed in %2 environment', parser.currentCS, parser.tags.env);
     }
@@ -193,14 +203,13 @@ AmsMethods.HandleTag = function (parser, name) {
     var tagId = ParseUtil_js_1.default.trimSpaces(parser.GetArgument(name));
     parser.tags.tag(tagId, star);
 };
-AmsMethods.HandleNoTag = BaseMethods_js_1.default.HandleNoTag;
-AmsMethods.HandleRef = BaseMethods_js_1.default.HandleRef;
-AmsMethods.Macro = BaseMethods_js_1.default.Macro;
-AmsMethods.Accent = BaseMethods_js_1.default.Accent;
-AmsMethods.Tilde = BaseMethods_js_1.default.Tilde;
-AmsMethods.Array = BaseMethods_js_1.default.Array;
-AmsMethods.Spacer = BaseMethods_js_1.default.Spacer;
-AmsMethods.NamedOp = BaseMethods_js_1.default.NamedOp;
-AmsMethods.EqnArray = BaseMethods_js_1.default.EqnArray;
-exports.default = AmsMethods;
+exports.AmsMethods.HandleNoTag = BaseMethods_js_1.default.HandleNoTag;
+exports.AmsMethods.HandleRef = BaseMethods_js_1.default.HandleRef;
+exports.AmsMethods.Macro = BaseMethods_js_1.default.Macro;
+exports.AmsMethods.Accent = BaseMethods_js_1.default.Accent;
+exports.AmsMethods.Tilde = BaseMethods_js_1.default.Tilde;
+exports.AmsMethods.Array = BaseMethods_js_1.default.Array;
+exports.AmsMethods.Spacer = BaseMethods_js_1.default.Spacer;
+exports.AmsMethods.NamedOp = BaseMethods_js_1.default.NamedOp;
+exports.AmsMethods.EqnArray = BaseMethods_js_1.default.EqnArray;
 //# sourceMappingURL=AmsMethods.js.map

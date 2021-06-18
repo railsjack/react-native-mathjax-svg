@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -24,6 +26,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MmlMaction = void 0;
 var MmlNode_js_1 = require("../MmlNode.js");
 var MmlMaction = (function (_super) {
     __extends(MmlMaction, _super);
@@ -34,14 +37,14 @@ var MmlMaction = (function (_super) {
         get: function () {
             return 'maction';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMaction.prototype, "arity", {
         get: function () {
             return 1;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMaction.prototype, "selected", {
@@ -50,21 +53,21 @@ var MmlMaction = (function (_super) {
             var i = Math.max(1, Math.min(this.childNodes.length, selection)) - 1;
             return this.childNodes[i] || this.factory.create('mrow');
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMaction.prototype, "isEmbellished", {
         get: function () {
             return this.selected.isEmbellished;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMaction.prototype, "isSpacelike", {
         get: function () {
             return this.selected.isSpacelike;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlMaction.prototype.core = function () {
@@ -97,7 +100,7 @@ var MmlMaction = (function (_super) {
         }
         this.attributes.set('selection', selection);
     };
-    MmlMaction.defaults = __assign({}, MmlNode_js_1.AbstractMmlNode.defaults, { actiontype: 'toggle', selection: 1 });
+    MmlMaction.defaults = __assign(__assign({}, MmlNode_js_1.AbstractMmlNode.defaults), { actiontype: 'toggle', selection: 1 });
     return MmlMaction;
 }(MmlNode_js_1.AbstractMmlNode));
 exports.MmlMaction = MmlMaction;

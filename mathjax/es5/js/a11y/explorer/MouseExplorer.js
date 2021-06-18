@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -29,8 +31,10 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FlameHoverer = exports.ContentHoverer = exports.ValueHoverer = exports.Hoverer = exports.AbstractMouseExplorer = void 0;
 var Region_js_1 = require("./Region.js");
 var Explorer_js_1 = require("./Explorer.js");
+require("../sre.js");
 var AbstractMouseExplorer = (function (_super) {
     __extends(AbstractMouseExplorer, _super);
     function AbstractMouseExplorer() {
@@ -41,10 +45,10 @@ var AbstractMouseExplorer = (function (_super) {
         ]);
         return _this;
     }
-    AbstractMouseExplorer.prototype.MouseOver = function (event) {
+    AbstractMouseExplorer.prototype.MouseOver = function (_event) {
         this.Start();
     };
-    AbstractMouseExplorer.prototype.MouseOut = function (event) {
+    AbstractMouseExplorer.prototype.MouseOut = function (_event) {
         this.Stop();
     };
     return AbstractMouseExplorer;
@@ -123,8 +127,8 @@ var ContentHoverer = (function (_super) {
 exports.ContentHoverer = ContentHoverer;
 var FlameHoverer = (function (_super) {
     __extends(FlameHoverer, _super);
-    function FlameHoverer(document, ignore, node) {
-        var _this = _super.call(this, document, new Region_js_1.DummyRegion(document), node, function (x) { return _this.highlighter.isMactionNode(x); }, function (x) { }) || this;
+    function FlameHoverer(document, _ignore, node) {
+        var _this = _super.call(this, document, new Region_js_1.DummyRegion(document), node, function (x) { return _this.highlighter.isMactionNode(x); }, function () { }) || this;
         _this.document = document;
         _this.node = node;
         return _this;

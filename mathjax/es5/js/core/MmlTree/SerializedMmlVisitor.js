@@ -3,24 +3,27 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -39,10 +42,13 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SerializedMmlVisitor = exports.toEntity = exports.DATAMJX = void 0;
 var MmlVisitor_js_1 = require("./MmlVisitor.js");
 var MmlNode_js_1 = require("./MmlNode.js");
 var mi_js_1 = require("./MmlNodes/mi.js");
 exports.DATAMJX = 'data-mjx-';
+var toEntity = function (c) { return '&#x' + c.codePointAt(0).toString(16).toUpperCase() + ';'; };
+exports.toEntity = toEntity;
 var SerializedMmlVisitor = (function (_super) {
     __extends(SerializedMmlVisitor, _super);
     function SerializedMmlVisitor() {
@@ -51,7 +57,7 @@ var SerializedMmlVisitor = (function (_super) {
     SerializedMmlVisitor.prototype.visitTree = function (node) {
         return this.visitNode(node, '');
     };
-    SerializedMmlVisitor.prototype.visitTextNode = function (node, space) {
+    SerializedMmlVisitor.prototype.visitTextNode = function (node, _space) {
         return this.quoteHTML(node.getText());
     };
     SerializedMmlVisitor.prototype.visitXMLNode = function (node, space) {
@@ -145,6 +151,8 @@ var SerializedMmlVisitor = (function (_super) {
         var variants = this.constructor.variants;
         variant && variants.hasOwnProperty(variant) && this.setDataAttribute(data, 'variant', variant);
         node.getProperty('variantForm') && this.setDataAttribute(data, 'alternate', '1');
+        node.getProperty('pseudoscript') && this.setDataAttribute(data, 'pseudoscript', 'true');
+        node.getProperty('autoOP') === false && this.setDataAttribute(data, 'auto-op', 'false');
         var texclass = node.getProperty('texClass');
         if (texclass !== undefined) {
             var setclass = true;
@@ -154,6 +162,8 @@ var SerializedMmlVisitor = (function (_super) {
             }
             setclass && this.setDataAttribute(data, 'texclass', texclass < 0 ? 'NONE' : MmlNode_js_1.TEXCLASSNAMES[texclass]);
         }
+        node.getProperty('scriptlevel') && node.getProperty('useHeight') === false &&
+            this.setDataAttribute(data, 'smallmatrix', 'true');
         return data;
     };
     SerializedMmlVisitor.prototype.setDataAttribute = function (data, name, value) {
@@ -164,20 +174,15 @@ var SerializedMmlVisitor = (function (_super) {
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/\"/g, '&quot;')
-            .replace(/([\uD800-\uDBFF].)/g, function (m, c) {
-            return '&#x' + ((c.charCodeAt(0) - 0xD800) * 0x400 +
-                (c.charCodeAt(1) - 0xDC00) + 0x10000).toString(16).toUpperCase() + ';';
-        })
-            .replace(/([\u0080-\uD7FF\uE000-\uFFFF])/g, function (m, c) {
-            return '&#x' + c.charCodeAt(0).toString(16).toUpperCase() + ';';
-        });
+            .replace(/[\uD800-\uDBFF]./g, exports.toEntity)
+            .replace(/[\u0080-\uD7FF\uE000-\uFFFF]/g, exports.toEntity);
     };
     SerializedMmlVisitor.variants = {
-        "-tex-calligraphic": 'script',
-        "-tex-calligraphic-bold": 'bold-script',
-        "-tex-oldstyle": 'normal',
-        "-tex-oldstyle-bold": 'bold',
-        "-tex-mathit": 'italic'
+        '-tex-calligraphic': 'script',
+        '-tex-bold-calligraphic': 'bold-script',
+        '-tex-oldstyle': 'normal',
+        '-tex-bold-oldstyle': 'bold',
+        '-tex-mathit': 'italic'
     };
     SerializedMmlVisitor.defaultAttributes = {
         math: {

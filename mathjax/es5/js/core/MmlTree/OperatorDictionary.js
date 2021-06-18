@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.OPTABLE = exports.MMLSPACING = exports.RANGES = exports.MO = exports.OPDEF = void 0;
 var MmlNode_js_1 = require("./MmlNode.js");
 function OPDEF(lspace, rspace, texClass, properties) {
     if (texClass === void 0) { texClass = MmlNode_js_1.TEXCLASS.BIN; }
@@ -123,6 +124,7 @@ exports.OPTABLE = {
         '\u22C3': exports.MO.OP,
         '\u2308': exports.MO.OPEN,
         '\u230A': exports.MO.OPEN,
+        '\u2329': exports.MO.OPEN,
         '\u2772': exports.MO.OPEN,
         '\u27E6': exports.MO.OPEN,
         '\u27E8': exports.MO.OPEN,
@@ -177,6 +179,7 @@ exports.OPTABLE = {
     postfix: {
         '!!': OPDEF(1, 0),
         '!': [1, 0, MmlNode_js_1.TEXCLASS.CLOSE, null],
+        '"': exports.MO.ACCENT,
         '&': exports.MO.ORD,
         ')': exports.MO.CLOSE,
         '++': OPDEF(0, 0),
@@ -194,10 +197,15 @@ exports.OPTABLE = {
         '||': [0, 0, MmlNode_js_1.TEXCLASS.BIN, { fence: true, stretchy: true, symmetric: true }],
         '|||': [0, 0, MmlNode_js_1.TEXCLASS.ORD, { fence: true, stretchy: true, symmetric: true }],
         '\u00A8': exports.MO.ACCENT,
+        '\u00AA': exports.MO.ACCENT,
         '\u00AF': exports.MO.WIDEACCENT,
         '\u00B0': exports.MO.ORD,
+        '\u00B2': exports.MO.ACCENT,
+        '\u00B3': exports.MO.ACCENT,
         '\u00B4': exports.MO.ACCENT,
         '\u00B8': exports.MO.ACCENT,
+        '\u00B9': exports.MO.ACCENT,
+        '\u00BA': exports.MO.ACCENT,
         '\u02C6': exports.MO.WIDEACCENT,
         '\u02C7': exports.MO.WIDEACCENT,
         '\u02C9': exports.MO.WIDEACCENT,
@@ -215,13 +223,24 @@ exports.OPTABLE = {
         '\u03F6': exports.MO.REL,
         '\u2016': [0, 0, MmlNode_js_1.TEXCLASS.ORD, { fence: true, stretchy: true }],
         '\u2019': [0, 0, MmlNode_js_1.TEXCLASS.CLOSE, { fence: true }],
+        '\u201A': exports.MO.ACCENT,
+        '\u201B': exports.MO.ACCENT,
         '\u201D': [0, 0, MmlNode_js_1.TEXCLASS.CLOSE, { fence: true }],
-        '\u2032': exports.MO.ORD02,
+        '\u201E': exports.MO.ACCENT,
+        '\u201F': exports.MO.ACCENT,
+        '\u2032': exports.MO.ORD,
+        '\u2033': exports.MO.ACCENT,
+        '\u2034': exports.MO.ACCENT,
+        '\u2035': exports.MO.ACCENT,
+        '\u2036': exports.MO.ACCENT,
+        '\u2037': exports.MO.ACCENT,
         '\u203E': exports.MO.WIDEACCENT,
+        '\u2057': exports.MO.ACCENT,
         '\u20DB': exports.MO.ACCENT,
         '\u20DC': exports.MO.ACCENT,
         '\u2309': exports.MO.CLOSE,
         '\u230B': exports.MO.CLOSE,
+        '\u232A': exports.MO.CLOSE,
         '\u23B4': exports.MO.WIDEACCENT,
         '\u23B5': exports.MO.WIDEACCENT,
         '\u23DC': exports.MO.WIDEACCENT,
@@ -344,6 +363,7 @@ exports.OPTABLE = {
         '\u2021': exports.MO.BIN3,
         '\u2022': exports.MO.BIN4,
         '\u2026': exports.MO.INNER,
+        '\u2043': exports.MO.BIN4,
         '\u2044': exports.MO.TALLBIN,
         '\u2061': exports.MO.ORD,
         '\u2062': exports.MO.ORD,
@@ -538,6 +558,7 @@ exports.OPTABLE = {
         '\u2258': exports.MO.REL,
         '\u2259': exports.MO.REL,
         '\u225A': exports.MO.REL,
+        '\u225B': exports.MO.REL,
         '\u225C': exports.MO.REL,
         '\u225D': exports.MO.REL,
         '\u225E': exports.MO.REL,
@@ -1171,8 +1192,8 @@ exports.OPTABLE = {
         '\u2AD9': exports.MO.REL,
         '\u2ADA': exports.MO.REL,
         '\u2ADB': exports.MO.REL,
-        '\u2ADC': exports.MO.REL,
         '\u2ADD': exports.MO.REL,
+        '\u2ADD\u0338': exports.MO.REL,
         '\u2ADE': exports.MO.REL,
         '\u2ADF': exports.MO.REL,
         '\u2AE0': exports.MO.REL,
@@ -1213,10 +1234,7 @@ exports.OPTABLE = {
         '\uFE38': exports.MO.WIDEACCENT,
     }
 };
-exports.OPTABLE['infix']['^'] = exports.MO.WIDEREL;
-exports.OPTABLE['infix']['_'] = exports.MO.WIDEREL;
-exports.OPTABLE['prefix']['\u2223'] = exports.MO.OPEN;
-exports.OPTABLE['prefix']['\u2225'] = exports.MO.OPEN;
-exports.OPTABLE['postfix']['\u2223'] = exports.MO.CLOSE;
-exports.OPTABLE['postfix']['\u2225'] = exports.MO.CLOSE;
+exports.OPTABLE.infix['^'] = exports.MO.WIDEREL;
+exports.OPTABLE.infix['_'] = exports.MO.WIDEREL;
+exports.OPTABLE.infix['\u2ADC'] = exports.MO.REL;
 //# sourceMappingURL=OperatorDictionary.js.map

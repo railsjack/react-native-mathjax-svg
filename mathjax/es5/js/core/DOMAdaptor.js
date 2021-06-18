@@ -1,15 +1,17 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractDOMAdaptor = void 0;
 var AbstractDOMAdaptor = (function () {
     function AbstractDOMAdaptor(document) {
         if (document === void 0) { document = null; }
@@ -42,7 +44,7 @@ var AbstractDOMAdaptor = (function () {
             try {
                 for (var _d = __values(Object.keys(def.style)), _e = _d.next(); !_e.done; _e = _d.next()) {
                     var key = _e.value;
-                    this.setStyle(node, key.replace(/-([a-z])/g, function (m, c) { return c.toUpperCase(); }), def.style[key]);
+                    this.setStyle(node, key.replace(/-([a-z])/g, function (_m, c) { return c.toUpperCase(); }), def.style[key]);
                 }
             }
             catch (e_2_1) { e_2 = { error: e_2_1 }; }

@@ -10,20 +10,42 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CONFIG = exports.MathJax = exports.Startup = void 0;
 var global_js_1 = require("./global.js");
 var PrioritizedList_js_1 = require("../util/PrioritizedList.js");
-;
 var Startup;
 (function (Startup) {
     var extensions = new PrioritizedList_js_1.PrioritizedList();
@@ -37,6 +59,10 @@ var Startup;
     Startup.elements = null;
     Startup.document = null;
     Startup.promise = new Promise(function (resolve, reject) {
+        Startup.promiseResolve = resolve;
+        Startup.promiseReject = reject;
+    });
+    Startup.pagePromise = new Promise(function (resolve, _reject) {
         var doc = global.document;
         if (!doc || !doc.readyState || doc.readyState === 'complete' || doc.readyState === 'interactive') {
             resolve();
@@ -51,12 +77,10 @@ var Startup;
         return visitor.visitTree(node, Startup.document);
     }
     Startup.toMML = toMML;
-    ;
     function registerConstructor(name, constructor) {
         Startup.constructors[name] = constructor;
     }
     Startup.registerConstructor = registerConstructor;
-    ;
     function useHandler(name, force) {
         if (force === void 0) { force = false; }
         if (!exports.CONFIG.handler || force) {
@@ -64,7 +88,6 @@ var Startup;
         }
     }
     Startup.useHandler = useHandler;
-    ;
     function useAdaptor(name, force) {
         if (force === void 0) { force = false; }
         if (!exports.CONFIG.adaptor || force) {
@@ -72,7 +95,6 @@ var Startup;
         }
     }
     Startup.useAdaptor = useAdaptor;
-    ;
     function useInput(name, force) {
         if (force === void 0) { force = false; }
         if (!inputSpecified || force) {
@@ -80,7 +102,6 @@ var Startup;
         }
     }
     Startup.useInput = useInput;
-    ;
     function useOutput(name, force) {
         if (force === void 0) { force = false; }
         if (!exports.CONFIG.output || force) {
@@ -88,25 +109,26 @@ var Startup;
         }
     }
     Startup.useOutput = useOutput;
-    ;
     function extendHandler(extend, priority) {
         if (priority === void 0) { priority = 10; }
         extensions.add(extend, priority);
     }
     Startup.extendHandler = extendHandler;
-    ;
     function defaultReady() {
         getComponents();
         makeMethods();
-        Startup.promise = Startup.promise.then(function () { return exports.CONFIG.pageReady(); });
+        Startup.pagePromise
+            .then(function () { return exports.CONFIG.pageReady(); })
+            .then(function () { return Startup.promiseResolve(); })
+            .catch(function (err) { return Startup.promiseReject(err); });
     }
     Startup.defaultReady = defaultReady;
-    ;
     function defaultPageReady() {
-        return (exports.CONFIG.typeset && exports.MathJax.typesetPromise ? exports.MathJax.typesetPromise() : null);
+        return (exports.CONFIG.typeset && exports.MathJax.typesetPromise ?
+            exports.MathJax.typesetPromise(exports.CONFIG.elements) :
+            Promise.resolve());
     }
     Startup.defaultPageReady = defaultPageReady;
-    ;
     function getComponents() {
         visitor = new exports.MathJax._.core.MmlTree.SerializedMmlVisitor.SerializedMmlVisitor();
         mathjax = exports.MathJax._.mathjax.mathjax;
@@ -123,7 +145,6 @@ var Startup;
         }
     }
     Startup.getComponents = getComponents;
-    ;
     function makeMethods() {
         var e_1, _a;
         if (Startup.input && Startup.output) {
@@ -150,7 +171,6 @@ var Startup;
         }
     }
     Startup.makeMethods = makeMethods;
-    ;
     function makeTypesetMethods() {
         exports.MathJax.typeset = function (elements) {
             if (elements === void 0) { elements = null; }
@@ -166,10 +186,17 @@ var Startup;
                 Startup.document.render();
             });
         };
-        exports.MathJax.typesetClear = function () { return Startup.document.clear(); };
+        exports.MathJax.typesetClear = function (elements) {
+            if (elements === void 0) { elements = null; }
+            if (elements) {
+                Startup.document.clearMathItemsWithin(elements);
+            }
+            else {
+                Startup.document.clear();
+            }
+        };
     }
     Startup.makeTypesetMethods = makeTypesetMethods;
-    ;
     function makeOutputMethods(iname, oname, input) {
         var name = iname + '2' + oname;
         exports.MathJax[name] =
@@ -192,7 +219,6 @@ var Startup;
         }
     }
     Startup.makeOutputMethods = makeOutputMethods;
-    ;
     function makeMmlMethods(name, input) {
         var STATE = exports.MathJax._.core.MathItem.STATE;
         exports.MathJax[name + '2mml'] =
@@ -211,17 +237,16 @@ var Startup;
             };
     }
     Startup.makeMmlMethods = makeMmlMethods;
-    ;
     function makeResetMethod(name, input) {
-        if (name === 'tex') {
-            exports.MathJax.texReset = function (start) {
-                if (start === void 0) { start = 0; }
-                return input.parseOptions.tags.reset(start);
-            };
-        }
+        exports.MathJax[name + 'Reset'] = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            return input.reset.apply(input, __spreadArray([], __read(args)));
+        };
     }
     Startup.makeResetMethod = makeResetMethod;
-    ;
     function getInputJax() {
         var e_2, _a;
         var jax = [];
@@ -247,7 +272,6 @@ var Startup;
         return jax;
     }
     Startup.getInputJax = getInputJax;
-    ;
     function getOutputJax() {
         var name = exports.CONFIG.output;
         if (!name)
@@ -259,7 +283,6 @@ var Startup;
         return new outputClass(exports.MathJax.config[name]);
     }
     Startup.getOutputJax = getOutputJax;
-    ;
     function getAdaptor() {
         var name = exports.CONFIG.adaptor;
         if (!name || name === 'none')
@@ -271,7 +294,6 @@ var Startup;
         return adaptor(exports.MathJax.config[name]);
     }
     Startup.getAdaptor = getAdaptor;
-    ;
     function getHandler() {
         var e_3, _a;
         var name = exports.CONFIG.handler;
@@ -298,14 +320,12 @@ var Startup;
         return handler;
     }
     Startup.getHandler = getHandler;
-    ;
     function getDocument(root) {
         if (root === void 0) { root = null; }
-        return mathjax.document(root || exports.CONFIG.document, __assign({}, exports.MathJax.config.options, { InputJax: Startup.input, OutputJax: Startup.output }));
+        return mathjax.document(root || exports.CONFIG.document, __assign(__assign({}, exports.MathJax.config.options), { InputJax: Startup.input, OutputJax: Startup.output }));
     }
     Startup.getDocument = getDocument;
 })(Startup = exports.Startup || (exports.Startup = {}));
-;
 exports.MathJax = global_js_1.MathJax;
 if (typeof exports.MathJax._.startup === 'undefined') {
     global_js_1.combineDefaults(exports.MathJax.config, 'startup', {

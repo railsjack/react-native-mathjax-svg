@@ -3,24 +3,27 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -39,6 +42,7 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SVGWrapper = void 0;
 var Wrapper_js_1 = require("../common/Wrapper.js");
 var svg_js_1 = require("../svg.js");
 var SVGWrapper = (function (_super) {
@@ -81,16 +85,17 @@ var SVGWrapper = (function (_super) {
         return svg;
     };
     SVGWrapper.prototype.createSVGnode = function (parent) {
+        this.element = this.svg('g', { 'data-mml-node': this.node.kind });
         var href = this.node.attributes.get('href');
         if (href) {
             parent = this.adaptor.append(parent, this.svg('a', { href: href }));
             var _a = this.getBBox(), h = _a.h, d = _a.d, w = _a.w;
-            this.adaptor.append(parent, this.svg('rect', {
+            this.adaptor.append(this.element, this.svg('rect', {
                 'data-hitbox': true, fill: 'none', stroke: 'none', 'pointer-events': 'all',
                 width: this.fixed(w), height: this.fixed(h + d), y: this.fixed(-d)
             }));
         }
-        this.element = this.adaptor.append(parent, this.svg('g', { 'data-mml-node': this.node.kind }));
+        this.adaptor.append(parent, this.element);
         return this.element;
     };
     SVGWrapper.prototype.handleStyles = function () {
@@ -180,10 +185,35 @@ var SVGWrapper = (function (_super) {
             return;
         if (!element) {
             element = this.element;
+            y = this.handleId(y);
         }
+        var translate = "translate(" + this.fixed(x) + "," + this.fixed(y) + ")";
         var transform = this.adaptor.getAttribute(element, 'transform') || '';
-        transform = 'translate(' + this.fixed(x) + ', ' + this.fixed(y) + ')' + (transform ? ' ' + transform : '');
-        this.adaptor.setAttribute(element, 'transform', transform);
+        this.adaptor.setAttribute(element, 'transform', translate + (transform ? ' ' + transform : ''));
+    };
+    SVGWrapper.prototype.handleId = function (y) {
+        if (!this.node.attributes || !this.node.attributes.get('id')) {
+            return y;
+        }
+        var adaptor = this.adaptor;
+        var h = this.getBBox().h;
+        var children = adaptor.childNodes(this.element);
+        children.forEach(function (child) { return adaptor.remove(child); });
+        var g = this.svg('g', { 'data-idbox': true, transform: "translate(0," + this.fixed(-h) + ")" }, children);
+        adaptor.append(this.element, this.svg('text', { 'data-id-align': true }, [this.text('')]));
+        adaptor.append(this.element, g);
+        return y + h;
+    };
+    SVGWrapper.prototype.firstChild = function () {
+        var adaptor = this.adaptor;
+        var child = adaptor.firstChild(this.element);
+        if (child && adaptor.kind(child) === 'text' && adaptor.getAttribute(child, 'data-id-align')) {
+            child = adaptor.firstChild(adaptor.next(child));
+        }
+        if (child && adaptor.kind(child) === 'rect' && adaptor.getAttribute(child, 'data-hitbox')) {
+            child = adaptor.next(child);
+        }
+        return child;
     };
     SVGWrapper.prototype.placeChar = function (n, x, y, parent, variant) {
         var e_4, _a;
@@ -192,7 +222,7 @@ var SVGWrapper = (function (_super) {
             variant = this.variant;
         }
         var C = n.toString(16).toUpperCase();
-        var _b = __read(this.getVariantChar(variant, n), 4), h = _b[0], d = _b[1], w = _b[2], data = _b[3];
+        var _b = __read(this.getVariantChar(variant, n), 4), w = _b[2], data = _b[3];
         if ('p' in data) {
             var path = (data.p ? 'M' + data.p + 'Z' : '');
             this.place(x, y, this.adaptor.append(parent, this.charNode(variant, C, path)));
@@ -202,7 +232,7 @@ var SVGWrapper = (function (_super) {
             this.place(x, y, g);
             x = 0;
             try {
-                for (var _c = __values(this.unicodeChars(data.c)), _d = _c.next(); !_d.done; _d = _c.next()) {
+                for (var _c = __values(this.unicodeChars(data.c, variant)), _d = _c.next(); !_d.done; _d = _c.next()) {
                     var n_1 = _d.value;
                     x += this.placeChar(n_1, x, y, g, variant);
                 }
@@ -216,7 +246,7 @@ var SVGWrapper = (function (_super) {
             }
         }
         else if (data.unknown) {
-            var char = String.fromCharCode(n);
+            var char = String.fromCodePoint(n);
             var text = this.adaptor.append(parent, this.jax.unknownText(char, variant));
             this.place(x, y, text);
             return this.jax.measureTextNodeWithCache(text, char, variant).w;
@@ -231,7 +261,7 @@ var SVGWrapper = (function (_super) {
         return this.svg('path', { 'data-c': C, d: path });
     };
     SVGWrapper.prototype.useNode = function (variant, C, path) {
-        var use = this.svg('use');
+        var use = this.svg('use', { 'data-c': C });
         var id = '#' + this.jax.fontCache.cachePath(variant, C, path);
         this.adaptor.setAttribute(use, 'href', id, svg_js_1.XLINKNS);
         return use;
@@ -268,12 +298,6 @@ var SVGWrapper = (function (_super) {
     };
     SVGWrapper.prototype.text = function (text) {
         return this.jax.text(text);
-    };
-    SVGWrapper.prototype.createMo = function (text) {
-        return _super.prototype.createMo.call(this, text);
-    };
-    SVGWrapper.prototype.coreMO = function () {
-        return _super.prototype.coreMO.call(this);
     };
     SVGWrapper.prototype.fixed = function (x, n) {
         if (n === void 0) { n = 1; }

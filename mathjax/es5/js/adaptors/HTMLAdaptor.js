@@ -3,26 +3,30 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HTMLAdaptor = void 0;
 var DOMAdaptor_js_1 = require("../core/DOMAdaptor.js");
 var HTMLAdaptor = (function (_super) {
     __extends(HTMLAdaptor, _super);
@@ -53,12 +57,15 @@ var HTMLAdaptor = (function (_super) {
     HTMLAdaptor.prototype.root = function (doc) {
         return doc.documentElement;
     };
+    HTMLAdaptor.prototype.doctype = function (doc) {
+        return "<!DOCTYPE " + doc.doctype.name + ">";
+    };
     HTMLAdaptor.prototype.tags = function (node, name, ns) {
         if (ns === void 0) { ns = null; }
         var nodes = (ns ? node.getElementsByTagNameNS(ns, name) : node.getElementsByTagName(name));
         return Array.from(nodes);
     };
-    HTMLAdaptor.prototype.getElements = function (nodes, document) {
+    HTMLAdaptor.prototype.getElements = function (nodes, _document) {
         var e_1, _a;
         var containers = [];
         try {
@@ -86,6 +93,9 @@ var HTMLAdaptor = (function (_super) {
             finally { if (e_1) throw e_1.error; }
         }
         return containers;
+    };
+    HTMLAdaptor.prototype.contains = function (container, node) {
+        return container.contains(node);
     };
     HTMLAdaptor.prototype.parent = function (node) {
         return node.parentNode;
@@ -127,7 +137,8 @@ var HTMLAdaptor = (function (_super) {
         return node.childNodes[i];
     };
     HTMLAdaptor.prototype.kind = function (node) {
-        return node.nodeName.toLowerCase();
+        var n = node.nodeType;
+        return (n === 1 || n === 3 || n === 8 ? node.nodeName.toLowerCase() : '');
     };
     HTMLAdaptor.prototype.value = function (node) {
         return node.nodeValue || '';
@@ -140,6 +151,10 @@ var HTMLAdaptor = (function (_super) {
     };
     HTMLAdaptor.prototype.outerHTML = function (node) {
         return node.outerHTML;
+    };
+    HTMLAdaptor.prototype.serializeXML = function (node) {
+        var serializer = new this.window.XMLSerializer();
+        return serializer.serializeToString(node);
     };
     HTMLAdaptor.prototype.setAttribute = function (node, name, value, ns) {
         if (ns === void 0) { ns = null; }
@@ -164,13 +179,26 @@ var HTMLAdaptor = (function (_super) {
         });
     };
     HTMLAdaptor.prototype.addClass = function (node, name) {
-        node.classList.add(name);
+        if (node.classList) {
+            node.classList.add(name);
+        }
+        else {
+            node.className = (node.className + ' ' + name).trim();
+        }
     };
     HTMLAdaptor.prototype.removeClass = function (node, name) {
-        return node.classList.remove(name);
+        if (node.classList) {
+            node.classList.remove(name);
+        }
+        else {
+            node.className = node.className.split(/ /).filter(function (c) { return c !== name; }).join(' ');
+        }
     };
     HTMLAdaptor.prototype.hasClass = function (node, name) {
-        return node.classList.contains(name);
+        if (node.classList) {
+            return node.classList.contains(name);
+        }
+        return node.className.split(/ /).indexOf(name) >= 0;
     };
     HTMLAdaptor.prototype.setStyle = function (node, name, value) {
         node.style[name] = value;
@@ -184,6 +212,10 @@ var HTMLAdaptor = (function (_super) {
     HTMLAdaptor.prototype.fontSize = function (node) {
         var style = this.window.getComputedStyle(node);
         return parseFloat(style.fontSize);
+    };
+    HTMLAdaptor.prototype.fontFamily = function (node) {
+        var style = this.window.getComputedStyle(node);
+        return style.fontFamily || '';
     };
     HTMLAdaptor.prototype.nodeSize = function (node, em, local) {
         if (em === void 0) { em = 1; }

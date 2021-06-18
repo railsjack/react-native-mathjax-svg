@@ -1,18 +1,21 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-;
-;
-;
+exports.MathJax = exports.combineWithMathJax = exports.combineDefaults = exports.combineConfig = exports.isObject = void 0;
+function isObject(x) {
+    return typeof x === 'object' && x !== null;
+}
+exports.isObject = isObject;
 function combineConfig(dst, src) {
     var e_1, _a;
     try {
@@ -20,7 +23,8 @@ function combineConfig(dst, src) {
             var id = _c.value;
             if (id === '__esModule')
                 continue;
-            if (typeof dst[id] === 'object' && typeof src[id] === 'object') {
+            if (isObject(dst[id]) && isObject(src[id]) &&
+                !(src[id] instanceof Promise)) {
                 combineConfig(dst[id], src[id]);
             }
             else if (src[id] !== null && src[id] !== undefined) {
@@ -47,7 +51,7 @@ function combineDefaults(dst, name, src) {
     try {
         for (var _b = __values(Object.keys(src)), _c = _b.next(); !_c.done; _c = _b.next()) {
             var id = _c.value;
-            if (typeof dst[id] === 'object' && typeof src[id] === 'object') {
+            if (isObject(dst[id]) && isObject(src[id])) {
                 combineDefaults(dst, id, src[id]);
             }
             else if (dst[id] == null && src[id] != null) {
@@ -74,7 +78,7 @@ if (typeof global.MathJax === 'undefined') {
 }
 if (!global.MathJax.version) {
     global.MathJax = {
-        version: '3.0.1',
+        version: '3.1.4',
         _: {},
         config: global.MathJax
     };

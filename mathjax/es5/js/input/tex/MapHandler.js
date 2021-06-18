@@ -1,13 +1,14 @@
 "use strict";
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -26,6 +27,9 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SubHandlers = exports.SubHandler = exports.MapHandler = void 0;
+var PrioritizedList_js_1 = require("../../util/PrioritizedList.js");
+var FunctionList_js_1 = require("../../util/FunctionList.js");
 var MapHandler;
 (function (MapHandler) {
     var maps = new Map();
@@ -36,44 +40,41 @@ var MapHandler;
         return maps.get(name);
     };
 })(MapHandler = exports.MapHandler || (exports.MapHandler = {}));
-exports.ExtensionMaps = {
-    NEW_MACRO: 'new-Macro',
-    NEW_DELIMITER: 'new-Delimiter',
-    NEW_COMMAND: 'new-Command',
-    NEW_ENVIRONMENT: 'new-Environment'
-};
 var SubHandler = (function () {
-    function SubHandler(maps, _fallback) {
+    function SubHandler() {
+        this._configuration = new PrioritizedList_js_1.PrioritizedList();
+        this._fallback = new FunctionList_js_1.FunctionList();
+    }
+    SubHandler.prototype.add = function (maps, fallback, priority) {
         var e_1, _a;
-        this._fallback = _fallback;
-        this._configuration = [];
+        if (priority === void 0) { priority = PrioritizedList_js_1.PrioritizedList.DEFAULTPRIORITY; }
         try {
-            for (var maps_1 = __values(maps), maps_1_1 = maps_1.next(); !maps_1_1.done; maps_1_1 = maps_1.next()) {
-                var name_1 = maps_1_1.value;
-                this.add(name_1);
+            for (var _b = __values(maps.slice().reverse()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var name_1 = _c.value;
+                var map = MapHandler.getMap(name_1);
+                if (!map) {
+                    this.warn('Configuration ' + name_1 + ' not found! Omitted.');
+                    return;
+                }
+                this._configuration.add(map, priority);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (maps_1_1 && !maps_1_1.done && (_a = maps_1.return)) _a.call(maps_1);
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
             finally { if (e_1) throw e_1.error; }
         }
-    }
-    SubHandler.prototype.add = function (name) {
-        var map = MapHandler.getMap(name);
-        if (!map) {
-            this.warn('Configuration ' + name + ' not found! Omitted.');
-            return;
+        if (fallback) {
+            this._fallback.add(fallback, priority);
         }
-        this._configuration.push(map);
     };
     SubHandler.prototype.parse = function (input) {
         var e_2, _a;
         try {
             for (var _b = __values(this._configuration), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var map = _c.value;
+                var map = _c.value.item;
                 var result = map.parse(input);
                 if (result) {
                     return result;
@@ -88,7 +89,7 @@ var SubHandler = (function () {
             finally { if (e_2) throw e_2.error; }
         }
         var _d = __read(input, 2), env = _d[0], symbol = _d[1];
-        this._fallback(env, symbol);
+        this._fallback.toArray()[0].item(env, symbol);
     };
     SubHandler.prototype.lookup = function (symbol) {
         var map = this.applicable(symbol);
@@ -98,18 +99,12 @@ var SubHandler = (function () {
         return this.applicable(symbol) ? true : false;
     };
     SubHandler.prototype.toString = function () {
-        return this._configuration
-            .map(function (x) { return x.name; })
-            .join(', ');
-    };
-    SubHandler.prototype.applicable = function (symbol) {
         var e_3, _a;
+        var names = [];
         try {
             for (var _b = __values(this._configuration), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var map = _c.value;
-                if (map.contains(symbol)) {
-                    return map;
-                }
+                var map = _c.value.item;
+                names.push(map.name);
             }
         }
         catch (e_3_1) { e_3 = { error: e_3_1 }; }
@@ -119,27 +114,16 @@ var SubHandler = (function () {
             }
             finally { if (e_3) throw e_3.error; }
         }
-        return null;
+        return names.join(', ');
     };
-    SubHandler.prototype.retrieve = function (name) {
-        return this._configuration.find(function (x) { return x.name === name; });
-    };
-    SubHandler.prototype.warn = function (message) {
-        console.log('TexParser Warning: ' + message);
-    };
-    return SubHandler;
-}());
-exports.SubHandler = SubHandler;
-var SubHandlers = (function () {
-    function SubHandlers(config) {
+    SubHandler.prototype.applicable = function (symbol) {
         var e_4, _a;
-        this.map = new Map();
         try {
-            for (var _b = __values(Object.keys(config.handler)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var key = _c.value;
-                var name_2 = key;
-                var subHandler = new SubHandler(config.handler[name_2] || [], config.fallback[name_2]);
-                this.set(name_2, subHandler);
+            for (var _b = __values(this._configuration), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var map = _c.value.item;
+                if (map.contains(symbol)) {
+                    return map;
+                }
             }
         }
         catch (e_4_1) { e_4 = { error: e_4_1 }; }
@@ -149,20 +133,14 @@ var SubHandlers = (function () {
             }
             finally { if (e_4) throw e_4.error; }
         }
-    }
-    SubHandlers.prototype.set = function (name, subHandler) {
-        this.map.set(name, subHandler);
+        return null;
     };
-    SubHandlers.prototype.get = function (name) {
-        return this.map.get(name);
-    };
-    SubHandlers.prototype.retrieve = function (name) {
+    SubHandler.prototype.retrieve = function (name) {
         var e_5, _a;
         try {
-            for (var _b = __values(this.map.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var handler = _c.value;
-                var map = handler.retrieve(name);
-                if (map) {
+            for (var _b = __values(this._configuration), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var map = _c.value.item;
+                if (map.name === name) {
                     return map;
                 }
             }
@@ -173,6 +151,65 @@ var SubHandlers = (function () {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
             finally { if (e_5) throw e_5.error; }
+        }
+        return null;
+    };
+    SubHandler.prototype.warn = function (message) {
+        console.log('TexParser Warning: ' + message);
+    };
+    return SubHandler;
+}());
+exports.SubHandler = SubHandler;
+var SubHandlers = (function () {
+    function SubHandlers() {
+        this.map = new Map();
+    }
+    SubHandlers.prototype.add = function (handlers, fallbacks, priority) {
+        var e_6, _a;
+        if (priority === void 0) { priority = PrioritizedList_js_1.PrioritizedList.DEFAULTPRIORITY; }
+        try {
+            for (var _b = __values(Object.keys(handlers)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var key = _c.value;
+                var name_2 = key;
+                var subHandler = this.get(name_2);
+                if (!subHandler) {
+                    subHandler = new SubHandler();
+                    this.set(name_2, subHandler);
+                }
+                subHandler.add(handlers[name_2], fallbacks[name_2], priority);
+            }
+        }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_6) throw e_6.error; }
+        }
+    };
+    SubHandlers.prototype.set = function (name, subHandler) {
+        this.map.set(name, subHandler);
+    };
+    SubHandlers.prototype.get = function (name) {
+        return this.map.get(name);
+    };
+    SubHandlers.prototype.retrieve = function (name) {
+        var e_7, _a;
+        try {
+            for (var _b = __values(this.map.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var handler = _c.value;
+                var map = handler.retrieve(name);
+                if (map) {
+                    return map;
+                }
+            }
+        }
+        catch (e_7_1) { e_7 = { error: e_7_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_7) throw e_7.error; }
         }
         return null;
     };

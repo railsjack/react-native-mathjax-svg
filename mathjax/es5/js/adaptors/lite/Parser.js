@@ -15,17 +15,19 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.LiteParser = exports.PATTERNS = void 0;
 var Entities = require("../../util/Entities.js");
 var Element_js_1 = require("./Element.js");
 var Text_js_1 = require("./Text.js");
@@ -39,17 +41,17 @@ var PATTERNS;
     PATTERNS.OPTIONALSPACE = '(?:\\s|\\n)*';
     PATTERNS.ATTRIBUTE = PATTERNS.ATTNAME + '(?:' + PATTERNS.OPTIONALSPACE + '=' + PATTERNS.OPTIONALSPACE + PATTERNS.VALUE + ')?';
     PATTERNS.ATTRIBUTESPLIT = '(' + PATTERNS.ATTNAME + ')(?:' + PATTERNS.OPTIONALSPACE + '=' + PATTERNS.OPTIONALSPACE + PATTERNS.VALUESPLIT + ')?';
-    PATTERNS.TAG = '(<(?:' + PATTERNS.TAGNAME + '(?:' + PATTERNS.SPACE + PATTERNS.ATTRIBUTE + ')*' +
-        PATTERNS.OPTIONALSPACE + '/?|/' + PATTERNS.TAGNAME + '|!--[^]*?--|![^]*?)(?:>|$))';
-    PATTERNS.tag = new RegExp(PATTERNS.TAG, "i");
-    PATTERNS.attr = new RegExp(PATTERNS.ATTRIBUTE, "i");
-    PATTERNS.attrsplit = new RegExp(PATTERNS.ATTRIBUTESPLIT, "i");
+    PATTERNS.TAG = '(<(?:' + PATTERNS.TAGNAME + '(?:' + PATTERNS.SPACE + PATTERNS.ATTRIBUTE + ')*'
+        + PATTERNS.OPTIONALSPACE + '/?|/' + PATTERNS.TAGNAME + '|!--[^]*?--|![^]*?)(?:>|$))';
+    PATTERNS.tag = new RegExp(PATTERNS.TAG, 'i');
+    PATTERNS.attr = new RegExp(PATTERNS.ATTRIBUTE, 'i');
+    PATTERNS.attrsplit = new RegExp(PATTERNS.ATTRIBUTESPLIT, 'i');
 })(PATTERNS = exports.PATTERNS || (exports.PATTERNS = {}));
 var LiteParser = (function () {
     function LiteParser() {
     }
-    LiteParser.prototype.parseFromString = function (text, format, adaptor) {
-        if (format === void 0) { format = 'text/html'; }
+    LiteParser.prototype.parseFromString = function (text, _format, adaptor) {
+        if (_format === void 0) { _format = 'text/html'; }
         if (adaptor === void 0) { adaptor = null; }
         var root = adaptor.createDocument();
         var node = adaptor.body(root);
@@ -92,7 +94,7 @@ var LiteParser = (function () {
     LiteParser.prototype.openTag = function (adaptor, node, tag, parts) {
         var PCDATA = this.constructor.PCDATA;
         var SELF_CLOSING = this.constructor.SELF_CLOSING;
-        var kind = tag.match(/<(.*?)[\s\n>/]/)[1].toLowerCase();
+        var kind = tag.match(/<(.*?)[\s\n>\/]/)[1].toLowerCase();
         var child = adaptor.node(kind);
         var attributes = tag.replace(/^<.*?[\s\n>]/, '').split(PATTERNS.attrsplit);
         if (attributes.pop().match(/>$/) || attributes.length < 5) {
@@ -112,7 +114,7 @@ var LiteParser = (function () {
     LiteParser.prototype.addAttributes = function (adaptor, node, attributes) {
         var CDATA_ATTR = this.constructor.CDATA_ATTR;
         while (attributes.length) {
-            var _a = __read(attributes.splice(0, 5), 5), space = _a[0], name_1 = _a[1], v1 = _a[2], v2 = _a[3], v3 = _a[4];
+            var _a = __read(attributes.splice(0, 5), 5), name_1 = _a[1], v1 = _a[2], v2 = _a[3], v3 = _a[4];
             var value = v1 || v2 || v3 || '';
             if (!CDATA_ATTR[name_1]) {
                 value = Entities.translate(value);
@@ -132,15 +134,33 @@ var LiteParser = (function () {
         adaptor.append(node, adaptor.text(pcdata.join('')));
     };
     LiteParser.prototype.checkDocument = function (adaptor, root) {
-        var e_1, _a;
+        var e_1, _a, e_2, _b;
         var node = this.getOnlyChild(adaptor, adaptor.body(root));
         if (!node)
             return;
+        try {
+            for (var _c = __values(adaptor.childNodes(adaptor.body(root))), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var child = _d.value;
+                if (child === node) {
+                    break;
+                }
+                if (child instanceof Text_js_1.LiteComment && child.value.match(/^<!DOCTYPE/)) {
+                    root.type = child.value;
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
         switch (adaptor.kind(node)) {
             case 'html':
                 try {
-                    for (var _b = __values(node.children), _c = _b.next(); !_c.done; _c = _b.next()) {
-                        var child = _c.value;
+                    for (var _e = __values(node.children), _f = _e.next(); !_f.done; _f = _e.next()) {
+                        var child = _f.value;
                         switch (adaptor.kind(child)) {
                             case 'head':
                                 root.head = child;
@@ -151,12 +171,12 @@ var LiteParser = (function () {
                         }
                     }
                 }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                catch (e_2_1) { e_2 = { error: e_2_1 }; }
                 finally {
                     try {
-                        if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                        if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
                     }
-                    finally { if (e_1) throw e_1.error; }
+                    finally { if (e_2) throw e_2.error; }
                 }
                 root.root = node;
                 adaptor.remove(node);
@@ -176,7 +196,7 @@ var LiteParser = (function () {
         }
     };
     LiteParser.prototype.getOnlyChild = function (adaptor, body) {
-        var e_2, _a;
+        var e_3, _a;
         var node = null;
         try {
             for (var _b = __values(adaptor.childNodes(body)), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -188,27 +208,30 @@ var LiteParser = (function () {
                 }
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_3) throw e_3.error; }
         }
         return node;
     };
-    LiteParser.prototype.serialize = function (adaptor, node) {
+    LiteParser.prototype.serialize = function (adaptor, node, xml) {
         var _this = this;
+        if (xml === void 0) { xml = false; }
         var SELF_CLOSING = this.constructor.SELF_CLOSING;
         var CDATA = this.constructor.CDATA_ATTR;
         var tag = adaptor.kind(node);
         var attributes = adaptor.allAttributes(node).map(function (x) { return x.name + '="' + (CDATA[x.name] ? x.value : _this.protectAttribute(x.value)) + '"'; }).join(' ');
-        var html = '<' + tag + (attributes ? ' ' + attributes : '') + '>'
-            + (SELF_CLOSING[tag] ? '' : adaptor.innerHTML(node) + '</' + tag + '>');
+        var content = this.serializeInner(adaptor, node, xml);
+        var html = '<' + tag + (attributes ? ' ' + attributes : '')
+            + ((!xml || content) && !SELF_CLOSING[tag] ? ">" + content + "</" + tag + ">" : xml ? '/>' : '>');
         return html;
     };
-    LiteParser.prototype.serializeInner = function (adaptor, node) {
+    LiteParser.prototype.serializeInner = function (adaptor, node, xml) {
         var _this = this;
+        if (xml === void 0) { xml = false; }
         var PCDATA = this.constructor.PCDATA;
         if (PCDATA.hasOwnProperty(node.kind)) {
             return adaptor.childNodes(node).map(function (x) { return adaptor.value(x); }).join('');
@@ -216,8 +239,8 @@ var LiteParser = (function () {
         return adaptor.childNodes(node).map(function (x) {
             var kind = adaptor.kind(x);
             return (kind === '#text' ? _this.protectHTML(adaptor.value(x)) :
-                kind === '#comment' ? adaptor.value(x) :
-                    _this.serialize(adaptor, x));
+                kind === '#comment' ? x.value :
+                    _this.serialize(adaptor, x, xml));
         }).join('');
     };
     LiteParser.prototype.protectAttribute = function (text) {

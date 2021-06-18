@@ -15,22 +15,25 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var END = Symbol();
+exports.LinkedList = exports.ListItem = exports.END = void 0;
+exports.END = Symbol();
 var ListItem = (function () {
     function ListItem(data) {
         if (data === void 0) { data = null; }
@@ -47,15 +50,15 @@ var LinkedList = (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        this.list = new ListItem(END);
+        this.list = new ListItem(exports.END);
         this.list.next = this.list.prev = this.list;
-        this.push.apply(this, __spread(args));
+        this.push.apply(this, __spreadArray([], __read(args)));
     }
     LinkedList.prototype.toArray = function () {
         return Array.from(this);
     };
     LinkedList.prototype.isBefore = function (a, b) {
-        return (a < b);
+        return a < b;
     };
     LinkedList.prototype.push = function () {
         var e_1, _a;
@@ -84,7 +87,7 @@ var LinkedList = (function () {
     };
     LinkedList.prototype.pop = function () {
         var item = this.list.prev;
-        if (item.data === END) {
+        if (item.data === exports.END) {
             return null;
         }
         this.list.prev = item.prev;
@@ -119,13 +122,44 @@ var LinkedList = (function () {
     };
     LinkedList.prototype.shift = function () {
         var item = this.list.next;
-        if (item.data === END) {
+        if (item.data === exports.END) {
             return null;
         }
         this.list.next = item.next;
         item.next.prev = this.list;
         item.next = item.prev = null;
         return item.data;
+    };
+    LinkedList.prototype.remove = function () {
+        var e_3, _a;
+        var items = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            items[_i] = arguments[_i];
+        }
+        var map = new Map();
+        try {
+            for (var items_1 = __values(items), items_1_1 = items_1.next(); !items_1_1.done; items_1_1 = items_1.next()) {
+                var item_1 = items_1_1.value;
+                map.set(item_1, true);
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (items_1_1 && !items_1_1.done && (_a = items_1.return)) _a.call(items_1);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+        var item = this.list.next;
+        while (item.data !== exports.END) {
+            var next = item.next;
+            if (map.has(item.data)) {
+                item.prev.next = item.next;
+                item.next.prev = item.prev;
+                item.next = item.prev = null;
+            }
+            item = next;
+        }
     };
     LinkedList.prototype.clear = function () {
         this.list.next.prev = this.list.prev.next = null;
@@ -137,7 +171,7 @@ var LinkedList = (function () {
         return {
             next: function () {
                 current = current.next;
-                return (current.data === END ?
+                return (current.data === exports.END ?
                     { value: null, done: true } :
                     { value: current.data, done: false });
             }
@@ -152,7 +186,7 @@ var LinkedList = (function () {
             },
             _a.next = function () {
                 current = current.prev;
-                return (current.data === END ?
+                return (current.data === exports.END ?
                     { value: null, done: true } :
                     { value: current.data, done: false });
             },
@@ -168,7 +202,7 @@ var LinkedList = (function () {
         }
         var item = new ListItem(data);
         var cur = this.list.next;
-        while (cur.data !== END && isBefore(cur.data, item.data)) {
+        while (cur.data !== exports.END && isBefore(cur.data, item.data)) {
             cur = cur.next;
         }
         item.prev = cur.prev;
@@ -177,7 +211,7 @@ var LinkedList = (function () {
         return this;
     };
     LinkedList.prototype.sort = function (isBefore) {
-        var e_3, _a;
+        var e_4, _a;
         if (isBefore === void 0) { isBefore = null; }
         if (isBefore === null) {
             isBefore = this.isBefore.bind(this);
@@ -189,12 +223,12 @@ var LinkedList = (function () {
                 lists.push(new LinkedList(item));
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_4) throw e_4.error; }
         }
         this.list.next = this.list.prev = this.list;
         while (lists.length > 1) {
@@ -216,7 +250,7 @@ var LinkedList = (function () {
         }
         var lcur = this.list.next;
         var mcur = list.list.next;
-        while (lcur.data !== END && mcur.data !== END) {
+        while (lcur.data !== exports.END && mcur.data !== exports.END) {
             if (isBefore(mcur.data, lcur.data)) {
                 _a = __read([lcur, mcur], 2), mcur.prev.next = _a[0], lcur.prev.next = _a[1];
                 _b = __read([lcur.prev, mcur.prev], 2), mcur.prev = _b[0], lcur.prev = _b[1];
@@ -228,7 +262,7 @@ var LinkedList = (function () {
                 lcur = lcur.next;
             }
         }
-        if (mcur.data !== END) {
+        if (mcur.data !== exports.END) {
             this.list.prev.next = list.list.next;
             list.list.next.prev = this.list.prev;
             list.list.prev.next = this.list;

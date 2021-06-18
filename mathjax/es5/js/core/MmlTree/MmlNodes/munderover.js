@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -24,6 +26,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MmlMover = exports.MmlMunder = exports.MmlMunderover = void 0;
 var MmlNode_js_1 = require("../MmlNode.js");
 var MmlMunderover = (function (_super) {
     __extends(MmlMunderover, _super);
@@ -34,42 +37,42 @@ var MmlMunderover = (function (_super) {
         get: function () {
             return 'munderover';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMunderover.prototype, "arity", {
         get: function () {
             return 3;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMunderover.prototype, "base", {
         get: function () {
             return 0;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMunderover.prototype, "under", {
         get: function () {
             return 1;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMunderover.prototype, "over", {
         get: function () {
             return 2;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMunderover.prototype, "linebreakContainer", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlMunderover.prototype.setChildInheritedAttributes = function (attributes, display, level, prime) {
@@ -101,7 +104,7 @@ var MmlMunderover = (function (_super) {
             }
         }
     };
-    MmlMunderover.defaults = __assign({}, MmlNode_js_1.AbstractMmlBaseNode.defaults, { accent: false, accentunder: false, align: 'center' });
+    MmlMunderover.defaults = __assign(__assign({}, MmlNode_js_1.AbstractMmlBaseNode.defaults), { accent: false, accentunder: false, align: 'center' });
     MmlMunderover.ACCENTS = ['', 'accentunder', 'accent'];
     return MmlMunderover;
 }(MmlNode_js_1.AbstractMmlBaseNode));
@@ -115,14 +118,14 @@ var MmlMunder = (function (_super) {
         get: function () {
             return 'munder';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMunder.prototype, "arity", {
         get: function () {
             return 2;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlMunder.defaults = __assign({}, MmlMunderover.defaults);
@@ -138,28 +141,28 @@ var MmlMover = (function (_super) {
         get: function () {
             return 'mover';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMover.prototype, "arity", {
         get: function () {
             return 2;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMover.prototype, "over", {
         get: function () {
             return 1;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMover.prototype, "under", {
         get: function () {
             return 2;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlMover.defaults = __assign({}, MmlMunderover.defaults);

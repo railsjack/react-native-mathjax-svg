@@ -1,17 +1,4 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -28,34 +15,25 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AutoloadConfiguration = void 0;
 var Configuration_js_1 = require("../Configuration.js");
 var SymbolMap_js_1 = require("../SymbolMap.js");
 var Symbol_js_1 = require("../Symbol.js");
 var RequireConfiguration_js_1 = require("../require/RequireConfiguration.js");
 var package_js_1 = require("../../../components/package.js");
 var Options_js_1 = require("../../../util/Options.js");
-var AutoloadCommandMap = (function (_super) {
-    __extends(AutoloadCommandMap, _super);
-    function AutoloadCommandMap() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    AutoloadCommandMap.prototype.remove = function (name) {
-        this.map.delete(name);
-    };
-    return AutoloadCommandMap;
-}(SymbolMap_js_1.CommandMap));
-exports.AutoloadCommandMap = AutoloadCommandMap;
 function Autoload(parser, name, extension, isMacro) {
     var e_1, _a, e_2, _b;
     if (package_js_1.Package.packages.has(parser.options.require.prefix + extension)) {
@@ -87,7 +65,8 @@ function Autoload(parser, name, extension, isMacro) {
             }
             finally { if (e_2) throw e_2.error; }
         }
-        parser.i -= name.length + (isMacro ? 0 : 7);
+        parser.string = (isMacro ? name + ' ' : '\\begin{' + name.slice(1) + '}') + parser.string.slice(parser.i);
+        parser.i = 0;
     }
     RequireConfiguration_js_1.RequireLoad(parser, extension);
 }
@@ -102,6 +81,7 @@ function configAutoload(config, jax) {
     var macros = parser.handlers.get('macro');
     var environments = parser.handlers.get('environment');
     var autoload = parser.options.autoload;
+    parser.packageData.set('autoload', { Autoload: Autoload });
     try {
         for (var _d = __values(Object.keys(autoload)), _e = _d.next(); !_e.done; _e = _d.next()) {
             var extension = _e.value;
@@ -146,12 +126,12 @@ function configAutoload(config, jax) {
         }
         finally { if (e_3) throw e_3.error; }
     }
-    if (!parser.options.require.jax) {
+    if (!parser.packageData.get('require')) {
         RequireConfiguration_js_1.RequireConfiguration.config(config, jax);
     }
 }
-var AutoloadMacros = new AutoloadCommandMap('autoload-macros', {}, {});
-var AutoloadEnvironments = new AutoloadCommandMap('autoload-environments', {}, {});
+var AutoloadMacros = new SymbolMap_js_1.CommandMap('autoload-macros', {}, {});
+var AutoloadEnvironments = new SymbolMap_js_1.CommandMap('autoload-environments', {}, {});
 exports.AutoloadConfiguration = Configuration_js_1.Configuration.create('autoload', {
     handler: {
         macro: ['autoload-macros'],
@@ -160,15 +140,15 @@ exports.AutoloadConfiguration = Configuration_js_1.Configuration.create('autoloa
     options: {
         autoload: Options_js_1.expandable({
             action: ['toggle', 'mathtip', 'texttip'],
-            amsCd: [[], ['CD']],
+            amscd: [[], ['CD']],
             bbox: ['bbox'],
             boldsymbol: ['boldsymbol'],
             braket: ['bra', 'ket', 'braket', 'set', 'Bra', 'Ket', 'Braket', 'Set', 'ketbra', 'Ketbra'],
+            bussproofs: [[], ['prooftree']],
             cancel: ['cancel', 'bcancel', 'xcancel', 'cancelto'],
             color: ['color', 'definecolor', 'textcolor', 'colorbox', 'fcolorbox'],
             enclose: ['enclose'],
-            extpfeil: ['xtwoheadrightarrow', 'xtwoheadleftarrow', 'xmapsto',
-                'xlongequal', 'xtofrom', 'Newextarrow'],
+            extpfeil: ['xtwoheadrightarrow', 'xtwoheadleftarrow', 'xmapsto', 'xlongequal', 'xtofrom', 'Newextarrow'],
             html: ['href', 'class', 'style', 'cssId'],
             mhchem: ['ce', 'pu'],
             newcommand: ['newcommand', 'renewcommand', 'newenvironment', 'renewenvironment', 'def', 'let'],
@@ -176,7 +156,8 @@ exports.AutoloadConfiguration = Configuration_js_1.Configuration.create('autoloa
             verb: ['verb']
         })
     },
-    config: configAutoload, configPriority: 10,
-    init: initAutoload, priority: 10
+    config: configAutoload,
+    init: initAutoload,
+    priority: 10
 });
 //# sourceMappingURL=AutoloadConfiguration.js.map

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.asyncLoad = void 0;
 var mathjax_js_1 = require("../mathjax.js");
 function asyncLoad(name) {
     if (!mathjax_js_1.mathjax.asyncLoad) {

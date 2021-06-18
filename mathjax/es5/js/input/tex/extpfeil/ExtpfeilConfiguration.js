@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ExtpfeilConfiguration = exports.ExtpfeilMethods = void 0;
 var Configuration_js_1 = require("../Configuration.js");
 var SymbolMap_js_1 = require("../SymbolMap.js");
 var AmsMethods_js_1 = require("../ams/AmsMethods.js");
@@ -7,7 +8,7 @@ var NewcommandUtil_js_1 = require("../newcommand/NewcommandUtil.js");
 var NewcommandConfiguration_js_1 = require("../newcommand/NewcommandConfiguration.js");
 var TexError_js_1 = require("../TexError.js");
 exports.ExtpfeilMethods = {};
-exports.ExtpfeilMethods.xArrow = AmsMethods_js_1.default.xArrow;
+exports.ExtpfeilMethods.xArrow = AmsMethods_js_1.AmsMethods.xArrow;
 exports.ExtpfeilMethods.NewExtArrow = function (parser, name) {
     var cs = parser.GetArgument(name);
     var space = parser.GetArgument(name);
@@ -36,6 +37,8 @@ new SymbolMap_js_1.CommandMap('extpfeil', {
 var init = function (config) {
     NewcommandConfiguration_js_1.NewcommandConfiguration.init(config);
 };
-exports.ExtpfeilConfiguration = Configuration_js_1.Configuration.create('extpfeil', { handler: { macro: ['extpfeil'] },
-    init: init });
+exports.ExtpfeilConfiguration = Configuration_js_1.Configuration.create('extpfeil', {
+    handler: { macro: ['extpfeil'] },
+    init: init
+});
 //# sourceMappingURL=ExtpfeilConfiguration.js.map

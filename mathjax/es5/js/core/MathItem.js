@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.newState = exports.STATE = exports.AbstractMathItem = exports.protoItem = void 0;
 function protoItem(open, math, close, n, start, end, display) {
     if (display === void 0) { display = null; }
     var item = { open: open, math: math, close: close,
@@ -14,11 +15,10 @@ var AbstractMathItem = (function () {
         if (end === void 0) { end = { i: 0, n: 0, delim: '' }; }
         this.root = null;
         this.typesetRoot = null;
-        this._state = exports.STATE.UNPROCESSED;
         this.metrics = {};
-        this.bbox = {};
         this.inputData = {};
         this.outputData = {};
+        this._state = exports.STATE.UNPROCESSED;
         this.math = math;
         this.inputJax = jax;
         this.display = display;
@@ -27,10 +27,16 @@ var AbstractMathItem = (function () {
         this.root = null;
         this.typesetRoot = null;
         this.metrics = {};
-        this.bbox = {};
         this.inputData = {};
         this.outputData = {};
     }
+    Object.defineProperty(AbstractMathItem.prototype, "isEscaped", {
+        get: function () {
+            return this.display === null;
+        },
+        enumerable: false,
+        configurable: true
+    });
     AbstractMathItem.prototype.render = function (document) {
         document.renderActions.renderMath(this, document);
     };
@@ -53,13 +59,13 @@ var AbstractMathItem = (function () {
     };
     AbstractMathItem.prototype.typeset = function (document) {
         if (this.state() < exports.STATE.TYPESET) {
-            this.typesetRoot = document.outputJax[this.display === null ? 'escaped' : 'typeset'](this, document);
+            this.typesetRoot = document.outputJax[this.isEscaped ? 'escaped' : 'typeset'](this, document);
             this.state(exports.STATE.TYPESET);
         }
     };
-    AbstractMathItem.prototype.updateDocument = function (document) { };
-    AbstractMathItem.prototype.removeFromDocument = function (restore) {
-        if (restore === void 0) { restore = false; }
+    AbstractMathItem.prototype.updateDocument = function (_document) { };
+    AbstractMathItem.prototype.removeFromDocument = function (_restore) {
+        if (_restore === void 0) { _restore = false; }
     };
     AbstractMathItem.prototype.setMetrics = function (em, ex, cwidth, lwidth, scale) {
         this.metrics = {
@@ -77,7 +83,6 @@ var AbstractMathItem = (function () {
                 this.removeFromDocument(restore);
             }
             if (state < exports.STATE.TYPESET && this._state >= exports.STATE.TYPESET) {
-                this.bbox = {};
                 this.outputData = {};
             }
             if (state < exports.STATE.COMPILED && this._state >= exports.STATE.COMPILED) {
@@ -89,7 +94,7 @@ var AbstractMathItem = (function () {
     };
     AbstractMathItem.prototype.reset = function (restore) {
         if (restore === void 0) { restore = false; }
-        this.state(exports.STATE.UNPROCESSED);
+        this.state(exports.STATE.UNPROCESSED, restore);
     };
     return AbstractMathItem;
 }());

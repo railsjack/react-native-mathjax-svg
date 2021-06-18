@@ -6,17 +6,18 @@ const TeX = require('./mathjax/es5/js/input/tex.js').TeX;
 const SVG = require('./mathjax/es5/js/output/svg.js').SVG;
 const liteAdaptor = require('./mathjax/es5/js/adaptors/liteAdaptor.js').liteAdaptor;
 const RegisterHTMLHandler = require('./mathjax/es5/js/handlers/html.js').RegisterHTMLHandler;
-const PACKAGES =
-  "action, ams, amsCd, base, bbox, boldsymbol, braket, cancel, color, configMacros, enclose, extpfeil, mhchem, newcommand, noerrors, noundefined, unicode";
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);
+
+const AllPackages =
+  require("./mathjax/es5/js/input/tex/AllPackages").AllPackages;
 
 const params = {
   ex: 8,
   em: 16,
   width: 80,
   inline: true,
-  packages: PACKAGES,
+  packages: AllPackages.sort().join(", "),
   fontCache: true
 };
 

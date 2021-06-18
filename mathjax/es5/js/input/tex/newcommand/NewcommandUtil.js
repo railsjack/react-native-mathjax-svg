@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var ParseUtil_js_1 = require("../ParseUtil.js");
 var TexError_js_1 = require("../TexError.js");
 var Symbol_js_1 = require("../Symbol.js");
-var MapHandler_js_1 = require("../MapHandler.js");
 var NewcommandUtil;
 (function (NewcommandUtil) {
     function disassembleSymbol(name, symbol) {
@@ -17,7 +16,6 @@ var NewcommandUtil;
         return newArgs;
     }
     NewcommandUtil.disassembleSymbol = disassembleSymbol;
-    ;
     function assembleSymbol(args) {
         var name = args[0];
         var char = args[1];
@@ -28,7 +26,6 @@ var NewcommandUtil;
         return new Symbol_js_1.Symbol(name, char, attrs);
     }
     NewcommandUtil.assembleSymbol = assembleSymbol;
-    ;
     function GetCSname(parser, cmd) {
         var c = parser.GetNext();
         if (c !== '\\') {
@@ -38,7 +35,6 @@ var NewcommandUtil;
         return cs.substr(1);
     }
     NewcommandUtil.GetCSname = GetCSname;
-    ;
     function GetTemplate(parser, cmd, cs) {
         var c = parser.GetNext();
         var params = [];
@@ -75,7 +71,6 @@ var NewcommandUtil;
         throw new TexError_js_1.default('MissingReplacementString', 'Missing replacement string for definition of %1', cmd);
     }
     NewcommandUtil.GetTemplate = GetTemplate;
-    ;
     function GetParameter(parser, name, param) {
         if (param == null) {
             return parser.GetArgument(name);
@@ -118,7 +113,6 @@ var NewcommandUtil;
         throw new TexError_js_1.default('RunawayArgument', 'Runaway argument for %1?', name);
     }
     NewcommandUtil.GetParameter = GetParameter;
-    ;
     function MatchParam(parser, param) {
         if (parser.string.substr(parser.i, param.length) !== param) {
             return 0;
@@ -131,29 +125,28 @@ var NewcommandUtil;
         return 1;
     }
     NewcommandUtil.MatchParam = MatchParam;
-    ;
     function addDelimiter(parser, cs, char, attr) {
         var handlers = parser.configuration.handlers;
-        var handler = handlers.retrieve(MapHandler_js_1.ExtensionMaps.NEW_DELIMITER);
+        var handler = handlers.retrieve(NewcommandUtil.NEW_DELIMITER);
         handler.add(cs, new Symbol_js_1.Symbol(cs, char, attr));
     }
     NewcommandUtil.addDelimiter = addDelimiter;
-    ;
     function addMacro(parser, cs, func, attr, symbol) {
         if (symbol === void 0) { symbol = ''; }
         var handlers = parser.configuration.handlers;
-        var handler = handlers.retrieve(MapHandler_js_1.ExtensionMaps.NEW_COMMAND);
+        var handler = handlers.retrieve(NewcommandUtil.NEW_COMMAND);
         handler.add(cs, new Symbol_js_1.Macro(symbol ? symbol : cs, func, attr));
     }
     NewcommandUtil.addMacro = addMacro;
-    ;
     function addEnvironment(parser, env, func, attr) {
         var handlers = parser.configuration.handlers;
-        var handler = handlers.retrieve(MapHandler_js_1.ExtensionMaps.NEW_ENVIRONMENT);
+        var handler = handlers.retrieve(NewcommandUtil.NEW_ENVIRONMENT);
         handler.add(env, new Symbol_js_1.Macro(env, func, attr));
     }
     NewcommandUtil.addEnvironment = addEnvironment;
-    ;
+    NewcommandUtil.NEW_DELIMITER = 'new-Delimiter';
+    NewcommandUtil.NEW_COMMAND = 'new-Command';
+    NewcommandUtil.NEW_ENVIRONMENT = 'new-Environment';
 })(NewcommandUtil || (NewcommandUtil = {}));
 exports.default = NewcommandUtil;
 //# sourceMappingURL=NewcommandUtil.js.map

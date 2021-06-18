@@ -15,9 +15,10 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var NodeUtil_js_1 = require("./NodeUtil.js");
@@ -27,11 +28,17 @@ var ParseMethods;
 (function (ParseMethods) {
     function variable(parser, c) {
         var def = ParseUtil_js_1.default.getFontDef(parser);
+        if (parser.stack.env.multiLetterIdentifiers && parser.stack.env.font !== '') {
+            c = parser.string.substr(parser.i - 1).match(/^[a-z]+/i)[0];
+            parser.i += c.length - 1;
+            if (def.mathvariant === TexConstants_js_1.TexConstant.Variant.NORMAL) {
+                def.autoOP = false;
+            }
+        }
         var node = parser.create('token', 'mi', def, c);
         parser.Push(node);
     }
     ParseMethods.variable = variable;
-    ;
     function digit(parser, c) {
         var mml;
         var pattern = parser.configuration.options['digits'];
@@ -47,20 +54,17 @@ var ParseMethods;
         parser.Push(mml);
     }
     ParseMethods.digit = digit;
-    ;
-    function controlSequence(parser, c) {
+    function controlSequence(parser, _c) {
         var name = parser.GetCS();
         parser.parse('macro', [parser, name]);
     }
     ParseMethods.controlSequence = controlSequence;
-    ;
     function mathchar0mi(parser, mchar) {
         var def = mchar.attributes || { mathvariant: TexConstants_js_1.TexConstant.Variant.ITALIC };
         var node = parser.create('token', 'mi', def, mchar.char);
         parser.Push(node);
     }
     ParseMethods.mathchar0mi = mathchar0mi;
-    ;
     function mathchar0mo(parser, mchar) {
         var def = mchar.attributes || {};
         def['stretchy'] = false;
@@ -70,7 +74,6 @@ var ParseMethods;
         parser.Push(node);
     }
     ParseMethods.mathchar0mo = mathchar0mo;
-    ;
     function mathchar7(parser, mchar) {
         var def = mchar.attributes || { mathvariant: TexConstants_js_1.TexConstant.Variant.NORMAL };
         if (parser.stack.env['font']) {
@@ -80,7 +83,6 @@ var ParseMethods;
         parser.Push(node);
     }
     ParseMethods.mathchar7 = mathchar7;
-    ;
     function delimiter(parser, delim) {
         var def = delim.attributes || {};
         def = Object.assign({ fence: false, stretchy: false }, def);
@@ -88,15 +90,13 @@ var ParseMethods;
         parser.Push(node);
     }
     ParseMethods.delimiter = delimiter;
-    ;
     function environment(parser, env, func, args) {
         var end = args[0];
         var mml = parser.itemFactory.create('begin').setProperties({ name: env, end: end });
-        mml = func.apply(void 0, __spread([parser, mml], args.slice(1)));
+        mml = func.apply(void 0, __spreadArray([parser, mml], __read(args.slice(1))));
         parser.Push(mml);
     }
     ParseMethods.environment = environment;
-    ;
 })(ParseMethods || (ParseMethods = {}));
 exports.default = ParseMethods;
 //# sourceMappingURL=ParseMethods.js.map

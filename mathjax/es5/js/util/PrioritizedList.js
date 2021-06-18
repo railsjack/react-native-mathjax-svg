@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.PrioritizedList = void 0;
 var PrioritizedList = (function () {
     function PrioritizedList() {
         this.items = [];

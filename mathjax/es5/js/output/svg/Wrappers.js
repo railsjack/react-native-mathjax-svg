@@ -1,6 +1,7 @@
 "use strict";
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SVGWrappers = void 0;
 var Wrapper_js_1 = require("./Wrapper.js");
 var math_js_1 = require("./Wrappers/math.js");
 var mrow_js_1 = require("./Wrappers/mrow.js");

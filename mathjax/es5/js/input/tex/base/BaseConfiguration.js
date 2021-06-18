@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -14,6 +16,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BaseConfiguration = exports.BaseTags = exports.Other = void 0;
 var Configuration_js_1 = require("../Configuration.js");
 var MapHandler_js_1 = require("../MapHandler.js");
 var TexError_js_1 = require("../TexError.js");
@@ -39,15 +42,12 @@ function Other(parser, char) {
     parser.Push(mo);
 }
 exports.Other = Other;
-;
-function csUndefined(parser, name) {
+function csUndefined(_parser, name) {
     throw new TexError_js_1.default('UndefinedControlSequence', 'Undefined control sequence %1', '\\' + name);
 }
-;
-function envUndefined(parser, env) {
+function envUndefined(_parser, env) {
     throw new TexError_js_1.default('UnknownEnv', 'Unknown environment \'%1\'', env);
 }
-;
 var BaseTags = (function (_super) {
     __extends(BaseTags, _super);
     function BaseTags() {
@@ -56,7 +56,8 @@ var BaseTags = (function (_super) {
     return BaseTags;
 }(Tags_js_1.AbstractTags));
 exports.BaseTags = BaseTags;
-exports.BaseConfiguration = Configuration_js_1.Configuration.create('base', { handler: {
+exports.BaseConfiguration = Configuration_js_1.Configuration.create('base', {
+    handler: {
         character: ['command', 'special', 'letter', 'digit'],
         delimiter: ['delimiter'],
         macro: ['delimiter', 'macros', 'mathchar0mi', 'mathchar0mo', 'mathchar7'],
@@ -76,6 +77,7 @@ exports.BaseConfiguration = Configuration_js_1.Configuration.create('base', { ha
         _a[bitem.SubsupItem.prototype.kind] = bitem.SubsupItem,
         _a[bitem.OverItem.prototype.kind] = bitem.OverItem,
         _a[bitem.LeftItem.prototype.kind] = bitem.LeftItem,
+        _a[bitem.Middle.prototype.kind] = bitem.Middle,
         _a[bitem.RightItem.prototype.kind] = bitem.RightItem,
         _a[bitem.BeginItem.prototype.kind] = bitem.BeginItem,
         _a[bitem.EndItem.prototype.kind] = bitem.EndItem,
@@ -90,10 +92,14 @@ exports.BaseConfiguration = Configuration_js_1.Configuration.create('base', { ha
         _a[bitem.EqnArrayItem.prototype.kind] = bitem.EqnArrayItem,
         _a[bitem.EquationItem.prototype.kind] = bitem.EquationItem,
         _a),
-    options: { maxMacros: 1000,
+    options: {
+        maxMacros: 1000,
         baseURL: (typeof (document) === 'undefined' ||
             document.getElementsByTagName('base').length === 0) ?
             '' : String(document.location).replace(/#.*$/, '')
     },
-    tags: { base: BaseTags } });
+    tags: {
+        base: BaseTags
+    }
+});
 //# sourceMappingURL=BaseConfiguration.js.map

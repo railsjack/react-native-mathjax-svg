@@ -2,10 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var BaseMethods_js_1 = require("../base/BaseMethods.js");
 var MmlNode_js_1 = require("../../../core/MmlTree/MmlNode.js");
+var TexError_js_1 = require("../TexError.js");
 var BraketMethods = {};
 BraketMethods.Macro = BaseMethods_js_1.default.Macro;
-BraketMethods.Braket = function (parser, name, open, close, stretchy, barmax) {
+BraketMethods.Braket = function (parser, _name, open, close, stretchy, barmax) {
     var next = parser.GetNext();
+    if (next === '') {
+        throw new TexError_js_1.default('MissingArgFor', 'Missing argument for %1', parser.currentCS);
+    }
     var single = true;
     if (next === '{') {
         parser.i++;

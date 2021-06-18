@@ -143,11 +143,10 @@ var digits = [0x30, 0x39];
 function inRange(value, range) {
     return (value >= range[0] && value <= range[1]);
 }
-;
 function createVectorToken(factory, kind, def, text) {
     var parser = factory.configuration.parser;
     var token = NodeFactory_js_1.NodeFactory.createToken(factory, kind, def, text);
-    var code = text.charCodeAt(0);
+    var code = text.codePointAt(0);
     if (text.length === 1 && !parser.stack.env.font &&
         parser.stack.env.vectorFont &&
         (inRange(code, latinCap) || inRange(code, latinSmall) ||
@@ -418,11 +417,9 @@ function outputBraket(_a, star1, star2) {
         (star1 ? "\\langle{" + arg1 + "}\\vert{" + arg2 + "}\\vert{" + arg3 + "}\\rangle" :
             "\\left\\langle{" + arg1 + "}\\right\\vert{" + arg2 + "}\\left\\vert{" + arg3 + "}\\right\\rangle");
 }
-;
 PhysicsMethods.Expectation = function (parser, name) {
     var star1 = parser.GetStar();
     var star2 = star1 && parser.GetStar();
-    var braket = parser.GetNext() === '{';
     var arg1 = parser.GetArgument(name);
     var arg2 = null;
     if (parser.GetNext() === '{') {
@@ -437,7 +434,6 @@ PhysicsMethods.Expectation = function (parser, name) {
 PhysicsMethods.MatrixElement = function (parser, name) {
     var star1 = parser.GetStar();
     var star2 = star1 && parser.GetStar();
-    var braket = parser.GetNext() === '{';
     var arg1 = parser.GetArgument(name);
     var arg2 = parser.GetArgument(name);
     var arg3 = parser.GetArgument(name);
@@ -584,9 +580,8 @@ PhysicsMethods.DiagonalMatrix = function (parser, name, anti) {
     if (parser.GetNext() !== '{') {
         return;
     }
-    ;
     var startI = parser.i;
-    var arg = parser.GetArgument(name);
+    parser.GetArgument(name);
     var endI = parser.i;
     parser.i = startI + 1;
     var elements = [];
@@ -620,7 +615,7 @@ function makeDiagMatrix(elements, anti) {
     }
     return matrix.join('\\\\ ');
 }
-PhysicsMethods.AutoClose = function (parser, fence, texclass) {
+PhysicsMethods.AutoClose = function (parser, fence, _texclass) {
     var mo = parser.create('token', 'mo', { stretchy: false }, fence);
     var item = parser.itemFactory.create('mml', mo).
         setProperties({ autoclose: fence });

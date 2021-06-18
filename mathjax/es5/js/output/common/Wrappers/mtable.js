@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -28,22 +30,25 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var BBox_js_1 = require("../BBox.js");
+exports.CommonMtableMixin = void 0;
+var BBox_js_1 = require("../../../util/BBox.js");
 var string_js_1 = require("../../../util/string.js");
 var numeric_js_1 = require("../../../util/numeric.js");
 function CommonMtableMixin(Base) {
@@ -54,7 +59,7 @@ function CommonMtableMixin(Base) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            var _this = _super.apply(this, __spread(args)) || this;
+            var _this = _super.apply(this, __spreadArray([], __read(args))) || this;
             _this.numCols = 0;
             _this.numRows = 0;
             _this.data = null;
@@ -65,6 +70,9 @@ function CommonMtableMixin(Base) {
             _this.hasLabels = _this.childNodes.reduce(function (value, row) { return value || row.node.isKind('mlabeledtr'); }, false);
             _this.findContainer();
             _this.isTop = !_this.container || (_this.container.node.isKind('math') && !_this.container.parent);
+            if (_this.isTop) {
+                _this.jax.table = _this;
+            }
             _this.getPercentageWidth();
             var attributes = _this.node.attributes;
             _this.frame = attributes.get('frame') !== 'none';
@@ -83,7 +91,7 @@ function CommonMtableMixin(Base) {
             get: function () {
                 return this.childNodes;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         class_1.prototype.findContainer = function () {
@@ -203,44 +211,70 @@ function CommonMtableMixin(Base) {
             var LW = [0];
             var rows = this.tableRows;
             for (var j = 0; j < rows.length; j++) {
+                var M = 0;
                 var row = rows[j];
+                var align = row.node.attributes.get('rowalign');
                 for (var i = 0; i < row.numCells; i++) {
                     var cell = row.getChild(i);
-                    this.updateHDW(cell, i, j, H, D, W);
+                    M = this.updateHDW(cell, i, j, align, H, D, W, M);
                     this.recordPWidthCell(cell, i);
                 }
                 NH[j] = H[j];
                 ND[j] = D[j];
                 if (row.labeled) {
-                    this.updateHDW(row.childNodes[0], 0, j, H, D, LW);
+                    M = this.updateHDW(row.childNodes[0], 0, j, align, H, D, LW, M);
                 }
+                this.extendHD(j, H, D, M);
+                this.extendHD(j, NH, ND, M);
             }
-            var w = this.node.attributes.get('width');
             var L = LW[0];
             this.data = { H: H, D: D, W: W, NH: NH, ND: ND, L: L };
             return this.data;
         };
-        class_1.prototype.updateHDW = function (cell, i, j, H, D, W) {
-            if (W === void 0) { W = null; }
-            var _a = cell.getBBox(), h = _a.h, d = _a.d, w = _a.w, pwidth = _a.pwidth;
-            if (h < .75)
-                h = .75;
-            if (d < .25)
-                d = .25;
+        class_1.prototype.updateHDW = function (cell, i, j, align, H, D, W, M) {
+            var _a = cell.getBBox(), h = _a.h, d = _a.d, w = _a.w;
+            var scale = cell.parent.bbox.rscale;
+            if (cell.parent.bbox.rscale !== 1) {
+                h *= scale;
+                d *= scale;
+                w *= scale;
+            }
+            if (this.node.getProperty('useHeight')) {
+                if (h < .75)
+                    h = .75;
+                if (d < .25)
+                    d = .25;
+            }
+            var m = 0;
+            align = cell.node.attributes.get('rowalign') || align;
+            if (align !== 'baseline' && align !== 'axis') {
+                m = h + d;
+                h = d = 0;
+            }
             if (h > H[j])
                 H[j] = h;
             if (d > D[j])
                 D[j] = d;
+            if (m > M)
+                M = m;
             if (W && w > W[i])
                 W[i] = w;
+            return M;
+        };
+        class_1.prototype.extendHD = function (i, H, D, M) {
+            var d = (M - (H[i] + D[i])) / 2;
+            if (d < .00001)
+                return;
+            H[i] += d;
+            D[i] += d;
         };
         class_1.prototype.recordPWidthCell = function (cell, i) {
             if (cell.childNodes[0] && cell.childNodes[0].getBBox().pwidth) {
                 this.pwidthCells.push([cell, i]);
             }
         };
-        class_1.prototype.computeBBox = function (bbox, recompute) {
-            if (recompute === void 0) { recompute = false; }
+        class_1.prototype.computeBBox = function (bbox, _recompute) {
+            if (_recompute === void 0) { _recompute = false; }
             var _a = this.getTableData(), H = _a.H, D = _a.D;
             var height, width;
             if (this.node.attributes.get('equalrows')) {
@@ -268,10 +302,10 @@ function CommonMtableMixin(Base) {
                 this.setColumnPWidths();
             }
         };
-        class_1.prototype.setChildPWidths = function (recompute, cwidth, clear) {
+        class_1.prototype.setChildPWidths = function (_recompute, cwidth, _clear) {
             var width = this.node.attributes.get('width');
             if (!string_js_1.isPercent(width))
-                return;
+                return false;
             if (!this.hasLabels) {
                 this.bbox.pwidth = '';
                 this.container.bbox.pwidth = '';
@@ -335,7 +369,7 @@ function CommonMtableMixin(Base) {
         class_1.prototype.getBBoxLR = function () {
             if (this.hasLabels) {
                 var side = this.node.attributes.get('side');
-                var _a = __read(this.getPadAlignShift(side), 3), pad = _a[0], align = _a[1], shift = _a[2];
+                var _a = __read(this.getPadAlignShift(side), 2), pad = _a[0], align = _a[1];
                 return (align === 'center' ? [pad, pad] :
                     side === 'left' ? [pad, 0] : [0, pad]);
             }
@@ -389,7 +423,7 @@ function CommonMtableMixin(Base) {
                 return this.getColumnWidthsAuto(swidths);
             }
             if (string_js_1.isPercent(width)) {
-                return this.getColumnWidthsPercent(swidths, width);
+                return this.getColumnWidthsPercent(swidths);
             }
             return this.getColumnWidthsFixed(swidths, this.length2em(width));
         };
@@ -419,7 +453,7 @@ function CommonMtableMixin(Base) {
                 return _this.length2em(x);
             });
         };
-        class_1.prototype.getColumnWidthsPercent = function (swidths, width) {
+        class_1.prototype.getColumnWidthsPercent = function (swidths) {
             var _this = this;
             var hasFit = swidths.indexOf('fit') >= 0;
             var W = (hasFit ? this.getTableData() : { W: null }).W;
@@ -477,9 +511,10 @@ function CommonMtableMixin(Base) {
             y += offset[align] || 0;
             return y;
         };
-        class_1.prototype.getEmHalfSpacing = function (fspace, space) {
-            var fspaceEm = this.em(fspace);
-            var spaceEm = this.addEm(space, 2);
+        class_1.prototype.getEmHalfSpacing = function (fspace, space, scale) {
+            if (scale === void 0) { scale = 1; }
+            var fspaceEm = this.em(fspace * scale);
+            var spaceEm = this.addEm(space, 2 / scale);
             spaceEm.unshift(fspaceEm);
             spaceEm.push(fspaceEm);
             return spaceEm;
@@ -502,7 +537,7 @@ function CommonMtableMixin(Base) {
                 return [align, null];
             var i = parseInt(row);
             if (i < 0)
-                i += this.numRows;
+                i += this.numRows + 1;
             return [align, i < 1 || i > this.numRows ? null : i - 1];
         };
         class_1.prototype.getColumnAttributes = function (name, i) {
@@ -510,7 +545,7 @@ function CommonMtableMixin(Base) {
             var n = this.numCols - i;
             var columns = this.getAttributeArray(name);
             if (columns.length === 0)
-                return;
+                return null;
             while (columns.length < n) {
                 columns.push(columns[columns.length - 1]);
             }
@@ -524,7 +559,7 @@ function CommonMtableMixin(Base) {
             var n = this.numRows - i;
             var rows = this.getAttributeArray(name);
             if (rows.length === 0)
-                return;
+                return null;
             while (rows.length < n) {
                 rows.push(rows[rows.length - 1]);
             }
@@ -543,13 +578,13 @@ function CommonMtableMixin(Base) {
             var _this = this;
             if (n === void 0) { n = 1; }
             if (!list)
-                return;
+                return null;
             return list.map(function (x) { return _this.em(x / n); });
         };
         class_1.prototype.convertLengths = function (list) {
             var _this = this;
             if (!list)
-                return;
+                return null;
             return list.map(function (x) { return _this.length2em(x); });
         };
         return class_1;

@@ -3,36 +3,39 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AbstractEmptyNode = exports.AbstractNode = void 0;
 var AbstractNode = (function () {
     function AbstractNode(factory, properties, children) {
         var e_1, _a;
         if (properties === void 0) { properties = {}; }
         if (children === void 0) { children = []; }
+        this.factory = factory;
         this.parent = null;
         this.properties = {};
-        this._factory = null;
         this.childNodes = [];
-        this._factory = factory;
         try {
             for (var _b = __values(Object.keys(properties)), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var name_1 = _c.value;
@@ -50,18 +53,11 @@ var AbstractNode = (function () {
             this.setChildren(children);
         }
     }
-    Object.defineProperty(AbstractNode.prototype, "factory", {
-        get: function () {
-            return this._factory;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(AbstractNode.prototype, "kind", {
         get: function () {
             return 'unknown';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     AbstractNode.prototype.setProperty = function (name, value) {
@@ -173,15 +169,15 @@ var AbstractEmptyNode = (function (_super) {
     function AbstractEmptyNode() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    AbstractEmptyNode.prototype.setChildren = function (children) {
+    AbstractEmptyNode.prototype.setChildren = function (_children) {
     };
     AbstractEmptyNode.prototype.appendChild = function (child) {
         return child;
     };
-    AbstractEmptyNode.prototype.replaceChild = function (newChild, oldChild) {
+    AbstractEmptyNode.prototype.replaceChild = function (_newChild, oldChild) {
         return oldChild;
     };
-    AbstractEmptyNode.prototype.childIndex = function (node) {
+    AbstractEmptyNode.prototype.childIndex = function (_node) {
         return null;
     };
     AbstractEmptyNode.prototype.walkTree = function (func, data) {

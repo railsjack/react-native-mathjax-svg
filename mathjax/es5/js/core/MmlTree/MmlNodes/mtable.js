@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23,17 +25,19 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.MmlMtable = void 0;
 var MmlNode_js_1 = require("../MmlNode.js");
 var string_js_1 = require("../../../util/string.js");
 var MmlMtable = (function (_super) {
@@ -41,23 +45,23 @@ var MmlMtable = (function (_super) {
     function MmlMtable() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.properties = {
-            useHeight: 1
+            useHeight: true
         };
-        _this.texClass = MmlNode_js_1.TEXCLASS.ORD;
+        _this.texclass = MmlNode_js_1.TEXCLASS.ORD;
         return _this;
     }
     Object.defineProperty(MmlMtable.prototype, "kind", {
         get: function () {
             return 'mtable';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(MmlMtable.prototype, "linebreakContainer", {
         get: function () {
             return true;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     MmlMtable.prototype.setInheritedAttributes = function (attributes, display, level, prime) {
@@ -82,7 +86,6 @@ var MmlMtable = (function (_super) {
         }
         _super.prototype.setInheritedAttributes.call(this, attributes, display, level, prime);
     };
-    ;
     MmlMtable.prototype.setChildInheritedAttributes = function (attributes, display, level, prime) {
         var e_2, _a, e_3, _b;
         try {
@@ -101,6 +104,7 @@ var MmlMtable = (function (_super) {
             }
             finally { if (e_2) throw e_2.error; }
         }
+        level = this.getProperty('scriptlevel') || level;
         display = !!(this.attributes.getExplicit('displaystyle') || this.attributes.getDefault('displaystyle'));
         attributes = this.addInheritedAttributes(attributes, {
             columnalign: this.attributes.get('columnalign'),
@@ -161,7 +165,7 @@ var MmlMtable = (function (_super) {
         }
         return this;
     };
-    MmlMtable.defaults = __assign({}, MmlNode_js_1.AbstractMmlNode.defaults, { align: 'axis', rowalign: 'baseline', columnalign: 'center', groupalign: '{left}', alignmentscope: true, columnwidth: 'auto', width: 'auto', rowspacing: '1ex', columnspacing: '.8em', rowlines: 'none', columnlines: 'none', frame: 'none', framespacing: '0.4em 0.5ex', equalrows: false, equalcolumns: false, displaystyle: false, side: 'right', minlabelspacing: '0.8em' });
+    MmlMtable.defaults = __assign(__assign({}, MmlNode_js_1.AbstractMmlNode.defaults), { align: 'axis', rowalign: 'baseline', columnalign: 'center', groupalign: '{left}', alignmentscope: true, columnwidth: 'auto', width: 'auto', rowspacing: '1ex', columnspacing: '.8em', rowlines: 'none', columnlines: 'none', frame: 'none', framespacing: '0.4em 0.5ex', equalrows: false, equalcolumns: false, displaystyle: false, side: 'right', minlabelspacing: '0.8em' });
     return MmlMtable;
 }(MmlNode_js_1.AbstractMmlNode));
 exports.MmlMtable = MmlMtable;

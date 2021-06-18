@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -29,6 +31,7 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FindTeX = void 0;
 var FindMath_js_1 = require("../../core/FindMath.js");
 var string_js_1 = require("../../util/string.js");
 var MathItem_js_1 = require("../../core/MathItem.js");
@@ -52,7 +55,7 @@ var FindTeX = (function (_super) {
             parts.push(starts.sort(string_js_1.sortLength).join('|'));
         }
         if (options['processEnvironments']) {
-            parts.push('\\\\begin\\{([^}]*)\\}');
+            parts.push('\\\\begin\\s*\\{([^}]*)\\}');
             this.env = i;
             i++;
         }
@@ -60,7 +63,7 @@ var FindTeX = (function (_super) {
             subparts.push('\\\\([\\\\$])');
         }
         if (options['processRefs']) {
-            subparts.push('(\\\\(?:eq)?ref\\{[^}]*\\})');
+            subparts.push('(\\\\(?:eq)?ref\\s*\\{[^}]*\\})');
         }
         if (subparts.length) {
             parts.push('(' + subparts.join('|') + ')');
@@ -74,15 +77,15 @@ var FindTeX = (function (_super) {
         starts.push(string_js_1.quotePattern(open));
         this.end[open] = [close, display, this.endPattern(close)];
     };
-    FindTeX.prototype.endPattern = function (end) {
-        return new RegExp(string_js_1.quotePattern(end) + '|\\\\(?:[a-zA-Z]|.)|[{}]', 'g');
+    FindTeX.prototype.endPattern = function (end, endp) {
+        return new RegExp((endp || string_js_1.quotePattern(end)) + '|\\\\(?:[a-zA-Z]|.)|[{}]', 'g');
     };
     FindTeX.prototype.findEnd = function (text, n, start, end) {
         var _a = __read(end, 3), close = _a[0], display = _a[1], pattern = _a[2];
         var i = pattern.lastIndex = start.index + start[0].length;
         var match, braces = 0;
         while ((match = pattern.exec(text))) {
-            if (match[0] === close && braces === 0) {
+            if ((match[1] || match[0]) === close && braces === 0) {
                 return MathItem_js_1.protoItem(start[0], text.substr(i, match.index - i), match[0], n, start.index, match.index + match[0].length, display);
             }
             else if (match[0] === '{') {
@@ -99,8 +102,8 @@ var FindTeX = (function (_super) {
         this.start.lastIndex = 0;
         while ((start = this.start.exec(text))) {
             if (start[this.env] !== undefined && this.env) {
-                var end = '\\end{' + start[this.env] + '}';
-                match = this.findEnd(text, n, start, [end, true, this.endPattern(end)]);
+                var end = '\\\\end\\s*(\\{' + string_js_1.quotePattern(start[this.env]) + '\\})';
+                match = this.findEnd(text, n, start, ['{' + start[this.env] + '}', true, this.endPattern(null, end)]);
                 if (match) {
                     match.math = match.open + match.math + match.close;
                     match.open = match.close = '';

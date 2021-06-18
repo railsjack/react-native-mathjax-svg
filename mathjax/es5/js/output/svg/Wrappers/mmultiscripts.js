@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -29,6 +31,7 @@ var __read = (this && this.__read) || function (o, n) {
     return ar;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SVGmmultiscripts = void 0;
 var msubsup_js_1 = require("./msubsup.js");
 var mmultiscripts_js_1 = require("../../common/Wrappers/mmultiscripts.js");
 var mmultiscripts_js_2 = require("../../../core/MmlTree/MmlNodes/mmultiscripts.js");
@@ -39,10 +42,10 @@ var SVGmmultiscripts = (function (_super) {
     }
     SVGmmultiscripts.prototype.toSVG = function (parent) {
         var svg = this.standardSVGnode(parent);
-        var data = this.getScriptData();
+        var data = this.scriptData;
         var sub = this.combinePrePost(data.sub, data.psub);
         var sup = this.combinePrePost(data.sup, data.psup);
-        var _a = __read(this.getUVQ(data.base, sub, sup), 3), u = _a[0], v = _a[1], q = _a[2];
+        var _a = __read(this.getUVQ(sub, sup), 2), u = _a[0], v = _a[1];
         var x = 0;
         if (data.numPrescripts) {
             x = this.addScripts(.05, u, v, true, this.firstPrescript, data.numPrescripts);
@@ -61,7 +64,7 @@ var SVGmmultiscripts = (function (_super) {
         var subRow = adaptor.append(this.element, this.svg('g'));
         this.place(x, u, supRow);
         this.place(x, v, subRow);
-        var m = i + 2 * n, child;
+        var m = i + 2 * n;
         var dx = 0;
         while (i < m) {
             var _a = __read([this.childNodes[i++], this.childNodes[i++]], 2), sub = _a[0], sup = _a[1];

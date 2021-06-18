@@ -3,15 +3,28 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -28,21 +41,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
-};
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
-    if (m) return m.call(o);
-    return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Package = exports.PackageError = void 0;
 var loader_js_1 = require("./loader.js");
 var PackageError = (function (_super) {
     __extends(PackageError, _super);
@@ -54,8 +59,6 @@ var PackageError = (function (_super) {
     return PackageError;
 }(Error));
 exports.PackageError = PackageError;
-;
-;
 var Package = (function () {
     function Package(name, noLoad) {
         if (noLoad === void 0) { noLoad = false; }
@@ -71,39 +74,46 @@ var Package = (function () {
         Package.packages.set(name, this);
         this.promise = this.makePromise(this.makeDependencies());
     }
-    Package.resolvePath = function (name, addExtension) {
-        if (addExtension === void 0) { addExtension = true; }
-        var file = loader_js_1.CONFIG.source[name] || name;
-        if (!file.match(/^(?:[a-z]+:\/)?\/|\[|[a-z]:\\/i)) {
-            file = '[mathjax]/' + file.replace(/^\.\//, '');
-        }
-        if (addExtension && !file.match(/\.[^\/]+$/)) {
-            file += '.js';
-        }
-        var match;
-        while ((match = file.match(/^\[([^\]]*)\]/))) {
-            if (!loader_js_1.CONFIG.paths.hasOwnProperty(match[1]))
-                break;
-            file = loader_js_1.CONFIG.paths[match[1]] + file.substr(match[0].length);
-        }
-        return file;
-    };
     Object.defineProperty(Package.prototype, "canLoad", {
         get: function () {
             return this.dependencyCount === 0 && !this.noLoad && !this.isLoading && !this.hasFailed;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
-    Package.prototype.makeDependencies = function () {
+    Package.resolvePath = function (name, addExtension) {
+        if (addExtension === void 0) { addExtension = true; }
+        var data = { name: name, addExtension: addExtension };
+        loader_js_1.Loader.pathFilters.execute(data);
+        return data.name;
+    };
+    Package.loadAll = function () {
         var e_1, _a;
+        try {
+            for (var _b = __values(this.packages.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var extension = _c.value;
+                if (extension.canLoad) {
+                    extension.load();
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+    };
+    Package.prototype.makeDependencies = function () {
+        var e_2, _a;
         var promises = [];
         var map = Package.packages;
         var noLoad = this.noLoad;
         var name = this.name;
         var dependencies = [];
         if (loader_js_1.CONFIG.dependencies.hasOwnProperty(name)) {
-            dependencies.push.apply(dependencies, __spread(loader_js_1.CONFIG.dependencies[name]));
+            dependencies.push.apply(dependencies, __spreadArray([], __read(loader_js_1.CONFIG.dependencies[name])));
         }
         else if (name !== 'core') {
             dependencies.push('core');
@@ -122,12 +132,12 @@ var Package = (function () {
                 }
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (dependencies_1_1 && !dependencies_1_1.done && (_a = dependencies_1.return)) _a.call(dependencies_1);
             }
-            finally { if (e_1) throw e_1.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         return promises;
     };
@@ -139,7 +149,7 @@ var Package = (function () {
         }));
         var config = (loader_js_1.CONFIG[this.name] || {});
         if (config.ready) {
-            promise = promise.then(function (name) { return config.ready(_this.name); });
+            promise = promise.then(function (_name) { return config.ready(_this.name); });
         }
         if (promises.length) {
             promises.push(promise);
@@ -168,7 +178,7 @@ var Package = (function () {
             var result = loader_js_1.CONFIG.require(url);
             if (result instanceof Promise) {
                 result.then(function () { return _this.checkLoad(); })
-                    .catch(function () { return _this.failed('Can\'t load "' + url + '"'); });
+                    .catch(function (err) { return _this.failed('Can\'t load "' + url + '"\n' + err.message.trim()); });
             }
             else {
                 this.checkLoad();
@@ -183,12 +193,12 @@ var Package = (function () {
         var script = document.createElement('script');
         script.src = url;
         script.charset = 'UTF-8';
-        script.onload = function (event) { return _this.checkLoad(); };
-        script.onerror = function (event) { return _this.failed('Can\'t load "' + url + '"'); };
+        script.onload = function (_event) { return _this.checkLoad(); };
+        script.onerror = function (_event) { return _this.failed('Can\'t load "' + url + '"'); };
         document.head.appendChild(script);
     };
     Package.prototype.loaded = function () {
-        var e_2, _a, e_3, _b;
+        var e_3, _a, e_4, _b;
         this.isLoaded = true;
         this.isLoading = false;
         try {
@@ -197,12 +207,12 @@ var Package = (function () {
                 dependent.requirementSatisfied();
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_3) throw e_3.error; }
         }
         try {
             for (var _e = __values(this.provided), _f = _e.next(); !_f.done; _f = _e.next()) {
@@ -210,12 +220,12 @@ var Package = (function () {
                 provided.loaded();
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
         finally {
             try {
                 if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_4) throw e_4.error; }
         }
         this.resolve(this.name);
     };
@@ -240,7 +250,7 @@ var Package = (function () {
         }
     };
     Package.prototype.provides = function (names) {
-        var e_4, _a;
+        var e_5, _a;
         if (names === void 0) { names = []; }
         try {
             for (var names_1 = __values(names), names_1_1 = names_1.next(); !names_1_1.done; names_1_1 = names_1.next()) {
@@ -257,12 +267,12 @@ var Package = (function () {
                 this.provided.push(provided);
             }
         }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
                 if (names_1_1 && !names_1_1.done && (_a = names_1.return)) _a.call(names_1);
             }
-            finally { if (e_4) throw e_4.error; }
+            finally { if (e_5) throw e_5.error; }
         }
     };
     Package.prototype.addDependent = function (extension, noLoad) {
@@ -272,7 +282,7 @@ var Package = (function () {
         }
     };
     Package.prototype.checkNoLoad = function () {
-        var e_5, _a;
+        var e_6, _a;
         if (this.noLoad) {
             this.noLoad = false;
             try {
@@ -281,31 +291,13 @@ var Package = (function () {
                     dependency.checkNoLoad();
                 }
             }
-            catch (e_5_1) { e_5 = { error: e_5_1 }; }
+            catch (e_6_1) { e_6 = { error: e_6_1 }; }
             finally {
                 try {
                     if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
                 }
-                finally { if (e_5) throw e_5.error; }
+                finally { if (e_6) throw e_6.error; }
             }
-        }
-    };
-    Package.loadAll = function () {
-        var e_6, _a;
-        try {
-            for (var _b = __values(this.packages.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var extension = _c.value;
-                if (extension.canLoad) {
-                    extension.load();
-                }
-            }
-        }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_6) throw e_6.error; }
         }
     };
     Package.packages = new Map();

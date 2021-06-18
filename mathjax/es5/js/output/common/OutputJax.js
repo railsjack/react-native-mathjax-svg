@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -39,23 +41,25 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommonOutputJax = void 0;
 var OutputJax_js_1 = require("../../core/OutputJax.js");
 var MathItem_js_1 = require("../../core/MathItem.js");
 var Options_js_1 = require("../../util/Options.js");
-var CssStyles_js_1 = require("./CssStyles.js");
 var lengths_js_1 = require("../../util/lengths.js");
 var Styles_js_1 = require("../../util/Styles.js");
+var StyleList_js_1 = require("../../util/StyleList.js");
 var CommonOutputJax = (function (_super) {
     __extends(CommonOutputJax, _super);
     function CommonOutputJax(options, defaultFactory, defaultFont) {
@@ -68,7 +72,7 @@ var CommonOutputJax = (function (_super) {
         _this.factory = _this.options.wrapperFactory ||
             new defaultFactory();
         _this.factory.jax = _this;
-        _this.cssStyles = _this.options.cssStyles || new CssStyles_js_1.CssStyles();
+        _this.cssStyles = _this.options.cssStyles || new StyleList_js_1.CssStyles();
         _this.font = _this.options.font || new defaultFont(fontOptions);
         _this.unknownCache = new Map();
         return _this;
@@ -122,8 +126,14 @@ var CommonOutputJax = (function (_super) {
                 var parent_1 = adaptor.parent(math.start.node);
                 if (math.state() < MathItem_js_1.STATE.METRICS && parent_1) {
                     var map = maps[math.display ? 1 : 0];
-                    var _d = map.get(parent_1), em = _d.em, ex = _d.ex, containerWidth = _d.containerWidth, lineWidth = _d.lineWidth, scale = _d.scale;
+                    var _d = map.get(parent_1), em = _d.em, ex = _d.ex, containerWidth = _d.containerWidth, lineWidth = _d.lineWidth, scale = _d.scale, family = _d.family;
                     math.setMetrics(em, ex, containerWidth, lineWidth, scale);
+                    if (this.options.mtextInheritFont) {
+                        math.outputData.mtextFamily = family;
+                    }
+                    if (this.options.merrorInheritFont) {
+                        math.outputData.merrorFamily = family;
+                    }
                     math.state(MathItem_js_1.STATE.METRICS);
                 }
             }
@@ -137,8 +147,9 @@ var CommonOutputJax = (function (_super) {
         }
     };
     CommonOutputJax.prototype.getMetricsFor = function (node, display) {
+        var getFamily = (this.options.mtextInheritFont || this.options.merrorInheritFont);
         var test = this.getTestElement(node, display);
-        var metrics = this.measureMetrics(test);
+        var metrics = this.measureMetrics(test, getFamily);
         this.adaptor.remove(test);
         return metrics;
     };
@@ -165,6 +176,7 @@ var CommonOutputJax = (function (_super) {
             }
             finally { if (e_2) throw e_2.error; }
         }
+        var getFamily = this.options.mtextInheritFont || this.options.merrorInheritFont;
         var maps = [new Map(), new Map()];
         try {
             for (var _h = __values(maps.keys()), _j = _h.next(); !_j.done; _j = _h.next()) {
@@ -172,7 +184,7 @@ var CommonOutputJax = (function (_super) {
                 try {
                     for (var _k = (e_4 = void 0, __values(domMaps[i].keys())), _l = _k.next(); !_l.done; _l = _k.next()) {
                         var node = _l.value;
-                        maps[i].set(node, this.measureMetrics(domMaps[i].get(node)));
+                        maps[i].set(node, this.measureMetrics(domMaps[i].get(node), getFamily));
                     }
                 }
                 catch (e_4_1) { e_4 = { error: e_4_1 }; }
@@ -263,8 +275,9 @@ var CommonOutputJax = (function (_super) {
         }
         return adaptor.append(node, adaptor.clone(display ? this.testDisplay : this.testInline));
     };
-    CommonOutputJax.prototype.measureMetrics = function (node) {
+    CommonOutputJax.prototype.measureMetrics = function (node, getFamily) {
         var adaptor = this.adaptor;
+        var family = (getFamily ? adaptor.fontFamily(node) : '');
         var em = adaptor.fontSize(node);
         var ex = (adaptor.nodeSize(adaptor.childNode(node, 1))[1] / 60) || (em * this.options.exFactor);
         var containerWidth = (adaptor.getStyle(node, 'display') === 'table' ?
@@ -273,7 +286,7 @@ var CommonOutputJax = (function (_super) {
                 adaptor.nodeBBox(adaptor.firstChild(node)).left - 2);
         var scale = Math.max(this.options.minScale, this.options.matchFontHeight ? ex / this.font.params.x_height / em : 1);
         var lineWidth = 1000000;
-        return { em: em, ex: ex, containerWidth: containerWidth, lineWidth: lineWidth, scale: scale };
+        return { em: em, ex: ex, containerWidth: containerWidth, lineWidth: lineWidth, scale: scale, family: family };
     };
     CommonOutputJax.prototype.styleSheet = function (html) {
         var e_7, _a, e_8, _b;
@@ -386,7 +399,7 @@ var CommonOutputJax = (function (_super) {
     CommonOutputJax.prototype.cssFontStyles = function (font, styles) {
         if (styles === void 0) { styles = {}; }
         var _a = __read(font, 3), family = _a[0], italic = _a[1], bold = _a[2];
-        styles['font-family'] = family;
+        styles['font-family'] = this.font.getFamily(family);
         if (italic)
             styles['font-style'] = 'italic';
         if (bold)
@@ -397,12 +410,12 @@ var CommonOutputJax = (function (_super) {
         if (!styles) {
             styles = new Styles_js_1.Styles();
         }
-        return [styles.get('font-family'),
+        return [this.font.getFamily(styles.get('font-family')),
             styles.get('font-style') === 'italic',
             styles.get('font-weight') === 'bold'];
     };
     CommonOutputJax.NAME = 'Common';
-    CommonOutputJax.OPTIONS = __assign({}, OutputJax_js_1.AbstractOutputJax.OPTIONS, { scale: 1, minScale: .5, matchFontHeight: true, mtextInheritFont: false, merrorInheritFont: true, mathmlSpacing: false, skipAttributes: {}, exFactor: .5, displayAlign: 'center', displayIndent: '0', wrapperFactory: null, font: null, cssStyles: null });
+    CommonOutputJax.OPTIONS = __assign(__assign({}, OutputJax_js_1.AbstractOutputJax.OPTIONS), { scale: 1, minScale: .5, matchFontHeight: true, mtextInheritFont: false, merrorInheritFont: false, mtextFont: '', merrorFont: 'serif', mathmlSpacing: false, skipAttributes: {}, exFactor: .5, displayAlign: 'center', displayIndent: '0', wrapperFactory: null, font: null, cssStyles: null });
     CommonOutputJax.commonStyles = {};
     return CommonOutputJax;
 }(OutputJax_js_1.AbstractOutputJax));

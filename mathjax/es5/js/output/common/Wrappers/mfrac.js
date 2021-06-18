@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -28,11 +30,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommonMfracMixin = void 0;
 function CommonMfracMixin(Base) {
     return (function (_super) {
         __extends(class_1, _super);
@@ -41,12 +45,13 @@ function CommonMfracMixin(Base) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            var _this = _super.apply(this, __spread(args)) || this;
+            var _this = _super.apply(this, __spreadArray([], __read(args))) || this;
             _this.bevel = null;
             _this.pad = (_this.node.getProperty('withDelims') ? 0 : _this.font.params.nulldelimiterspace);
             if (_this.node.attributes.get('bevelled')) {
                 var H = _this.getBevelData(_this.isDisplay()).H;
                 var bevel = _this.bevel = _this.createMo('/');
+                bevel.node.attributes.set('symmetric', true);
                 bevel.canStretch(1);
                 bevel.getStretchedVariant([H], true);
             }
@@ -62,7 +67,7 @@ function CommonMfracMixin(Base) {
                 this.getBevelledBBox(bbox, display);
             }
             else {
-                var thickness = this.length2em(String(linethickness));
+                var thickness = this.length2em(String(linethickness), .06);
                 w = -2 * this.pad;
                 if (thickness === 0) {
                     this.getAtopBBox(bbox, display);
@@ -95,7 +100,6 @@ function CommonMfracMixin(Base) {
                 v: (display ? tex.denom1 : tex.denom2) + a - T };
         };
         class_1.prototype.getAtopBBox = function (bbox, display) {
-            var tex = this.font.params;
             var _a = this.getUVQ(display), u = _a.u, v = _a.v, nbox = _a.nbox, dbox = _a.dbox;
             bbox.combine(nbox, 0, u);
             bbox.combine(dbox, 0, -v);
@@ -132,7 +136,7 @@ function CommonMfracMixin(Base) {
             var v = dbox.scale * (dbox.d - dbox.h) / 2 + a - delta;
             return { H: H, delta: delta, u: u, v: v, nbox: nbox, dbox: dbox };
         };
-        class_1.prototype.canStretch = function (direction) {
+        class_1.prototype.canStretch = function (_direction) {
             return false;
         };
         class_1.prototype.isDisplay = function () {

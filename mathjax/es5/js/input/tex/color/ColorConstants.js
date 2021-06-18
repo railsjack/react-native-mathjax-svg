@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.COLORS = void 0;
 exports.COLORS = new Map([
     ['Apricot', '#FBB982'],
     ['Aquamarine', '#00B5BE'],

@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -39,11 +41,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommonTeXFontMixin = void 0;
 function CommonTeXFontMixin(Base) {
     var _a;
     return _a = (function (_super) {
@@ -56,7 +60,7 @@ function CommonTeXFontMixin(Base) {
             };
             return class_1;
         }(Base)),
-        _a.defaultVariants = __spread(Base.defaultVariants, [
+        _a.defaultVariants = __spreadArray(__spreadArray([], __read(Base.defaultVariants)), [
             ['-smallop', 'normal'],
             ['-largeop', 'normal'],
             ['-size3', 'normal'],
@@ -68,8 +72,9 @@ function CommonTeXFontMixin(Base) {
             ['-tex-mathit', 'italic'],
             ['-tex-variant', 'normal']
         ]),
-        _a.defaultCssFonts = __assign({}, Base.defaultCssFonts, { '-smallop': ['serif', false, false], '-largeop': ['serif', false, false], '-size3': ['serif', false, false], '-size4': ['serif', false, false], '-tex-calligraphic': ['cursive', true, false], '-tex-bold-calligraphic': ['cursive', true, true], '-tex-oldstyle': ['serif', false, false], '-tex-bold-oldstyle': ['serif', false, true], '-tex-mathit': ['serif', true, false] }),
-        _a.defaultSizeVariants = ['normal', '-smallop', '-largeop', '-size3', '-size4'],
+        _a.defaultCssFonts = __assign(__assign({}, Base.defaultCssFonts), { '-smallop': ['serif', false, false], '-largeop': ['serif', false, false], '-size3': ['serif', false, false], '-size4': ['serif', false, false], '-tex-calligraphic': ['cursive', true, false], '-tex-bold-calligraphic': ['cursive', true, true], '-tex-oldstyle': ['serif', false, false], '-tex-bold-oldstyle': ['serif', false, true], '-tex-mathit': ['serif', true, false] }),
+        _a.defaultSizeVariants = ['normal', '-smallop', '-largeop', '-size3', '-size4', '-tex-variant'],
+        _a.defaultStretchVariants = ['-size4'],
         _a;
 }
 exports.CommonTeXFontMixin = CommonTeXFontMixin;

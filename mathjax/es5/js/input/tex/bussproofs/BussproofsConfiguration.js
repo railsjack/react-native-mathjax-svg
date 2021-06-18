@@ -1,11 +1,13 @@
 "use strict";
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BussproofsConfiguration = void 0;
 var Configuration_js_1 = require("../Configuration.js");
 var BussproofsItems_js_1 = require("./BussproofsItems.js");
 var BussproofsUtil_js_1 = require("./BussproofsUtil.js");
 require("./BussproofsMappings.js");
-exports.BussproofsConfiguration = Configuration_js_1.Configuration.create('bussproofs', { handler: {
+exports.BussproofsConfiguration = Configuration_js_1.Configuration.create('bussproofs', {
+    handler: {
         macro: ['Bussproofs-macros'],
         environment: ['Bussproofs-environments']
     },

@@ -73,7 +73,7 @@ NewcommandMethods.Let = function (parser, name) {
         }
         macro_1 = map_1.lookup(name);
         var newArgs = NewcommandUtil_js_1.default.disassembleSymbol(cs, macro_1);
-        var method = function (p, cs) {
+        var method = function (p, _cs) {
             var rest = [];
             for (var _i = 2; _i < arguments.length; _i++) {
                 rest[_i - 2] = arguments[_i];

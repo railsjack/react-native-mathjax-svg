@@ -3,10 +3,12 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -23,15 +25,16 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -49,11 +52,13 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.liteAdaptor = exports.LiteAdaptor = void 0;
 var DOMAdaptor_js_1 = require("../core/DOMAdaptor.js");
 var Document_js_1 = require("./lite/Document.js");
 var Element_js_1 = require("./lite/Element.js");
@@ -76,9 +81,8 @@ var LiteAdaptor = (function (_super) {
     LiteAdaptor.prototype.parse = function (text, format) {
         return this.parser.parseFromString(text, format, this);
     };
-    ;
-    LiteAdaptor.prototype.create = function (kind, ns) {
-        if (ns === void 0) { ns = null; }
+    LiteAdaptor.prototype.create = function (kind, _ns) {
+        if (_ns === void 0) { _ns = null; }
         return new Element_js_1.LiteElement(kind);
     };
     LiteAdaptor.prototype.text = function (text) {
@@ -98,6 +102,9 @@ var LiteAdaptor = (function (_super) {
     };
     LiteAdaptor.prototype.root = function (doc) {
         return doc.root;
+    };
+    LiteAdaptor.prototype.doctype = function (doc) {
+        return doc.type;
     };
     LiteAdaptor.prototype.tags = function (node, name, ns) {
         if (ns === void 0) { ns = null; }
@@ -199,6 +206,12 @@ var LiteAdaptor = (function (_super) {
         }
         return containers;
     };
+    LiteAdaptor.prototype.contains = function (container, node) {
+        while (node && node !== container) {
+            node = this.parent(node);
+        }
+        return !!node;
+    };
     LiteAdaptor.prototype.parent = function (node) {
         return node.parent;
     };
@@ -235,6 +248,8 @@ var LiteAdaptor = (function (_super) {
         var i = this.childIndex(onode);
         if (i >= 0) {
             onode.parent.children[i] = nnode;
+            nnode.parent = onode.parent;
+            onode.parent = null;
         }
         return onode;
     };
@@ -267,14 +282,14 @@ var LiteAdaptor = (function (_super) {
     LiteAdaptor.prototype.next = function (node) {
         var parent = node.parent;
         if (!parent)
-            return;
+            return null;
         var i = this.childIndex(node) + 1;
         return (i >= 0 && i < parent.children.length ? parent.children[i] : null);
     };
     LiteAdaptor.prototype.previous = function (node) {
         var parent = node.parent;
         if (!parent)
-            return;
+            return null;
         var i = this.childIndex(node) - 1;
         return (i >= 0 ? parent.children[i] : null);
     };
@@ -285,7 +300,7 @@ var LiteAdaptor = (function (_super) {
         return node.children[node.children.length - 1];
     };
     LiteAdaptor.prototype.childNodes = function (node) {
-        return __spread(node.children);
+        return __spreadArray([], __read(node.children));
     };
     LiteAdaptor.prototype.childNode = function (node, i) {
         return node.children[i];
@@ -294,20 +309,24 @@ var LiteAdaptor = (function (_super) {
         return node.kind;
     };
     LiteAdaptor.prototype.value = function (node) {
-        return (node.kind === '#text' ? node.value : '');
+        return (node.kind === '#text' ? node.value :
+            node.kind === '#comment' ? node.value.replace(/^<!(--)?((?:.|\n)*)\1>$/, '$2') : '');
     };
     LiteAdaptor.prototype.textContent = function (node) {
         var _this = this;
         return node.children.reduce(function (s, n) {
             return s + (n.kind === '#text' ? n.value :
                 n.kind === '#comment' ? '' : _this.textContent(n));
-        }, "");
+        }, '');
     };
     LiteAdaptor.prototype.innerHTML = function (node) {
         return this.parser.serializeInner(this, node);
     };
     LiteAdaptor.prototype.outerHTML = function (node) {
         return this.parser.serialize(this, node);
+    };
+    LiteAdaptor.prototype.serializeXML = function (node) {
+        return this.parser.serialize(this, node, true);
     };
     LiteAdaptor.prototype.setAttribute = function (node, name, value, ns) {
         if (ns === void 0) { ns = null; }
@@ -389,21 +408,52 @@ var LiteAdaptor = (function (_super) {
     LiteAdaptor.prototype.allStyles = function (node) {
         return this.getAttribute(node, 'style');
     };
-    LiteAdaptor.prototype.fontSize = function (node) {
+    LiteAdaptor.prototype.fontSize = function (_node) {
         return this.options.fontSize;
     };
-    LiteAdaptor.prototype.nodeSize = function (node, em, local) {
-        if (em === void 0) { em = 1; }
-        if (local === void 0) { local = null; }
-        var text = this.textContent(node);
-        return [.6 * text.length, 0];
+    LiteAdaptor.prototype.fontFamily = function (_node) {
+        return this.options.fontFamily;
     };
-    LiteAdaptor.prototype.nodeBBox = function (node) {
+    LiteAdaptor.prototype.nodeSize = function (node, _em, _local) {
+        if (_em === void 0) { _em = 1; }
+        if (_local === void 0) { _local = null; }
+        var text = this.textContent(node);
+        var non = Array.from(text.replace(LiteAdaptor.cjkPattern, '')).length;
+        var CJK = Array.from(text).length - non;
+        return [
+            CJK * this.options.cjkCharWidth + non * this.options.unknownCharWidth,
+            this.options.unknownCharHeight
+        ];
+    };
+    LiteAdaptor.prototype.nodeBBox = function (_node) {
         return { left: 0, right: 0, top: 0, bottom: 0 };
     };
     LiteAdaptor.OPTIONS = {
         fontSize: 16,
+        fontFamily: 'Times',
+        cjkCharWidth: 1,
+        unknownCharWidth: .6,
+        unknownCharHeight: .8,
     };
+    LiteAdaptor.cjkPattern = new RegExp([
+        '[',
+        '\u1100-\u115F',
+        '\u2329\u232A',
+        '\u2E80-\u303E',
+        '\u3040-\u3247',
+        '\u3250-\u4DBF',
+        '\u4E00-\uA4C6',
+        '\uA960-\uA97C',
+        '\uAC00-\uD7A3',
+        '\uF900-\uFAFF',
+        '\uFE10-\uFE19',
+        '\uFE30-\uFE6B',
+        '\uFF01-\uFF60\uFFE0-\uFFE6',
+        "\uD82C\uDC00-\uD82C\uDC01",
+        "\uD83C\uDE00-\uD83C\uDE51",
+        "\uD840\uDC00-\uD8BF\uDFFD",
+        ']'
+    ].join(''), 'gu');
     return LiteAdaptor;
 }(DOMAdaptor_js_1.AbstractDOMAdaptor));
 exports.LiteAdaptor = LiteAdaptor;
